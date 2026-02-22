@@ -2,7 +2,7 @@
 
 - Conversation ID: 699a7bac-141c-8322-8c92-8f895f8ac91b
 - Title: SFP SFP+ Compatibility
-- Captured: 2026-02-22T10:40:54.421Z
+- Captured: 2026-02-22T10:43:56.734Z
 - URL: https://chatgpt.com/c/699a7bac-141c-8322-8c92-8f895f8ac91b
 
 ---
@@ -1186,4 +1186,71 @@ Single-mode
 UPC (blue)
 
 If you want, tell me what connector type your outdoor fiber currently has (if any), and I’ll tell you exactly what adapter or connector you need.
+
+## User
+
+yes sure please do. and another thing is that does the exact model from ruijie SFP module is MINI-GBIC-LX-SM1310?
+
+## Assistant
+
+Yes — the Ruijie Reyee SFP module you mentioned, MINI-GBIC-LX-SM1310, is a real and appropriate model for single-mode fiber at 1 Gbps.
+
+✅ About the Ruijie MINI-GBIC-LX-SM1310
+
+It is a 1000BASE-LX (1G) SFP transceiver
+
+Designed for single-mode fiber (SMF, 9/125 µm)
+
+Operates at 1310 nm wavelength
+
+Uses a duplex LC connector
+
+Supports distances up to ~10 km on SMF — far more than your ~200 m run
+
+Comes in the SFP form factor compatible with both your switches’ SFP/SFP+ ports for 1G operation 
+Ruijie Networks
++1
+
+This is exactly the correct type of optical module if you choose to use single-mode fiber (OS2) between your switches.
+
+🧠 Why This Model Is Appropriate
+
+Your switches (e.g., RG-ES228GS-P) have standard 1 G SFP uplink ports that support 1000Base-X optical modules such as LX modules. 
+reyee.ruijie.com
+
+The RG-NBS3200-24GT4XS has SFP+ uplinks, but those ports are backward-compatible with 1 G SFP transceivers, meaning the switch will run them at 1 Gbps when a 1 G optics like this is inserted. 
+Ruijie Networks
+
+So the MINI-GBIC-LX-SM1310 is a perfectly valid choice for your fiber uplinks.
+
+📦 Summary — What You Should Buy
+
+For each fiber uplink between your RG-ES228GS-P units and the RG-NBS3200:
+
+Optical Modules:
+
+6× Ruijie Reyee MINI-GBIC-LX-SM1310
+
+3 for the NBS3200 uplink ports
+
+1 for each of the 3 ES228GS-P units
+
+Fiber Cable:
+
+2-core OS2 single-mode fiber
+
+Terminated with LC-LC duplex connectors
+
+Or use LC fast connectors + short patch cord to SFP if you lack fusion splicer
+
+⚠️ Important Notes
+
+This LX module is single-mode only — do not plug it into multimode fiber without a mode-conditioning patch cable; modes won’t auto-convert. 
+Ruijie Networks
+
+Avoid cheaper non-UPC/angled connectors (APC) unless the optics specifically require them — LX SFPs use UPC.
+
+Make sure fiber polarity (Tx/Rx cross) is correct.
+
+If you tell me what jacket color and markings are on your outdoor fiber (e.g., “OS2 9/125 SMF” printed on the cable), I’ll confirm whether you can terminate it directly with fast connectors for this optics choice.
 
