@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-22T14:44:15.411Z
+- Captured: 2026-02-22T14:47:34.509Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -13066,4 +13066,105 @@ Code
 
 If you want, paste your first app idea (5–10 lines) and I’ll show you exactly what Prompt 1 should produce for `inputs.yml` (with your defaults).
 ::contentReference[oaicite:0]{index=0}
+
+## User
+
+- ok, i check what you did and its amazing. 
+- can you already add the default capabilities.offline = all and capabilities.realtime = all and sync once back online just like doing the data in Outbox first when offline and sync automatically
+- before I give you my first app idea. can you please check this github repo: https://github.com/Fission-AI/OpenSpec
+- look for data or information that can useful here in our prompt
+
+## Assistant
+
+Awesome — two things in your request:
+
+Update our default capabilities to:
+
+capabilities.offline = all (offline-first + outbox + auto sync)
+
+capabilities.realtime = all
+
+Review Fission-AI/OpenSpec and extract ideas we can reuse in our AI_prompt.md.
+
+I did both. Here’s what I found and how to integrate it cleanly.
+
+1) Updating defaults: offline=all + realtime=all (with outbox + auto-sync)
+What this means in our system
+
+When offline is all, the generated projects must assume:
+
+Local-first writes (client writes go to local store first)
+
+Outbox pattern (enqueue “intents” locally)
+
+Background sync when online
+
+Idempotency keys on writes
+
+Conflict-safe server processing (append-only events preferred)
+
+That’s exactly the “sync once back online” behavior you described.
+
+The minimal prompt changes you should make (I will embed these into AI_prompt.md)
+
+In PROMPT 1 (Spec Synthesizer) defaults:
+
+capabilities.offline = all
+
+capabilities.realtime = all
+
+In PROMPT 1 inference rules:
+
+If the user says “online-only”, “no offline”, or “web-only”, then downgrade offline to none.
+
+In PROMPT 2 (Scaffold Generator):
+
+If offline is all, scaffold an “offline sync placeholder contract”:
+
+packages/shared/src/offline.ts (outbox event types + idempotency key shape)
+
+API stub endpoints like:
+
+POST /sync/push (accept outbox batch)
+
+GET /sync/pull?cursor=...
+
+Keep it minimal (stubs + structure) so the baseline still runs without building full sync logic on day 1.
+
+Also: since your enums originally were none | read-only | offline-writes, adding all is reasonable and matches your intent (it essentially means “offline-writes + sync scaffolding always on”).
+
+2) What OpenSpec adds that’s useful for our prompt
+
+OpenSpec’s core value: it turns “requirements in chat” into files in the repo, organized so agents can always re-load context and reviewers can understand intent quickly. 
+openspec.dev
++1
+
+The most useful ideas to steal (and how to integrate them)
+A) Specs live alongside code, organized by capability
+
+OpenSpec promotes a structure like openspec/specs/<capability>/spec.md so intent persists beyond chat sessions. 
+openspec.dev
+
+✅ How we integrate:
+Add (optional but recommended) to our generated repo:
+
+openspec/specs/ folder
+
+One spec per module (tasks, auth, uploads, etc.)
+
+Our generator can create a starter spec for each enabled module from inputs.yml.
+
+This works perfectly with your “one file describes the app” idea, because the agent can:
+
+generate inputs.yml from your description
+
+then generate living specs per module automatically
+
+B) “Change folders” per feature with proposal → tasks → apply → archive
+
+OpenSpec demonstrates a workflow where each change results in an organized artifact trail, and can be archived when done. 
+GitHub
+
+✅ How we integrate (lightweight):
+We don’t need OpenSpec CLI, but we can copy the p
 
