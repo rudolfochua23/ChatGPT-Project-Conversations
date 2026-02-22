@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-22T14:16:14.543Z
+- Captured: 2026-02-22T14:19:31.039Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -12595,4 +12595,41 @@ default = single
 and the spec synthesizer flips to multi only when your description indicates it.
 
 If you say “go ahead”, I will produce a clean, copy-paste-ready AI_prompt.md that embeds your baseline tree + contents (with the minimal fixes above) and includes the two-step Option B prompts + runbooks.
+
+## User
+
+- ok sorry again about that. the inputs.yml will still be the single source of truth just like what we discussed before. we are on the same page on that. 
+- Do you want tenancy default to be single or multi? 
+Single
+- ok, then Go Ahead
+
+## Assistant
+
+Markdown
+# AI_prompt.md — Spec-Driven Reusable App Initiator (Option B)
+> **Goal:** You describe the app in plain English → the agent synthesizes `inputs.yml` (single source of truth) → the agent scaffolds a full, hydration-safe monorepo + compose + devcontainer using modern OSS-first defaults.
+
+---
+
+## Non-negotiables (hard rules)
+1) **`inputs.yml` is the single source of truth** for every generated project.
+2) Humans edit only:
+   - `inputs.yml`
+   - (optionally) `project.memory.md`
+3) **No hardcoded domains/URLs** in code or compose. All env URLs come from `inputs.yml` → rendered into `.env.generated.*`.
+4) **Hydration-safe Next.js** (prevents “dead UI”):
+   - `apps/web/app/layout.tsx` and `apps/web/app/**/page.tsx` are **server-only**.
+   - Any interactive UI must be in `*.client.tsx` with `'use client'`.
+   - If shadcn/ui is used, it must be in client components.
+5) **OSS-first + compose-first**:
+   - Compose is required for dev and staging.
+   - Kubernetes artifacts exist, but staging must not require Kubernetes.
+6) **Tenancy default: SINGLE.** Multi-tenant only if explicitly requested in the description.
+
+---
+
+## What you (human) will do
+You will use **two prompts** in Copilot:
+
+1) **SPEC SYNTHESIZER**: Your plain-English descripti
 
