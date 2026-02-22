@@ -2,7 +2,7 @@
 
 - Conversation ID: 699a7bac-141c-8322-8c92-8f895f8ac91b
 - Title: SFP SFP+ Compatibility
-- Captured: 2026-02-22T09:40:09.687Z
+- Captured: 2026-02-22T09:43:11.593Z
 - URL: https://chatgpt.com/c/699a7bac-141c-8322-8c92-8f895f8ac91b
 
 ---
@@ -541,4 +541,89 @@ Are these inside same building or separate buildings?
 Do you already have fiber installed or are you pulling new cable?
 
 I can optimize the cost further (for example, direct trunk fiber vs patch cord method).
+
+## User
+
+i mean is what kind of fiber cable is that single mode fiber? i only have 2 core fiber cable. is it the same?
+
+## Assistant
+
+Ahhhh — perfect question. Now we’re talking about the actual fiber cable, not the SFP module 👍
+
+You said:
+
+“I only have 2 core fiber cable. Is it the same?”
+
+✅ Yes — 2 core fiber is exactly what you need.
+What “2 Core Fiber” Means
+
+A 2 core fiber cable means it contains:
+
+2 individual fiber strands inside
+
+One strand = TX
+
+One strand = RX
+
+That is called:
+
+✅ Duplex fiber
+
+And that is exactly what standard 1000BASE-LX SFP modules require.
+
+For Single-Mode, The Cable Should Be:
+🔹 Type:
+
+OS2 (9/125µm) Single-Mode Fiber
+
+🔹 Core Count:
+
+2 Core (Duplex) ✔ Correct
+
+🔹 Jacket Color (usually):
+
+Yellow
+
+If your cable jacket is yellow and printed something like:
+
+Code
+OS2 9/125µm
+SM G.652D
+Single Mode
+
+Then you are 100% good.
+
+What You Should NOT Have
+
+❌ OM3 / OM4 (Multimode, usually aqua)
+
+❌ 50/125µm (that’s multimode)
+
+❌ 1 core fiber (that would require BiDi SFPs)
+
+So Your Setup Should Be
+
+For each link (per ES228GS-P):
+
+1 × 1000BASE-LX SFP in ES228GS-P
+
+1 × 1000BASE-LX SFP in NBS3200
+
+Use your existing 2-core OS2 fiber
+
+Terminate with LC duplex UPC
+
+Simple Check
+
+If your 2-core cable is:
+
+Yellow ✔
+
+9/125µm ✔
+
+OS2 ✔
+
+Then yes — it is exactly the correct fiber for 1000BASE-LX SFP modules.
+
+If you want, tell me what is printed on the fiber jacket and I’ll confirm 100%.
 
