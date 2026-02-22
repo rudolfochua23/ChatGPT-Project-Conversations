@@ -2,7 +2,7 @@
 
 - Conversation ID: 699a7bac-141c-8322-8c92-8f895f8ac91b
 - Title: SFP SFP+ Compatibility
-- Captured: 2026-02-22T10:01:26.523Z
+- Captured: 2026-02-22T10:04:28.786Z
 - URL: https://chatgpt.com/c/699a7bac-141c-8322-8c92-8f895f8ac91b
 
 ---
