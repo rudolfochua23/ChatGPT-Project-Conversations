@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-22T14:47:34.509Z
+- Captured: 2026-02-22T14:51:05.051Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -13166,5 +13166,93 @@ OpenSpec demonstrates a workflow where each change results in an organized artif
 GitHub
 
 ✅ How we integrate (lightweight):
-We don’t need OpenSpec CLI, but we can copy the p
+We don’t need OpenSpec CLI, but we can copy the pattern:
+
+changes/active/<yyy-mm-dd>-<feature>/
+
+proposal.md
+
+tasks.md
+
+design.md
+
+changes/archive/... once merged
+
+This directly reduces Copilot chaos and helps you keep incremental changes safe.
+
+C) “Agree before you build”
+
+OpenSpec is built around aligning on specs before implementation. 
+GitHub
++1
+
+✅ How we integrate:
+In our AI_prompt.md, we already do this with:
+
+“Spec Synthesizer” step (inputs.yml)
+
+then scaffold generator
+
+We should add one more hard rule:
+
+If the user request is ambiguous, the agent must write assumptions into project.memory.md and clearly list them before generating code.
+
+D) Tool-agnostic + works with Copilot
+
+OpenSpec explicitly supports GitHub Copilot among other tools. 
+openspec.dev
++1
+
+✅ How we integrate:
+We keep our prompt tool-agnostic the same way:
+
+our repo generates normal files
+
+nothing vendor-locked
+
+works in Copilot, Cursor, etc.
+
+3) Concrete additions I will fold into AI_prompt.md (based on OpenSpec)
+
+If we apply OpenSpec ideas without adding heavy tooling, the best “bang for effort” additions are:
+
+Create openspec/specs/<module>/spec.md for each enabled module
+
+Create a changes/ folder convention for each feature change
+
+Add a “spec delta” mindset: when a feature changes, update the module spec first, then code
+
+These are aligned with OpenSpec’s “context that persists” model. 
+openspec.dev
+
+4) Quick note about defaulting to offline=all + realtime=all
+
+This is powerful, but it will make every project heavier unless your generator keeps it “scaffold-only” until needed.
+
+So the rule I will enforce in the prompt is:
+
+Default values in inputs.yml can be all
+
+But initial code generation should include:
+
+contract stubs
+
+placeholder modules
+
+no full sync engine unless your app description requires it
+
+That keeps “best practice foundation” without slowing you down.
+
+What I need from you next
+
+Paste your first app idea (5–10 lines).
+Then I’ll show you what Prompt 1 should produce for inputs.yml with:
+
+tenancy default = single
+
+offline default = all + outbox sync scaffolding
+
+realtime default = all
+
+plus module list inferred from your description
 
