@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-22T13:45:21.449Z
+- Captured: 2026-02-22T13:48:42.689Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -12565,5 +12565,34 @@ When you say:
 
 “AI_prompt.md will be the single source of truth and inputs.yml will be generated”
 
-That’s totally fine — but the generated project repo still must contain `
+That’s totally fine — but the generated project repo still must contain inputs.yml as a real file because:
+
+the validator tool needs it
+
+env rendering needs it
+
+CI needs it
+
+future feature updates need it
+
+So:
+AI_prompt.md is SoT for the process
+inputs.yml is SoT for the project
+
+That separation prevents drift.
+
+6) One question I will NOT leave you hanging with
+
+You don’t need to answer now, but it affects defaults:
+
+Do you want tenancy default to be single or multi?
+Your pasted inputs.yml uses multi, but for generic initiators, the safest default is usually single unless you explicitly mention multi-tenant.
+
+If you don’t answer, I will set:
+
+default = single
+
+and the spec synthesizer flips to multi only when your description indicates it.
+
+If you say “go ahead”, I will produce a clean, copy-paste-ready AI_prompt.md that embeds your baseline tree + contents (with the minimal fixes above) and includes the two-step Option B prompts + runbooks.
 
