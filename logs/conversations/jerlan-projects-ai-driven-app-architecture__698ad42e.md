@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-22T14:19:31.039Z
+- Captured: 2026-02-22T14:22:45.585Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -12631,5 +12631,439 @@ Markdown
 ## What you (human) will do
 You will use **two prompts** in Copilot:
 
-1) **SPEC SYNTHESIZER**: Your plain-English descripti
+1) **SPEC SYNTHESIZER**: Your plain-English description → generates/updates `inputs.yml`
+2) **SCAFFOLD GENERATOR**: Reads `inputs.yml` → generates the full repo (folder tree + file contents)
+
+After generation, you run:
+- `pnpm bootstrap:dev`
+- `pnpm dev:all`
+
+---
+
+# PROMPT 1 — SPEC SYNTHESIZER (Option B)
+> Paste this into Copilot Chat in a blank/new repo (or an existing repo if updating).
+> Replace `<PASTE APP DESCRIPTION HERE>`.
+
+```text
+SPEC SYNTHESIZER (Option B)
+
+You are the Spec Synthesizer.
+
+Input: my plain-English app description (below).
+Output: a complete ./inputs.yml using fixed options + defaults.
+
+Rules:
+1) Generate ONLY ./inputs.yml (do not generate code yet).
+2) Use these defaults unless explicitly overridden:
+   - app.type = GENERIC
+   - tenancy.mode = single
+   - deployment.strategy = compose
+   - capabilities.offline = none
+   - capabilities.realtime = none
+   - domains.root_domain = example.com
+   - domains.subdomains.staging = staging
+   - domains.subdomains.production = app
+   - domains.prefixes: api=api, realtime=ws, auth=auth, storage=s3
+3) Infer switches from wording:
+   - Offline: if I mention offline-first, field, POS, tablet, intermittent internet → offline = offline-writes
+   - Realtime: if I mention chat, live updates, notifications → realtime = notifications/live/chat/all
+   - Multi-tenant: if I mention multiple organizations/clients/tenants/white-label → tenancy.mode = multi
+4) Create structured modules under inputs.modules.* with enabled:true and inferred settings.
+5) env_urls:
+   - development URLs are fixed localhost defaults
+   - staging/production URLs MUST be templates using ${domains.*} placeholders
+6) Include Keycloak + MinIO defaults for dev credentials:
+   - Keycloak admin/admin (dev only)
+   - MinIO admin/admin (dev only)
+7) Output:
+   - The full YAML file contents for inputs.yml
+   - Then a short bullet list of what you inferred
+
+Here is my app description:
+<PASTE APP DESCRIPTION HERE>
+PROMPT 2 — SCAFFOLD GENERATOR (inputs.yml → full repo)
+
+Paste this AFTER Prompt 1 has created/updated inputs.yml.
+
+Plain text
+SCAFFOLD GENERATOR
+
+You are the Scaffold Generator.
+
+1) Read ./inputs.yml and treat it as the single source of truth.
+2) Generate the full repo with the folder tree and file contents described below.
+3) Where a file includes placeholders ${domains.*} in inputs.yml, DO NOT resolve them by hand inside files. Only render via tools/render-inputs.mjs into .env.generated.*
+4) Enforce hydration safety (strict):
+   - apps/web/app/layout.tsx and apps/web/app/**/page.tsx are server-only
+   - interactive UI lives in *.client.tsx and starts with 'use client'
+5) Tenancy default is single:
+   - If inputs.tenancy.mode=single → DO NOT generate tenant_id logic anywhere
+   - If inputs.tenancy.mode=multi → generate tenant resolution scaffolding only
+6) Output all file contents fully. Do not omit files.
+
+CREATE THIS FOLDER TREE (baseline v1)
+repo/
+├─ inputs.yml
+├─ inputs.schema.json
+├─ project.memory.md
+├─ README.md
+├─ compose.yml
+├─ .env.dev
+├─ .env.staging
+├─ .env.prod
+├─ .devcontainer/
+│  ├─ devcontainer.json
+│  └─ Dockerfile
+├─ .github/
+│  └─ workflows/
+│     └─ ci.yml
+├─ turbo.json
+├─ pnpm-workspace.yaml
+├─ package.json
+├─ tsconfig.base.json
+├─ tools/
+│  ├─ validate-inputs.mjs
+│  ├─ render-inputs.mjs
+│  ├─ sync-env.mjs
+│  ├─ bootstrap-profile.mjs
+│  ├─ down-profile.mjs
+│  ├─ reset-profile.mjs
+│  └─ hydration-lint.mjs
+├─ infra/
+│  ├─ keycloak/
+│  │  └─ realm-app.json
+│  ├─ minio/
+│  │  └─ init.sh
+│  └─ k8s/
+│     ├─ README.md
+│     └─ placeholders/
+│        └─ customization.yaml
+├─ apps/
+│  ├─ web/
+│  │  ├─ package.json
+│  │  ├─ next.config.mjs
+│  │  ├─ tsconfig.json
+│  │  ├─ app/
+│  │  │  ├─ layout.tsx
+│  │  │  ├─ dashboard/page.tsx
+│  │  │  ├─ tasks/page.tsx
+│  │  │  └─ examples/page.tsx
+│  │  ├─ components/
+│  │  │  ├─ shell/AppShell.server.tsx
+│  │  │  ├─ nav/Sidebar.client.tsx
+│  │  │  ├─ nav/Topbar.client.tsx
+│  │  │  └─ tasks/Tasks.client.tsx
+│  │  └─ styles/globals.css
+│  └─ api/
+│     ├─ package.json
+│     ├─ tsconfig.json
+│     └─ src/
+│        ├─ main.ts
+│        ├─ app.module.ts
+│        └─ health.controller.ts
+└─ packages/
+   └─ shared/
+      ├─ package.json
+      └─ src/index.ts
+
+NOW WRITE THESE EXACT FILE CONTENTS (baseline v1)
+- Use the contents below as the default scaffold.
+- Only change the minimum necessary to reflect inputs.yml (e.g., app name, enabled pages, offline/realtime scaffolds).
+- Fix any obvious correctness bugs (duplicate JSON keys, broken CI ordering, missing tool files).
+
+FILE: inputs.yml
+(Use the existing inputs.yml already produced by Prompt 1. If missing, generate it according to Prompt 1 rules.)
+
+FILE: inputs.schema.json
+Create a JSON Schema that validates:
+- inputs.app.type: GENERIC|POS
+- domains structure and required keys
+- env_urls structure; allow ${...} placeholders (strings)
+- tenancy.mode = single|multi
+  - if single: disallow inputs.tenancy.multi
+  - if multi: require inputs.tenancy.multi.strategy + inputs.tenancy.multi.resolution.method + claim_key when jwt-claim
+- deployment.strategy enum
+- capabilities.realtime/offline enums
+- ui.required_routes booleans
+- governance flags booleans
+
+FILE: project.memory.md
+(Use the exact content from the baseline in this prompt, but update tenancy default to single if needed; keep the hydration pitfalls.)
+
+FILE: .env.dev / .env.staging / .env.prod
+(Use the exact baseline content.)
+
+FILE: compose.yml
+(Use the exact baseline content. Ensure dev works.)
+
+FILE: infra/keycloak/realm-app.json
+(Use the baseline realm; ensure it works with localhost redirectUris. Keep admin user.)
+
+FILE: infra/minio/init.sh
+Simplify for dev:
+- It should default to minio-dev unless another host is explicitly available.
+- It must create the bucket from MINIO_BUCKET.
+
+FILE: .devcontainer/Dockerfile and devcontainer.json
+(Use baseline but ensure postCreateCommand runs pnpm check:spec:dev)
+
+FILE: package.json
+IMPORTANT:
+- Do NOT duplicate script keys.
+- Include scripts:
+  - validate:inputs
+  - render:inputs
+  - check:spec:dev
+  - bootstrap:dev
+  - dev:all
+  - lint:hydration
+  - down:dev
+  - reset:dev
+- Pin packageManager pnpm@9.12.0
+- Include devDependencies: turbo, typescript, ajv, js-yaml
+
+FILE: tools/*.mjs
+Implement all tool scripts referenced by package.json.
+
+FILE: apps/web
+Use hydration-safe shell + nav + pages exactly like the baseline.
+
+FILE: apps/api
+Use NestJS minimal health endpoint.
+For developer experience, implement api "dev" with tsx watch (recommended).
+
+FILE: .github/workflows/ci.yml
+IMPORTANT:
+- Enable corepack and pnpm BEFORE running pnpm install.
+- Run: pnpm validate:inputs, pnpm render:inputs, pnpm lint:hydration
+- Keep node-version 20.
+
+After generating everything:
+1) print the exact commands I should run (in order)
+2) explain what success looks like (URLs)
+Default baseline file contents (v1)
+
+The generator should use these exact defaults unless inputs.yml requires a change.
+
+FILE: project.memory.md
+Markdown
+# Project Memory (Cognition)
+
+## Intent
+- Spec-driven development using inputs.yml as the single source of truth
+- OSS-first, secure-by-default, performance-seeking
+- Docker Compose first (dev/staging/prod profiles), Kubernetes-ready artifacts scaffolded
+- TypeScript end-to-end monorepo
+- Web: Next.js App Router with strict hydration-safe client boundaries
+- API: NestJS
+- Auth: Keycloak (OIDC)
+- Object storage: MinIO (S3-compatible)
+- Data: Postgres + Redis
+
+## Non-negotiables
+- No environment-specific hardcoding (URLs, domains, credentials, tenant IDs)
+- Server/Client boundaries must be strict in Next.js:
+  - app/layout.tsx and app/**/page.tsx are server-only by default
+  - interactive UI lives only in *.client.tsx and starts with 'use client'
+  - shadcn/ui imports are client-only
+- Compose-first: staging must not require Kubernetes
+- K8s-ready: manifests exist but are not used for staging
+
+## Known pitfalls
+- Dead UI (menus/buttons do nothing) happens when:
+  - 'use client' is missing
+  - shadcn/ui is imported into server components
+  - hooks/event handlers exist in server components
+FILE: .env.dev
+env
+ENV=dev
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=app_dev
+
+KEYCLOAK_ADMIN=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=admin
+MINIO_BUCKET=app
+FILE: .env.staging
+env
+ENV=staging
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=app_staging
+
+KEYCLOAK_ADMIN=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=admin
+MINIO_BUCKET=app
+FILE: .env.prod
+env
+ENV=prod
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=app_prod
+
+KEYCLOAK_ADMIN=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=admin
+MINIO_BUCKET=app
+FILE: infra/keycloak/realm-app.json
+JSON
+{
+  "realm": "app",
+  "enabled": true,
+  "displayName": "App Realm",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        { "type": "password", "value": "admin", "temporary": false }
+      ],
+      "realmRoles": ["admin"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "Realm admin role for starter projects" },
+      { "name": "user", "description": "Default user role" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "web",
+      "name": "Web Client",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"]
+    }
+  ]
+}
+FILE: infra/minio/init.sh
+Bash
+#!/bin/sh
+set -e
+
+HOST="${HOST:-minio-dev}"
+: "${MINIO_BUCKET:=app}"
+
+echo "Configuring MinIO host: $HOST"
+mc alias set local "http://$HOST:9000" "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+
+echo "Ensuring bucket exists: $MINIO_BUCKET"
+mc mb -p "local/$MINIO_BUCKET" || true
+
+echo "MinIO init done."
+PROMPT 3 — Feature/module change later (safe incremental)
+
+Use this after the repo exists. You describe the change in English.
+
+Plain text
+FEATURE/MODULE UPDATE (Option B)
+
+I will describe a new feature/module in plain English.
+
+1) Read current inputs.yml (single source of truth).
+2) Update inputs.yml minimally (features/modules/capabilities only).
+3) Run an alignment plan: list ONLY files that must change.
+4) Implement ONLY those changes:
+   - apps/api: NestJS module/controller/service/DTOs (minimal)
+   - apps/web: route pages (server) + interactive islands (*.client.tsx)
+   - packages/shared: contracts/types
+5) Do NOT regenerate the whole repo.
+6) Hydration rules must remain valid (no hooks/events/shadcn in server files).
+
+Output:
+- Updated inputs.yml (if changed)
+- File change plan
+- Exact file edits
+- Commands to run:
+  pnpm check:spec:dev
+  pnpm lint:hydration
+  pnpm dev:all
+
+Here is the new feature/module:
+<PASTE CHANGE DESCRIPTION HERE>
+Runbooks (what you run in the generated project repo)
+One-time setup (blank repo → running)
+
+Open repo in VS Code
+
+Dev Containers: Reopen in Container
+
+In terminal:
+
+pnpm bootstrap:dev
+
+pnpm dev:all
+
+Success URLs:
+
+Web: http://localhost:3000
+
+API health: http://localhost:3001/health
+
+Keycloak: http://localhost:8080
+ (admin/admin)
+
+MinIO: http://localhost:9000
+ (admin/admin)
+
+MinIO console: http://localhost:9001
+
+After editing inputs.yml
+
+pnpm check:spec:dev
+
+If infra-related env changed: pnpm down:dev && docker compose --profile dev up -d
+
+pnpm lint:hydration
+
+pnpm dev:all
+
+Validation gates (must pass)
+
+pnpm validate:inputs
+
+pnpm render:inputs
+
+pnpm lint:hydration
+
+CI runs these on every push/PR
+
+Notes
+
+This is v1 baseline: keep it stable.
+
+Add complexity only when needed (offline sync, realtime contracts, tenancy enforcement).
+
+Always enforce hydration boundaries first.
+
+Code
+
+---
+
+## What changed vs your pasted baseline (important fixes)
+- Tenancy default is **single** (as you requested); multi only when described.
+- The generator must **avoid duplicate keys** in `package.json`.
+- CI must enable **corepack + pnpm** before `pnpm install`.
+- The scaffold must include **all referenced tools** (validate/render/sync/bootstrap/down/reset/hydration-lint).
+
+If you want, paste your first app idea (5–10 lines) and I’ll show you exactly what Prompt 1 should produce for `inputs.yml` (with your defaults).
+::contentReference[oaicite:0]{index=0}
 
