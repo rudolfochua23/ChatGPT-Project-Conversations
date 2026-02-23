@@ -2,7 +2,7 @@
 
 - Conversation ID: 699c4122-dde0-83a0-b4ed-c675fad3b235
 - Title: GPU Mode Standard vs Ultimate
-- Captured: 2026-02-23T12:21:41.482Z
+- Captured: 2026-02-23T12:24:44.030Z
 - URL: https://chatgpt.com/c/699c4122-dde0-83a0-b4ed-c675fad3b235
 
 ---
