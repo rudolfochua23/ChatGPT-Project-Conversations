@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-23T14:04:58.614Z
+- Captured: 2026-02-23T14:08:02.643Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -13905,5 +13905,167 @@ It contains:
 
 The rules
 
-The
+The defaults
+
+The two prompts you will use
+
+The folder structure
+
+The workflow
+
+You do NOT paste the entire thing into Copilot.
+
+You only paste specific sections from it when needed.
+
+🟢 How You Actually Use It (Step-by-Step)
+
+Let’s simulate real usage.
+
+🧱 STEP 0 — You have a blank repo open in VS Code
+
+Example:
+
+Code
+my-new-app/
+
+Open Copilot Chat.
+
+🟣 STEP 1 — Run SPEC SYNTHESIZER
+
+In AI_prompt.md, find the section:
+
+Code
+# PROMPT 1 — SPEC SYNTHESIZER
+
+Copy only the block inside the triple backticks.
+
+It looks like this:
+
+Code
+SPEC SYNTHESIZER
+...
+<PASTE APP DESCRIPTION HERE>
+
+You paste that into Copilot chat.
+
+Then you replace:
+
+Code
+<PASTE APP DESCRIPTION HERE>
+
+With your actual idea.
+
+Example:
+
+Code
+Build an inventory and sales app for small shops.
+Must support offline usage on tablets.
+Single tenant.
+Needs products, stock adjustments, sales orders, receipts.
+
+Then press Enter.
+
+Copilot generates inputs.yml.
+
+That’s it.
+
+You do NOT paste the whole markdown file.
+
+🟣 STEP 2 — Run SCAFFOLD GENERATOR
+
+After inputs.yml is created:
+
+Go back to AI_prompt.md.
+
+Find:
+
+Code
+# PROMPT 2 — SCAFFOLD GENERATOR
+
+Copy only the text inside the triple backticks.
+
+Paste into Copilot chat.
+
+Press Enter.
+
+Copilot generates:
+
+Folder tree
+
+File contents
+
+Compose
+
+Devcontainer
+
+OpenSpec folders
+
+etc.
+
+🟣 STEP 3 — After Project Exists
+
+Later, when adding a feature:
+
+Find:
+
+Code
+# PROMPT 3 — FEATURE/MODULE UPDATE
+
+Copy only that section.
+
+Paste into Copilot chat.
+
+Replace:
+
+Code
+<PASTE CHANGE DESCRIPTION HERE>
+
+With your new feature.
+
+🔴 What You Should NOT Do
+
+❌ Do NOT paste the entire AI_prompt.md file into Copilot.
+❌ Do NOT mix prompts together.
+❌ Do NOT run scaffold generator before inputs.yml exists.
+
+🧠 Why It Is Designed This Way
+
+Because:
+
+AI_prompt.md = your permanent system brain
+
+Copilot chat = execution environment
+
+inputs.yml = project truth
+
+Separation prevents chaos.
+
+🟡 If You Want Even Cleaner Workflow
+
+You can store:
+
+Code
+/prompts/
+  spec-synthesizer.txt
+  scaffold-generator.txt
+  feature-update.txt
+
+Then you just open the file, copy contents, paste into Copilot.
+
+Even simpler mentally.
+
+🟢 Very Simple Mental Model
+
+AI_prompt.md is a cookbook.
+
+You don’t eat the cookbook.
+
+You copy one recipe at a time and cook it.
+
+If you'd like, I can now:
+
+Show you a literal screen-by-screen walkthrough of exactly what you click and paste in VS Code
+OR
+
+Generate a simplified “3 prompt only” minimal version so you don’t feel overwhelmed.
 
