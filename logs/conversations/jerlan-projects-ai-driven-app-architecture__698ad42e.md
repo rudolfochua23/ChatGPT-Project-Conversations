@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-23T14:01:54.416Z
+- Captured: 2026-02-23T14:04:58.614Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -13880,4 +13880,30 @@ If you want, I can also provide **starter contents** for:
 - module spec templates (tasks/auth/uploads)
 so Copilot can generate them consistently every time.
 ::contentReference[oaicite:4]{index=4}
+
+## User
+
+i really dont understand this "Paste this as your AI_prompt.md" markdown file. does this markdown should be paste directly in the copilot chatbox as is or there should be something that I need to be edited before pasting to copilot chat?
+
+## Assistant
+
+Excellent question. This is where confusion usually starts — so let me make it crystal clear.
+
+You do NOT paste the whole AI_prompt.md into Copilot chat.
+
+That markdown file is documentation + reusable prompt storage, not something you execute directly.
+
+🔵 What AI_prompt.md Actually Is
+
+It is:
+
+Your playbook + master instruction manual.
+
+It lives in your Initiator repository.
+
+It contains:
+
+The rules
+
+The
 
