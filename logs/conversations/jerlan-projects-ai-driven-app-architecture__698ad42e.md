@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T17:10:08.974Z
+- Captured: 2026-02-24T17:13:13.049Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -16452,4 +16452,319 @@ inputs:
         items:
 
           - id: "BALINGAYAN"
+            name: "BALINGAYAN"
+            aliases: []
+            active: true
+
+          - id: "BALITE"
+            name: "BALITE"
+            aliases: []
+            active: true
+
+          - id: "BARUYAN"
+            name: "BARUYAN"
+            aliases: []
+            active: true
+
+          - id: "BATINO"
+            name: "BATINO"
+            aliases: []
+            active: true
+
+          - id: "BAYANAN_I"
+            name: "BAYANAN I"
+            aliases: ["BAYANAN 1"]
+            active: true
+
+          - id: "BAYANAN_II"
+            name: "BAYANAN II"
+            aliases: ["BAYANAN 2"]
+            active: true
+
+          - id: "BIGA"
+            name: "BIGA"
+            aliases: []
+            active: true
+
+          - id: "BONDOC"
+            name: "BONDOC"
+            aliases: []
+            active: true
+
+          - id: "BUCAYAO"
+            name: "BUCAYAO"
+            aliases: []
+            active: true
+
+          - id: "BUHUAN"
+            name: "BUHUAN"
+            aliases: []
+            active: true
+
+          - id: "BULUSAN"
+            name: "BULUSAN"
+            aliases: []
+            active: true
+
+          - id: "CALERO_POBLACION"
+            name: "CALERO (POBLACION)"
+            aliases: ["CALERO"]
+            active: true
+
+          - id: "CAMANSIHAN"
+            name: "CAMANSIHAN"
+            aliases: []
+            active: true
+
+          - id: "CAMILMIL"
+            name: "CAMILMIL"
+            aliases: []
+            active: true
+
+          - id: "CANUBING_I"
+            name: "CANUBING I"
+            aliases: ["CANUBING 1"]
+            active: true
+
+          - id: "CANUBING_II"
+            name: "CANUBING II"
+            aliases: ["CANUBING 2"]
+            active: true
+
+          - id: "COMUNAL"
+            name: "COMUNAL"
+            aliases: []
+            active: true
+
+          - id: "GUINOBATAN"
+            name: "GUINOBATAN"
+            aliases: []
+            active: true
+
+          - id: "GULOD"
+            name: "GULOD"
+            aliases: []
+            active: true
+
+          - id: "GUTAD"
+            name: "GUTAD"
+            aliases: []
+            active: true
+
+          - id: "IBABA_EAST_POBLACION"
+            name: "IBABA EAST (POBLACION)"
+            aliases: ["IBABA EAST"]
+            active: true
+
+          - id: "IBABA_WEST"
+            name: "IBABA WEST"
+            aliases: []
+            active: true
+
+          - id: "ILAYA"
+            name: "ILAYA"
+            aliases: []
+            active: true
+
+          - id: "LALUD"
+            name: "LALUD"
+            aliases: []
+            active: true
+
+          - id: "LAZARETO"
+            name: "LAZARETO"
+            aliases: []
+            active: true
+
+          - id: "LIBIS"
+            name: "LIBIS"
+            aliases: []
+            active: true
+
+          - id: "MAIDLANG"
+            name: "MAIDLANG"
+            aliases: []
+            active: true
+
+          - id: "MALAMIG"
+            name: "MALAMIG"
+            aliases: []
+            active: true
+
+          - id: "NAVOTAS"
+            name: "NAVOTAS"
+            aliases: []
+            active: true
+
+          - id: "PANGOLINAN"
+            name: "PANGOLINAN"
+            aliases: []
+            active: true
+
+          - id: "PARANG"
+            name: "PARANG"
+            aliases: []
+            active: true
+
+          - id: "POBLACION_ZONES"
+            name: "POBLACION (VARIOUS ZONES)"
+            aliases: ["POBLACION"]
+            active: true
+
+          - id: "PULONG_BAKAL"
+            name: "PULONG BAKAL"
+            aliases: []
+            active: true
+
+          - id: "PULONG_MALAKI"
+            name: "PULONG MALAKI"
+            aliases: []
+            active: true
+
+          - id: "PUTING_TUBIG"
+            name: "PUTING TUBIG"
+            aliases: []
+            active: true
+
+          - id: "SALONG_SAN_RAPHAEL"
+            name: "SALONG (NOW SAN RAPHAEL)"
+            aliases: ["SAN RAPHAEL", "SALONG"]
+            active: true
+
+          - id: "SAN_ANTONIO"
+            name: "SAN ANTONIO"
+            aliases: []
+            active: true
+
+          - id: "SAN_IGNACIO"
+            name: "SAN IGNACIO"
+            aliases: []
+            active: true
+
+          - id: "SAN_RAFAEL"
+            name: "SAN RAFAEL"
+            aliases: []
+            active: true
+
+          - id: "SAN_VICENTE_CENTRAL_POBLACION"
+            name: "SAN VICENTE CENTRAL (POBLACION)"
+            aliases: ["SAN VICENTE CENTRAL"]
+            active: true
+
+          - id: "SAN_VICENTE_EAST_POBLACION"
+            name: "SAN VICENTE EAST (POBLACION)"
+            aliases: ["SAN VICENTE EAST"]
+            active: true
+
+          - id: "SAN_VICENTE_NORTH_POBLACION"
+            name: "SAN VICENTE NORTH (POBLACION)"
+            aliases: ["SAN VICENTE NORTH"]
+            active: true
+
+          - id: "SAN_VICENTE_SOUTH_POBLACION"
+            name: "SAN VICENTE SOUTH (POBLACION)"
+            aliases: ["SAN VICENTE SOUTH"]
+            active: true
+
+          - id: "SAN_VICENTE_WEST_POBLACION"
+            name: "SAN VICENTE WEST (POBLACION)"
+            aliases: ["SAN VICENTE WEST"]
+            active: true
+
+          - id: "SANTA_CRUZ"
+            name: "SANTA CRUZ"
+            aliases: []
+            active: true
+
+          - id: "SANTA_ISABEL"
+            name: "SANTA ISABEL"
+            aliases: []
+            active: true
+
+          - id: "SANTA_MARIA_VILLAGE"
+            name: "SANTA MARIA VILLAGE"
+            aliases: []
+            active: true
+
+          - id: "SANTA_RITA_BUNGAHAN"
+            name: "SANTA RITA (BUNGAHAN)"
+            aliases: ["SANTA RITA"]
+            active: true
+
+          - id: "SANTO_NIÑO"
+            name: "SANTO NIÑO"
+            aliases: ["SANTO NINO"]
+            active: true
+
+          - id: "SAPUL"
+            name: "SAPUL"
+            aliases: []
+            active: true
+
+          - id: "SILONAY"
+            name: "SILONAY"
+            aliases: []
+            active: true
+
+          - id: "SUQUI"
+            name: "SUQUI"
+            aliases: []
+            active: true
+
+          - id: "TAWAGAN"
+            name: "TAWAGAN"
+            aliases: []
+            active: true
+
+          - id: "TAWIRAN"
+            name: "TAWIRAN"
+            aliases: []
+            active: true
+
+          - id: "TIBAG"
+            name: "TIBAG"
+            aliases: []
+            active: true
+
+          - id: "WAWA"
+            name: "WAWA"
+            aliases: []
+            active: true
+
+        ui:
+          default_sort: "name"
+          allow_search: true
+          show_in_forms:
+            fisherfolk_address_barangay: true
+🚀 What to Run Now in Copilot
+
+Since you updated inputs.yml, run:
+
+Plain text
+FEATURE/MODULE UPDATE
+
+Read inputs.yml and project.memory.md.
+
+Reference_data.barangays list has been updated with the official Calapan City barangays.
+
+1) Ensure database seeding reflects the new barangay list.
+2) Ensure address select dropdown uses this list.
+3) Ensure dashboard aggregations group by barangayId (not raw string).
+4) Do NOT regenerate the entire repo.
+5) Must pass hydration lint.
+
+Output:
+- updated seed files
+- updated service logic (if needed)
+- commands to run
+
+If you want next, I can now give you:
+
+✅ The exact Postgres table schema optimized for this dataset
+
+✅ The correct indexes for fast search + aggregation
+
+✅ The correct query patterns for dashboard performance at scale
+
+Let’s build this like a production government-grade system.
 
