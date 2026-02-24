@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T14:00:47.187Z
+- Captured: 2026-02-24T14:03:56.976Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -15067,5 +15067,5 @@ run on push main: build and push GHCR images
 
 include Dockerfiles in apps/web and apps/api
 
-If you want the walkthrough to be even more literal: tell me what OS you’re on (Windows/macOS/Linux) so I can match the exact menu names and shortcut k
+If you want the walkthrough to be even more literal: tell me what OS you’re on (Windows/macOS/Linux) so I can match the exact menu names and shortcut keys you’ll see.
 
