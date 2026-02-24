@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T16:23:09.848Z
+- Captured: 2026-02-24T16:30:01.457Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -15307,4 +15307,367 @@ Copilot generates and updates code
 You never regenerate the entire repo again once it exists
 
 If you paste your first app idea now (5–10 lines), I’ll run it through Prompt 1 logic and show you what your inputs.yml should look like (with tenancy single + offline/realtime all + domain templating).
+
+## User
+
+ok here's my app idea:
+- the app is about Fisherfolk Information Management System
+- basic data records includes:
+1. ID NUMBER	
+2. FULL NAME	( Last Name, First Name, Middle Name )
+3. DATE OF BIRTH ( MM/DD/YYYY )
+4. ADDRESS ( predefined records of List of barangays in Calapan City, Oriental Mindoo ) 
+5. SEX ( Gender )
+6. IMAGE	SIGNATURE	( Upload Image or direct simple stylus pen drawing dialog box with image cropping feature )
+7. PROFILE IMAGE ( Upload Image or direct web Camera Capture with image cropping feature set ratio to 1x1 )
+7. RSBSA NUMBER	
+8. CATEGORY ( Selectable based on predefined records )
+9. CONTACT NUMBER ( set to start typing the number after +639 but in database it should save with +639 )
+10. is President? ( clickable check mark if yes )
+
+- CATEGORY data must be a selection of 
+1. Boat Owner/Operator	
+2. Capture Fishing
+3. Gleaning	
+4. Vendor	
+5. Fish Processing	
+6. Aquaculture
+
+- Main Dashboard shows charts of the:
+1. latest count of fisherfolks overall records
+2. latest count per barangay
+3. latest by Gender Overall, then under it is the per barangay gender
+4. latest per barangay per Category count
+5. and at the very bottom is the list of all fisherfolk records sorted by latest record added, can search by almost anything like last name, id number, rsba number, contact, barangay
+6. capable of records sorting by any of the database columns
+
+## Assistant
+
+Here’s what your inputs.yml should look like for the Fisherfolk Information Management System based on your idea, using our current defaults:
+
+tenancy single
+
+deployment compose
+
+offline all (outbox + auto-sync stubs)
+
+realtime all
+
+shadcn/ui + shadcnstudio shell
+
+charts enabled
+
+barangay list + categories predefined records
+
+Copy-paste this as your project’s inputs.yml:
+
+YAML
+version: 1
+
+inputs:
+  app:
+    type: GENERIC
+    name: "fisherfolk-ims"
+    purpose: "Manage fisherfolk records with dashboard analytics, search, sorting, and media capture (signature + profile)."
+    features:
+      - "Fisherfolk master records CRUD"
+      - "Predefined barangay address selection (Calapan City, Oriental Mindoro)"
+      - "Predefined category selection"
+      - "Signature capture (upload or draw) with cropping"
+      - "Profile photo (upload or camera capture) with 1:1 crop"
+      - "Dashboard analytics with charts"
+      - "Full-text-like search across key fields"
+      - "Sortable table by any column"
+
+  modules:
+    fisherfolk:
+      enabled: true
+      primary_key: "id_number"
+      fields:
+        id_number:
+          type: string
+          required: true
+          unique: true
+        full_name:
+          type: object
+          required: true
+          parts: ["last_name", "first_name", "middle_name"]
+        date_of_birth:
+          type: date
+          required: true
+          format: "MM/DD/YYYY"
+        address_barangay:
+          type: enum_ref
+          required: true
+          ref: "reference_data.barangays"
+        sex:
+          type: enum
+          required: true
+          values: ["Male", "Female"]
+        signature_image:
+          type: media
+          required: false
+          capture_modes: ["upload", "draw"]
+          crop:
+            enabled: true
+            aspect_ratio: "free"
+        profile_image:
+          type: media
+          required: false
+          capture_modes: ["upload", "camera"]
+          crop:
+            enabled: true
+            aspect_ratio: "1:1"
+        rsbsa_number:
+          type: string
+          required: false
+          indexed: true
+        category:
+          type: enum_ref
+          required: true
+          ref: "reference_data.categories"
+        contact_number:
+          type: phone
+          required: false
+          ui_prefix: "+639"
+          storage_format: "+639#########"
+        is_president:
+          type: boolean
+          required: false
+          default: false
+
+    reference_data:
+      enabled: true
+      barangays:
+        source: "predefined"
+        locality: "Calapan City, Oriental Mindoro"
+        note: "Populate this list with the official barangay records for Calapan City."
+      categories:
+        source: "predefined"
+        values:
+          - "Boat Owner/Operator"
+          - "Capture Fishing"
+          - "Gleaning"
+          - "Vendor"
+          - "Fish Processing"
+          - "Aquaculture"
+
+    dashboard:
+      enabled: true
+      charts:
+        enabled: true
+        requirements:
+          - "Overall count of fisherfolk records (latest)"
+          - "Count per barangay (latest)"
+          - "Gender overall + per barangay breakdown"
+          - "Per barangay per category counts"
+      table:
+        enabled: true
+        default_sort:
+          column: "created_at"
+          direction: "desc"
+        search:
+          enabled: true
+          fields:
+            - "full_name.last_name"
+            - "full_name.first_name"
+            - "id_number"
+            - "rsbsa_number"
+            - "contact_number"
+            - "address_barangay"
+            - "category"
+        sorting:
+          enabled: true
+          any_column: true
+
+    uploads:
+      enabled: true
+      provider: minio
+      buckets:
+        - name: "app"
+          purpose: "store fisherfolk profile and signature images"
+
+    auth:
+      enabled: true
+      provider: keycloak
+      mode: oidc
+      roles:
+        - "admin"
+        - "staff"
+      default_role: "staff"
+
+    sync:
+      enabled: true
+      offline_mode: "all"
+      pattern: "outbox"
+      requirements:
+        - "local-first writes (client queues outbox events)"
+        - "auto sync when online"
+        - "idempotency keys for all write operations"
+        - "cursor-based pull for reading changes"
+      conflict_policy: "append-only-preferred"
+
+    realtime:
+      enabled: true
+      mode: "all"
+      transport: "socket.io"
+      requirements:
+        - "broadcast record-created/updated events"
+        - "dashboard counters update live"
+
+  domains:
+    root_domain: "example.com"
+    subdomains:
+      staging: "staging"
+      production: "app"
+    prefixes:
+      api: "api"
+      realtime: "ws"
+      auth: "auth"
+      storage: "s3"
+
+  env_urls:
+    development:
+      web: "http://localhost:3000"
+      api: "http://localhost:3001"
+      realtime: "ws://localhost:3002"
+      oidc_issuer: "http://localhost:8080/realms/app"
+      object_storage_endpoint: "http://localhost:9000"
+
+    staging:
+      web: "https://${domains.subdomains.staging}.${domains.root_domain}"
+      api: "https://${domains.prefixes.api}-${domains.subdomains.staging}.${domains.root_domain}"
+      realtime: "wss://${domains.prefixes.realtime}-${domains.subdomains.staging}.${domains.root_domain}"
+      oidc_issuer: "https://${domains.prefixes.auth}-${domains.subdomains.staging}.${domains.root_domain}/realms/app"
+      object_storage_endpoint: "https://${domains.prefixes.storage}-${domains.subdomains.staging}.${domains.root_domain}"
+
+    production:
+      web: "https://${domains.subdomains.production}.${domains.root_domain}"
+      api: "https://${domains.prefixes.api}.${domains.root_domain}"
+      realtime: "wss://${domains.prefixes.realtime}.${domains.root_domain}"
+      oidc_issuer: "https://${domains.prefixes.auth}.${domains.root_domain}/realms/app"
+      object_storage_endpoint: "https://${domains.prefixes.storage}.${domains.root_domain}"
+
+  deployment:
+    strategy: compose
+
+  capabilities:
+    realtime: all
+    offline: all
+
+  tenancy:
+    mode: single
+
+  data:
+    sensitivity: medium
+
+  constraints:
+    data_services:
+      mode: local
+
+  security:
+    oidc:
+      provider: keycloak
+      realm: "app"
+      dev_defaults:
+        admin_user: "admin"
+        admin_password: "admin"
+
+  object_storage:
+    provider: minio
+    bucket: "app"
+    dev_defaults:
+      root_user: "admin"
+      root_password: "admin"
+
+  ui:
+    required_routes:
+      examples: true
+      dashboard: true
+      tasks: true
+      authentication: true
+    web_runtime:
+      next_router: app
+      hydration_policy: strict
+      shadcn_client_only: true
+      shadcnstudio_shell: true
+    charts:
+      provider: "recharts"
+    data_table:
+      provider: "tanstack-table"
+      global_search: true
+      column_sorting: true
+      server_side_pagination: true
+      default_page_size: 25
+
+  governance:
+    enforce_oss_first: true
+    enforce_compose_first: true
+    enforce_k8s_ready: true
+    enforce_hydration_safe_ui: true
+    enforce_no_env_hardcoding: true
+    enforce_append_only: true
+    enforce_offline_outbox: true
+    enforce_realtime_contracts: true
+What you should edit (for this project)
+
+Must edit later: inputs.modules.reference_data.barangays → put the actual barangay list (official names)
+
+Optional edits:
+
+domains.root_domain + subdomains/prefixes when you have your real domain
+
+data.sensitivity if you decide it’s high
+
+roles under modules.auth.roles
+
+Next: the exact Copilot prompts to run (chronological)
+1) Scaffold Generator (run once)
+
+Now that you already have inputs.yml, paste this into Copilot Chat:
+
+Plain text
+SCAFFOLD GENERATOR
+
+Read ./inputs.yml and ./project.memory.md. Treat inputs.yml as the single source of truth.
+
+Generate the complete repo:
+- Turborepo + pnpm monorepo
+- apps/web: Next.js App Router using shadcn/ui + shadcnstudio application shell
+  - dashboard shows charts per inputs.yml using Recharts
+  - table uses TanStack Table (sortable, searchable, server-side pagination ready)
+  - strict hydration-safe islands (*.client.tsx only)
+- apps/api: NestJS
+  - CRUD for fisherfolk
+  - query endpoints for dashboard aggregations
+  - sync stubs: POST /sync/push and GET /sync/pull?cursor=
+  - realtime events (Socket.IO) for record-created/updated and dashboard counter updates
+- Compose-first: dev/staging/prod profiles with Postgres, Redis, Keycloak, MinIO
+- Devcontainer
+- Tools: validate-inputs, render-inputs, sync-env, hydration-lint, bootstrap/down/reset profiles
+- CI/CD: CI validation + hydration lint; CD builds & pushes images to GHCR on main
+- Create minimal openspec/ structure + module specs from inputs.yml modules.
+
+Output the full folder tree and full file contents grouped by path, and then list the exact commands to run.
+2) For adding/updating features (run repeatedly)
+
+Whenever you add fields, new charts, new modules, etc., paste:
+
+Plain text
+FEATURE/MODULE UPDATE
+
+Read inputs.yml (single source of truth) + project.memory.md.
+
+I will describe a change in English.
+
+1) Update inputs.yml minimally.
+2) Create openspec/changes/active/<yyyy-mm-dd>-<short-name>/{proposal.md,tasks.md,spec-delta.md}
+3) Update openspec/specs/modules/*.spec.md as needed.
+4) Implement ONLY necessary code changes (no repo regen).
+5) Must pass hydration lint.
+
+Here is the change:
+<PASTE CHANGE HERE>
+
+If you want, I can also generate the barangay list placeholder format (so it’s easy to paste official barangays later) and the exact API aggregation endpoints your da
 
