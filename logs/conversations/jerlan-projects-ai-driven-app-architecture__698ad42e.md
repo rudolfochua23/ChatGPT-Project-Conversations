@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T13:48:20.474Z
+- Captured: 2026-02-24T13:53:49.596Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -14603,4 +14603,196 @@ If you say nothing: I’ll keep CI only (safer, fewer secrets).
 If you say “yes”: I’ll add a minimal CD that builds & pushes images to GHCR (deploy step optional).
 
 Once that’s set, I’ll do the literal VS Code click-by-click walkthrough.
+
+## User
+
+ok, its a yes
+
+## Assistant
+
+Cool — yes means we’ll add a real CD pipeline (not just CI).
+
+To stay aligned with your compose-first rule and keep it safe (no secrets required to deploy yet), the best “minimum viable CD” is:
+
+✅ Build + push Docker images to GitHub Container Registry (GHCR) on every push to main
+➕ Optional (but included) staging deploy via SSH you can enable later by adding secrets.
+
+Below is exactly what I’ll embed into our master AI_prompt.md as the required .github/workflows/ci.yml.
+
+What “CD included” will do
+On Pull Requests
+
+Validate inputs.yml against schema
+
+Render envs
+
+Run hydration lint
+
+(Optionally) build apps
+
+On Push to main
+
+Everything above plus
+
+Build Docker images:
+
+ghcr.io/<owner>/<repo>-web:sha-...
+
+ghcr.io/<owner>/<repo>-api:sha-...
+
+Push them to GHCR
+
+Optional staging deploy (compose-first)
+
+If you add secrets, it can SSH into your staging server and run:
+
+docker compose pull && docker compose up -d
+
+Required repo additions for CD to work
+
+Your scaffold must include these Dockerfiles:
+
+apps/web/Dockerfile
+
+apps/api/Dockerfile
+
+And a staging compose file on the server (or in repo) that references GHCR images.
+
+We won’t force “auto-deploy” without secrets, but we will include the job and keep it guarded.
+
+✅ Drop-in CI/CD workflow (ci.yml)
+
+This is the exact workflow I’ll add to the prompt:
+
+YAML
+name: CI-CD
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.12.0 --activate
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate inputs
+        run: pnpm validate:inputs
+
+      - name: Render env
+        run: pnpm render:inputs
+
+      - name: Hydration lint
+        run: pnpm lint:hydration
+
+  cd_publish_images:
+    # CD starts only on main branch pushes
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ci]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image names
+        id: meta
+        run: |
+          OWNER_LC="$(ech_ "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+          REPO_LC="$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')"
+          echo "owner_lc=$OWNER_LC" >> $GITHUB_OUTPUT
+          echo "repo_lc=$REPO_LC" >> $GITHUB_OUTPUT
+          echo "sha_short=$(echo "${{ github.sha }}" | cut -c1-12)" >> $GITHUB_OUTPUT
+
+      - name: Build & push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.repo_lc }}-web:sha-${{ steps.meta.outputs.sha_short }}
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.repo_lc }}-web:latest
+
+      - name: Build & push api image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.repo_lc }}-api:sha-${{ steps.meta.outputs.sha_short }}
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.repo_lc }}-api:latest
+
+  # OPTIONAL: Compose-first staging deploy (enable by setting secrets)
+  # Secrets needed:
+  # - STAGING_HOST (e.g., 1.2.3.4)
+  # - STAGING_USER (e.g., ubuntu)
+  # - STAGING_SSH_KEY (private key)
+  # - STAGING_PATH (e.g., /opt/myapp)
+  #
+  # cd_deploy_staging:
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   needs: [cd_publish_images]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy via SSH (compose-first)
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #         host: ${{ secrets.STAGING_HOST }}
+  #         username: ${{ secrets.STAGING_USER }}
+  #         key: ${{ secrets.STAGING_SSH_KEY }}
+  #         script: |
+  #           cd "${{ secrets.STAGING_PATH }}"
+  #           docker compose pull
+  #           docker compose up -d
+
+This is real CD (publish) and an optional deploy that remains compose-first.
+
+One more thing (so you don’t get surprised)
+
+To publish images, your repo must have Dockerfiles. In the scaffold generator prompt, we’ll add:
+
+apps/web/Dockerfile (Next.js production build)
+
+apps/api/Dockerfile (NestJS build + run)
+
+And in staging, you’ll run compose referencing ghcr.io/... images.
+
+Next step
+
+With CD confirmed, I’ll now update our master prompt to:
+
+enforce shadcn/ui + shadcnstudio shell
+
+include the CI/CD file above
+
+include Dockerfiles needed for publishing
+
+Then I’ll do the literal VS Code screen-by-screen walkthrough.
+
+If you want the walkthrough to match your exact setup: are you using GitHub Copilot Chat (the sidebar chat) or Inline Chat (
 
