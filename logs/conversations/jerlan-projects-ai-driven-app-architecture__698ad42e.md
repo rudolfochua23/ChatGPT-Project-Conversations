@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T16:59:11.162Z
+- Captured: 2026-02-24T17:03:46.659Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -15922,4 +15922,371 @@ Here is the change:
 <PASTE CHANGE HERE>
 
 If you want, next I can also give you the exact DB schema for fisherfolk + indexes to support “search by almost anything” and fast aggregations for those charts (Postgres-friendly, scalable).
+
+## User
+
+generate the barangay list placeholder format (so it’s easy to paste official barangays later) and the exact API aggregation endpoints my dashboard will need
+
+## Assistant
+
+1) Barangay list placeholder format (easy to paste later)
+
+Add this under your inputs.yml at inputs.modules.reference_data.barangays.
+
+This format is designed so you can:
+
+paste official names later with minimal editing
+
+keep stable IDs (good for DB + analytics)
+
+support future changes (renames, merges) without breaking history
+
+YAML
+inputs:
+  modules:
+    reference_data:
+      enabled: true
+      barangays:
+        source: "predefined"
+        locality:
+          country: "PH"
+          province: "Oriental Mindoro"
+          city_municipality: "Calapan City"
+        versioning:
+          dataset_version: "v1"
+          effective_date: "YYYY-MM-DD"
+          notes: "Replace placeholders with official Calapan City barangays."
+        format:
+          id_strategy: "slug"     # slug | uuid
+          name_case: "UPPERCASE"  # keep analytics consistent
+        items:
+          # -------------------------------------------------------------------
+          # PLACEHOLDER ITEMS (replace with official barangays)
+          # - id: stable identifier (slug)
+          # - name: display name (UPPERCASE recommended)
+          # - aliases: optional search helpers (case-insensitive)
+          # - active: allow soft deprecation without breaking historical data
+          # -------------------------------------------------------------------
+          - id: "BARANGAY_01"
+            name: "BARANGAY 01"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_02"
+            name: "BARANGAY 02"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_03"
+            name: "BARANGAY 03"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_04"
+            name: "BARANGAY 04"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_05"
+            name: "BARANGAY 05"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_06"
+            name: "BARANGAY 06"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_07"
+            name: "BARANGAY 07"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_08"
+            name: "BARANGAY 08"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_09"
+            name: "BARANGAY 09"
+            aliases: []
+            active: true
+
+          - id: "BARANGAY_10"
+            name: "BARANGAY 10"
+            aliases: []
+            active: true
+
+        # Optional: ensure UI uses this list for select inputs
+        ui:
+          default_sort: "name"
+          allow_search: true
+          show_in_forms:
+            fisherfolk_address_barangay: true
+When you paste the official list later
+
+Replace each placeholder with:
+
+YAML
+- id: "SANTA_ISABEL"
+  name: "SANTA ISABEL"
+  aliases: ["Sta Isabel", "Santa Isabel"]
+  active: true
+
+✅ Use aliases to make search forgiving without changing the canonical name.
+
+2) Exact dashboard API aggregation endpoints you need
+
+These endpoints match your dashboard requirements (counts + charts + recent list).
+
+Base route
+
+Use a dedicated controller:
+
+GET /dashboard/*
+
+A) Summary KPIs
+
+Purpose: total records + new + inactive (and optional renewals)
+
+Endpoint
+
+GET /dashboard/summary?asOf=YYYY-MM-DD
+
+Response
+
+JSON
+{
+  "asOf": "2026-02-25",
+  "totalRegistered": 1234,
+  "newCount": 12,
+  "inactiveCount": 34,
+  "renewalCount": 0
+}
+
+Server logic idea
+
+totalRegistered = total fisherfolk rows
+
+newCount = rows created within “current month” or last 30 days (define in service)
+
+inactiveCount = status = INACTIVE (if you add a status later)
+
+renewalCount = optional (if you introduce renewal concept)
+
+B) Overall count per barangay (for bar chart)
+
+Endpoint
+
+GET /dashboard/by-barangay?limit=50
+
+Response
+
+JSON
+[
+  { "barangayId": "SANTA_ISABEL", "barangay": "SANTA ISABEL", "count": 2 },
+  { "barangayId": "WAWA", "barangay": "WAWA", "count": 2 },
+  { "barangayId": "BARUYAN", "barangay": "BARUYAN", "count": 1 }
+]
+
+Notes
+
+Keep both barangayId and barangay so UI can show consistent labels.
+
+Sort by count desc.
+
+C) Gender overall + (optional) per barangay breakdown
+
+You requested:
+
+gender overall
+
+and “under it” per barangay gender
+
+Do it as two endpoints (simpler, cacheable).
+
+C1) Overall gender distribution
+
+Endpoint
+
+GET /dashboard/gender
+
+Response
+
+JSON
+{
+  "total": 5,
+  "items": [
+    { "sex": "Male", "count": 3 },
+    { "sex": "Female", "count": 2 }
+  ]
+}
+C2) Gender distribution by barangay
+
+Endpoint
+
+GET /dashboard/gender-by-barangay?limit=50
+
+Response
+
+JSON
+[
+  {
+    "barangayId": "WAWA",
+    "barangay": "WAWA",
+    "items": [
+      { "sex": "Male", "count": 2 },
+      { "sex": "Female", "count": 0 }
+    ]
+  }
+]
+D) Per barangay per category count
+
+This supports your “latest per barangay per Category count”.
+
+Endpoint
+
+GET /dashboard/category-by-barangay?limitBarangays=50
+
+Response
+
+JSON
+[
+  {
+    "barangayId": "WAWA",
+    "barangay": "WAWA",
+    "items": [
+      { "category": "Capture Fishing", "count": 2 },
+      { "category": "Vendor", "count": 1 }
+    ]
+  }
+]
+E) Category counts (for the top tiles)
+
+Endpoint
+
+GET /dashboard/category-counts
+
+Response
+
+JSON
+{
+  "total": 10,
+  "items": [
+    { "category": "Capture Fishing", "count": 3 },
+    { "category": "Vendor", "count": 2 },
+    { "category": "Boat Owner/Operator", "count": 2 },
+    { "category": "Gleaning", "count": 1 },
+    { "category": "Fish Processing", "count": 1 },
+    { "category": "Aquaculture", "count": 1 }
+  ]
+}
+F) Age group distribution (for bar chart)
+
+This requires DOB → age calculation.
+
+Endpoint
+
+GET /dashboard/age-groups?asOf=YYYY-MM-DD
+
+Response
+
+JSON
+{
+  "asOf": "2026-02-25",
+  "items": [
+    { "range": "18-25", "count": 0 },
+    { "range": "26-35", "count": 1 },
+    { "range": "36-45", "count": 2 },
+    { "range": "46-55", "count": 1 },
+    { "range": "56-65", "count": 1 },
+    { "range": "66+", "count": 0 }
+  ]
+}
+
+Ranges (matches your screenshot)
+
+18–25
+
+26–35
+
+36–45
+
+46–55
+
+56–65
+
+66+
+
+G) Activity categories radial chart
+
+This is basically category counts with a “totalActivities”.
+
+Endpoint
+
+GET /dashboard/activity-categories
+
+Response
+
+JSON
+{
+  "totalActivities": 10,
+  "items": [
+    { "category": "Boat Owner/Operator", "count": 2 },
+    { "category": "Capture Fishing", "count": 3 },
+    { "category": "Gleaning", "count": 1 },
+    { "category": "Vendor", "count": 2 },
+    { "category": "Fish Processing", "count": 1 },
+    { "category": "Aquaculture", "count": 1 }
+  ]
+}
+H) Recent records list (for the table)
+
+Endpoint
+
+GET /fisherfolk/recent?limit=10
+
+Response
+
+JSON
+{
+  "items": [
+    {
+      "idNumber": "MR-CL-001234-2015",
+      "fullName": "Juan Dela Cruz",
+      "barangayId": "WAWA",
+      "barangay": "WAWA",
+      "sex": "Male",
+      "dateRegistered": "2025-12-04",
+      "createdAt": "2025-12-04T08:10:00Z"
+    }
+  ]
+}
+Bonus: one endpoint to fetch everything (optional)
+
+If you want fewer calls (and faster dashboard load):
+
+Endpoint
+
+GET /dashboard/overview
+
+Returns:
+
+summary
+
+categoryCounts
+
+byBarangay
+
+gender
+
+ageGroups
+
+activityCategories
+
+recent
+
+This is optional; I recommend starting with individual endpoints for clarity and caching.
+
+If you want, I can now give you the exact SQL aggregation queries (Postgres) behind each endpoint (fast + indexed) and the indexes you should add for searc
 
