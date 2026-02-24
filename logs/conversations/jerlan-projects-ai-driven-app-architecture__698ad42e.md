@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T17:07:03.856Z
+- Captured: 2026-02-24T17:10:08.974Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -16289,4 +16289,167 @@ recent
 This is optional; I recommend starting with individual endpoints for clarity and caching.
 
 If you want, I can now give you the exact SQL aggregation queries (Postgres) behind each endpoint (fast + indexed) and the indexes you should add for search/sort scalability.
+
+## User
+
+can you rerun this last prompt with these list of barangays already given and add this to the list of barangays:
+
+Complete Alphabetical List:
+Balingayan
+
+Balite
+
+Baruyan
+
+Batino
+
+Bayanan I
+
+Bayanan II
+
+Biga
+
+Bondoc
+
+Bucayao
+
+Buhuan
+
+Bulusan
+
+Calero (Poblacion)
+
+Camansihan
+
+Camilmil
+
+Canubing I
+
+Canubing II
+
+Comunal
+
+Guinobatan
+
+Gulod
+
+Gutad
+
+Ibaba East (Poblacion)
+
+Ibaba West
+
+Ilaya
+
+Lalud
+
+Lazareto
+
+Libis
+
+Maidlang
+
+Malamig
+
+Navotas
+
+Pangolinan
+
+Parang
+
+Poblacion (various zones)
+
+Pulong Bakal
+
+Pulong Malaki
+
+Puting Tubig
+
+Salong (now San Raphael)
+
+San Antonio
+
+San Ignacio
+
+San Rafael
+
+San Vicente Central (Poblacion)
+
+San Vicente East (Poblacion)
+
+San Vicente North (Poblacion)
+
+San Vicente South (Poblacion)
+
+San Vicente West (Poblacion)
+
+Santa Cruz
+
+Santa Isabel
+
+Santa Maria Village
+
+Santa Rita (Bungahan)
+
+Santo Niño
+
+Sapul
+
+Silonay
+
+Suqui
+
+Tawagan
+
+Tawiran
+
+Tibag
+
+Wawa
+
+## Assistant
+
+Perfect. Below is the updated barangay placeholder section, now populated with your full alphabetical list for Calapan City, Oriental Mindoro, structured properly for your spec-driven system.
+
+This is ready to paste directly into:
+
+Code
+inputs.modules.reference_data.barangays
+
+inside inputs.yml.
+
+It follows:
+
+Stable slug IDs
+
+Uppercase canonical names
+
+Alias support for search normalization
+
+Soft-deprecation support
+
+Consistent analytics formatting
+
+✅ Updated Barangay Configuration (Complete List Included)
+YAML
+inputs:
+  modules:
+    reference_data:
+      enabled: true
+      barangays:
+        source: "predefined"
+        locality:
+          country: "PH"
+          province: "Oriental Mindoro"
+          city_municipality: "Calapan City"
+        versioning:
+          dataset_version: "v1"
+          effective_date: "2026-01-01"
+          notes: "Official Calapan City barangay list (alphabetical)."
+        format:
+          id_strategy: "slug"
+          name_case: "UPPERCASE"
+        items:
+
+          - id: "BALINGAYAN"
 
