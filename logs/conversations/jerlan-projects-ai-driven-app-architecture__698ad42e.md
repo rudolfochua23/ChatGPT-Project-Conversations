@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T13:57:00.754Z
+- Captured: 2026-02-24T14:00:47.187Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -14795,4 +14795,277 @@ include Dockerfiles needed for publishing
 Then I’ll do the literal VS Code screen-by-screen walkthrough.
 
 If you want the walkthrough to match your exact setup: are you using GitHub Copilot Chat (the sidebar chat) or Inline Chat (Ctrl+I)?
+
+## User
+
+im using the GitHub Copilot Chat
+
+## Assistant
+
+Perfect — GitHub Copilot Chat (sidebar) is the cleanest way to run this.
+
+Before the walkthrough: yes, with the changes you requested, the prompt stays aligned to our setup as long as the Scaffold Generator is instructed to:
+
+scaffold shadcn/ui (components + cn() util + Tailwind) and use shadcn components in the shell
+
+scaffold a shadcnstudio-style application shell (sidebar/topbar/content) as the baseline layout
+
+include CI + CD (build + push images to GHCR on main)
+
+include Dockerfiles for apps/web and apps/api
+
+keep hydration safety (client islands) so the UI works
+
+Now here’s the literal screen-by-screen VS Code walkthrough.
+
+Screen-by-screen walkthrough in VS Code (Copilot Chat)
+Screen 0 — Prepare your folders
+
+You should have two repos conceptually:
+
+Initiator repo (contains AI_prompt.md)
+
+New project repo (blank repo where Copilot will generate the app)
+
+What you do
+
+In VS Code, open the new project repo (empty folder or empty git repo).
+
+You should see Explorer (left side) with basically nothing inside.
+
+Screen 1 — Open Copilot Chat panel
+
+Click the Copilot icon on the left sidebar (it looks like a small robot / Copilot logo).
+
+You should see the Copilot Chat window open.
+
+You’ll type/paste prompts here.
+
+Screen 2 — Open AI_prompt.md (reference only)
+
+This is where most people get confused:
+
+✅ You open AI_prompt.md so you can copy prompts from it.
+❌ You do NOT paste the whole AI_prompt.md into chat.
+
+What you do
+
+Open your Initiator repo in another VS Code window OR open AI_prompt.md from GitHub in a browser.
+
+Scroll to PROMPT 1 — SPEC SYNTHESIZER
+
+Copy only the block inside the triple backticks (the big text prompt).
+
+Screen 3 — Run Prompt 1 (Spec Synthesizer)
+
+Back in the new project repo VS Code window:
+
+Click inside the Copilot Chat input box.
+
+Paste the SPEC SYNTHESIZER prompt.
+
+Replace this line:
+
+<PASTE APP DESCRIPTION HERE>
+
+with your actual app description.
+
+Example format (keep it short and specific):
+
+what the app is
+
+what modules/features it has
+
+offline required? (default is yes)
+
+realtime required? (default is yes)
+
+tenancy single/multi? (default is single)
+
+Press Enter.
+
+What you should see happen
+
+Copilot will reply with:
+
+a full inputs.yml file content
+
+What you do next
+
+In Explorer (left), create a new file:
+
+Right click → New File
+
+name it: inputs.yml
+
+Paste the generated YAML into inputs.yml
+
+Save (Ctrl+S)
+
+✅ At this point: inputs.yml exists and is your source of truth.
+
+Screen 4 — Run Prompt 2 (Scaffold Generator)
+
+Now go back to AI_prompt.md and copy PROMPT 2 — SCAFFOLD GENERATOR (only the text inside the backticks).
+
+Back in the Copilot Chat:
+
+Paste the Scaffold Generator prompt
+
+Press Enter
+
+What Copilot will output
+
+It will output:
+
+Folder tree
+
+File contents grouped by path
+
+Instructions/commands
+
+How to apply it (two ways)
+Way A (manual but reliable)
+
+For each file:
+
+Create folders/files in Explorer
+
+Paste the content exactly
+
+Save
+
+Way B (Copilot edits workspace automatically)
+
+Depending on your Copilot version, it may offer “Apply” or create files directly.
+If it supports it, type:
+
+“Apply all files to my workspace exactly as written.”
+
+If it doesn’t, use Way A.
+
+Screen 5 — Confirm the generated structure
+
+In Explorer, you should now see at least:
+
+compose.yml
+
+.devcontainer/
+
+.github/workflows/ci.yml
+
+apps/web/
+
+apps/api/
+
+tools/
+
+openspec/
+
+If you don’t see those, you are not done applying the scaffold.
+
+Screen 6 — Reopen in Devcontainer
+
+This is the “isolated environment always” part.
+
+Press Ctrl+Shift+P
+
+Type: Dev Containers: Reopen in Container
+
+Click it
+
+Wait for it to reopen inside the container
+
+What you should see
+
+VS Code bottom-left will show something like:
+“Dev Container: Spec-Driven Monorepo”
+
+Screen 7 — Run the one-time setup commands
+
+Open terminal inside the devcontainer:
+
+Menu: Terminal → New Terminal
+
+Run:
+
+Bash
+pnpm install
+pnpm bootstrap:dev
+pnpm dev:all
+What success looks like
+
+Web opens at: http://localhost:3000
+
+API health: http://localhost:3001/health
+
+Keycloak: http://localhost:8080 (admin/admin)
+
+MinIO: http://localhost:9000 (admin/admin)
+
+MinIO Console: http://localhost:9001
+
+And crucially:
+✅ sidebar links work
+✅ topbar button works
+✅ tasks add works
+(no “dead UI”)
+
+Screen 8 — Verify the hydration gate (important)
+
+In terminal run:
+
+Bash
+pnpm lint:hydration
+
+You should see:
+✅ hydration-lint OK
+
+If it fails, it tells you exactly which file is violating server/client boundaries.
+
+After the first run: how you add features safely
+You describe the change in Copilot Chat
+
+Use PROMPT 3 — FEATURE/MODULE UPDATE.
+
+Paste Prompt 3
+
+Replace <PASTE CHANGE DESCRIPTION HERE> with your new feature
+
+Press Enter
+
+Apply only the changed files
+
+Then run:
+
+Bash
+pnpm check:spec:dev
+pnpm lint:hydration
+pnpm dev:all
+Notes specific to your requirements
+UI/UX: shadcn/ui + shadcnstudio
+
+When you run Scaffold Generator, ensure it generates:
+
+apps/web/components/ui/* (shadcn/ui)
+
+apps/web/lib/utils.ts (cn() helper)
+
+Sidebar/Topbar uses shadcn components (Button, Sheet/Dropdown, etc.)
+
+Shell layout matches shadcnstudio “application shell” style
+
+If you want, paste your current AI_prompt.md and I’ll rewrite the SCAFFOLD GENERATOR section to explicitly force the shadcn CLI steps and components list.
+
+CI/CD
+
+Your ci.yml should:
+
+run on PR: validate/render/hydration-lint
+
+run on push main: build and push GHCR images
+
+include Dockerfiles in apps/web and apps/api
+
+If you want the walkthrough to be even more literal: tell me what OS you’re on (Windows/macOS/Linux) so I can match the exact menu names and shortcut k
 
