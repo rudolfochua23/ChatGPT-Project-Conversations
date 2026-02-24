@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T16:39:28.212Z
+- Captured: 2026-02-24T16:43:39.940Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -15670,4 +15670,256 @@ Here is the change:
 <PASTE CHANGE HERE>
 
 If you want, I can also generate the barangay list placeholder format (so it’s easy to paste official barangays later) and the exact API aggregation endpoints your dashboard will need.
+
+## User
+
+ok yes please do that plus add this charts dashboard based on the image uploaded here
+
+## Assistant
+
+Got it. We’ll add that exact dashboard layout (dark, card-based, KPI strip + category tiles + 4 charts + recent table) using shadcn/ui + shadcnstudio-style shell and Recharts.
+
+Below are:
+
+What to add/update in inputs.yml (minimal)
+
+The API data your dashboard needs (endpoints + response shapes)
+
+The exact Copilot prompt to paste to generate the dashboard UI to match your screenshot
+
+The prompt you’ll keep using later for future features
+
+1) Minimal inputs.yml additions/updates
+
+Add/ensure these parts (keep the rest as-is):
+
+YAML
+inputs:
+  modules:
+    dashboard:
+      enabled: true
+      charts:
+        enabled: true
+        layout_preset: "fisherfolk-dashboard-v1"  # <- add this
+        widgets:
+          kpis: true
+          category_tiles: true
+          fisherfolk_by_barangay_bar: true
+          gender_distribution_donut: true
+          age_group_distribution_bar: true
+          activity_categories_radial: true
+          recent_table: true
+
+  ui:
+    charts:
+      provider: "recharts"
+    theme:
+      default: "dark"
+
+That layout_preset is the switch that tells the generator “use the screenshot layout.”
+
+2) Dashboard API: what data the UI needs
+
+Your dashboard screenshot implies these datasets:
+
+A) KPI header
+
+total registered
+
+new (recent period)
+
+renewal (optional)
+
+inactive (optional)
+
+year selector (optional)
+
+B) Category tiles
+
+Counts per category
+
+C) Charts
+
+fisherfolk by barangay (horizontal bar)
+
+gender distribution (donut)
+
+age group distribution (bar)
+
+activity categories (radial)
+
+D) Recent table
+
+Latest registrations + searchable list (later: full table page)
+
+Recommended endpoints (NestJS):
+
+GET /dashboard/summary
+
+JSON
+{
+  "totalRegistered": 0,
+  "newCount": 0,
+  "renewalCount": 0,
+  "inactiveCount": 0,
+  "asOf": "2026-02-25T00:00:00Z"
+}
+
+GET /dashboard/category-counts
+
+JSON
+[
+  { "category": "Capture Fishing", "count": 3, "percent": 0 },
+  { "category": "Fish Vending", "count": 2, "percent": 0 }
+]
+
+GET /dashboard/by-barangay
+
+JSON
+[
+  { "barangay": "SANTA ISABEL", "count": 2 },
+  { "barangay": "WAWA", "count": 2 },
+  { "barangay": "BARUYAN", "count": 1 }
+]
+
+GET /dashboard/gender
+
+JSON
+{
+  "total": 5,
+  "items": [
+    { "sex": "Female", "count": 2 },
+    { "sex": "Male", "count": 3 }
+  ]
+}
+
+GET /dashboard/age-groups
+
+JSON
+[
+  { "range": "18-25", "count": 0 },
+  { "range": "26-35", "count": 1 },
+  { "range": "36-45", "count": 2 },
+  { "range": "46-55", "count": 1 },
+  { "range": "56-65", "count": 1 },
+  { "range": "66+", "count": 0 }
+]
+
+GET /dashboard/activity-categories
+
+JSON
+{
+  "totalActivities": 10,
+  "items": [
+    { "category": "Boat Owner/Operator", "count": 2 },
+    { "category": "Capture Fishing", "count": 3 }
+  ]
+}
+
+GET /fisherfolk?limit=10&sort=created_at:desc
+
+JSON
+{
+  "items": [
+    {
+      "idNumber": "MR-CL-001234-2015",
+      "fullName": "Juan Dela Cruz",
+      "barangay": "WAWA",
+      "sex": "Male",
+      "dateRegistered": "2025-12-04"
+    }
+  ],
+  "nextCursor": null
+}
+
+These map 1:1 with the screenshot sections.
+
+3) Paste this into Copilot Chat to generate the dashboard from the screenshot
+
+Use this as a FEATURE/MODULE UPDATE (even if it’s your first time—Copilot will implement the dashboard and the needed API stubs).
+
+Plain text
+DASHBOARD UI IMPLEMENTATION — MATCH SCREENSHOT
+
+Read inputs.yml (single source of truth) + project.memory.md.
+UI must be based on shadcn/ui and shadcnstudio-style application shell.
+
+Goal:
+Implement the Dashboard page UI to match the provided screenshot layout:
+- Dark theme
+- Card-based grid
+- KPI overview card (Total Registered, New, Renewal, Inactive)
+- Category stat tiles (6 categories)
+- Charts area:
+  1) Fisherfolk by Barangay (horizontal bar chart)
+  2) Gender Distribution (donut chart with total in center)
+  3) Age Group Distribution (vertical bar chart)
+  4) Activity Categories (radial chart / circular breakdown)
+- Bottom: “Recently Registered” table with columns:
+  ID Number | Full Name | Barangay | Sex | Date Registered | Actions
+- Add a “View All” button (routes to /fisherfolk or /records later)
+
+Technical requirements:
+1) Use shadcn/ui components for layout:
+   - Card, CardHeader, CardContent
+   - Button, Badge
+   - Table (or DataTable base if already included)
+   - DropdownMenu (for per-card menus if desired)
+2) Use Recharts for charts:
+   - BarChart for barangay + age groups
+   - PieChart for donut gender
+   - RadialBarChart for activity categories
+3) Hydration-safe:
+   - apps/web/app/dashboard/page.tsx MUST remain server component
+   - Create a client island: apps/web/components/dashboard/Dashboard.client.tsx with 'use client'
+   - All charts live inside Dashboard.client.tsx
+4) Data fetching:
+   - Create a lightweight API client in apps/web (server fetch in page.tsx OR client fetch inside island; choose whichever is simplest for now)
+   - Create NestJS controller stubs returning mock data for:
+     GET /dashboard/summary
+     GET /dashboard/category-counts
+     GET /dashboard/by-barangay
+     GET /dashboard/gender
+     GET /dashboard/age-groups
+     GET /dashboard/activity-categories
+5) Styling:
+   - Use shadcnstudio-like spacing, typography, rounded cards, subtle borders
+   - Ensure it visually resembles the screenshot (grid placements similar)
+
+Output:
+- Exact files added/updated with full contents
+- Commands to run:
+  pnpm check:spec:dev
+  pnpm lint:hydration
+  pnpm dev:all
+
+That prompt is designed so Copilot:
+
+keeps /dashboard/page.tsx server-only
+
+puts all interactivity/charts in a .client.tsx
+
+uses shadcn/ui components
+
+uses Recharts charts that visually resemble your screenshot
+
+4) The prompt you will keep using for future features
+
+Whenever you add new modules/fields (e.g., signature capture, camera capture, barangay dataset, advanced search), use:
+
+Plain text
+FEATURE/MODULE UPDATE
+
+Read inputs.yml (single source of truth) + project.memory.md.
+
+1) Update inputs.yml minimally if needed.
+2) Update openspec/specs/modules/*.spec.md as needed.
+3) Implement ONLY necessary code changes (no repo regeneration).
+4) Hydration-safe: interactive UI only in *.client.tsx.
+5) Must pass pnpm lint:hydration.
+
+Here is the change:
+<PASTE CHANGE HERE>
+
+If you want, next I can also give you the exact DB schema for fisherfolk + indexes to support “search by almost anything” and fast aggregations for those charts (Postgres-fr
 
