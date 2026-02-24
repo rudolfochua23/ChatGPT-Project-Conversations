@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T22:45:52.109Z
+- Captured: 2026-02-24T22:48:55.922Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -17107,5 +17107,30 @@ pnpm bootstrap:dev
 
 If Copilot tries to:
 
-Regenerate the entire repo
+Regenerate the entire repo ❌
+
+Rewrite compose files ❌
+
+Touch unrelated modules ❌
+
+Stop it and tell it:
+
+Only modify barangay-related logic. Do not regenerate repository.
+
+🧠 Why we are doing this first
+
+Because:
+
+Dashboard aggregations depend on:
+
+Code
+GROUP BY barangay_id
+
+If barangay values are inconsistent (string vs ID), your charts will break later.
+
+We are stabilizing the foundation first.
+
+After you run that prompt, tell me what Copilot responded with.
+
+Then we proceed step-by-step calmly.
 
