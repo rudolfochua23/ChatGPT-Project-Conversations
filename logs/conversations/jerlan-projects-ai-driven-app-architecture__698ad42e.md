@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T15:11:18.777Z
+- Captured: 2026-02-24T15:15:13.703Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -15068,4 +15068,243 @@ run on push main: build and push GHCR images
 include Dockerfiles in apps/web and apps/api
 
 If you want the walkthrough to be even more literal: tell me what OS you’re on (Windows/macOS/Linux) so I can match the exact menu names and shortcut keys you’ll see.
+
+## User
+
+- ok i'm really confused here. 
+- I really dont understand that screen by screen method. 
+- can you just first tell what files and folders I need to create inside the new Project folder and also its contents per file
+- then tell which file/s should I be editing 
+- then next state the prompt that i need to run on the Copilot Chat box chronologically and what what prompt should I be continuously running for updating or adding some new features
+
+## Assistant
+
+Got you. Let’s simplify this into 3 things:
+
+What you must create in a new project folder (minimum)
+
+Which files you will edit day-to-day
+
+Which Copilot prompts you run, in order (and which one you keep using for updates)
+
+I’m going to be blunt: you should not manually create all 60+ files. The whole point of this system is Copilot generates them. You only create the minimum starter files, then run prompts.
+
+1) In a NEW project folder, what do I create first?
+✅ Minimum files to create BEFORE Copilot generates the whole repo
+
+Create only these two files manually:
+
+A) inputs.yml
+
+Create an empty file for now (Copilot will fill it in from Prompt 1):
+
+YAML
+version: 1
+inputs: {}
+B) project.memory.md
+
+Create this file (starter memory, prevents drift):
+
+Markdown
+# Project Memory (Cognition)
+
+## Intent
+- Spec-driven development using inputs.yml as the single source of truth
+- OSS-first, secure-by-default, performance-seeking
+- Docker Compose first (dev/staging/prod profiles), Kubernetes-ready artifacts scaffolded
+- TypeScript end-to-end monorepo
+- Web: Next.js App Router with strict hydration-safe client boundaries + shadcn/ui + shadcnstudio shell
+- API: NestJS
+- Auth: Keycloak (OIDC)
+- Object storage: MinIO (S3-compatible)
+- Data: Postgres + Redis
+
+## Non-negotiables
+- inputs.yml is the single source of truth
+- No environment-specific hardcoding (URLs, domains, credentials, tenant IDs)
+- Next.js hydration safety:
+  - layout/page server-only by default
+  - interactive UI only in *.client.tsx with 'use client'
+  - shadcn/ui imports only in client components
+- Compose-first: staging must not require Kubernetes
+- K8s-ready: manifests exist but are not used for staging
+
+## Known pitfalls
+- Dead UI happens when:
+  - 'use client' is missing
+  - shadcn/ui imported into server components
+  - hooks/event handlers exist in server components
+
+✅ That’s it. Nothing else should be created manually.
+
+2) Which files should I be editing?
+✅ Files you edit regularly
+
+inputs.yml ← you edit this (or let Copilot update it)
+
+features/modules
+
+domain/subdomain
+
+tenancy
+
+deployment
+
+capabilities (offline/realtime)
+
+openspec/specs/modules/*.spec.md ← optional but recommended
+
+human-readable module specs
+
+keep these updated when you add features
+
+openspec/changes/active/.../proposal.md + tasks.md ← when adding a feature
+
+helps prevent Copilot from changing random stuff
+
+❌ Files you usually do NOT edit directly
+
+compose/devcontainer/CI/tools scripts (unless upgrading baseline)
+
+auto-generated .env.generated.*
+
+3) The Copilot prompts you run (chronological)
+
+You will always run prompts in this order:
+
+PROMPT 1 (Run ONCE per project)
+✅ “Spec Synthesizer”
+
+Purpose: You describe your app in English → Copilot writes inputs.yml.
+
+Paste this into Copilot Chat:
+
+Plain text
+SPEC SYNTHESIZER
+
+Read ./project.memory.md first.
+
+Now generate a complete ./inputs.yml as the single source of truth.
+Defaults unless explicitly overridden:
+- tenancy.mode = single
+- deployment.strategy = compose
+- capabilities.offline = all (outbox + auto-sync stubs)
+- capabilities.realtime = all
+- domains.root_domain = example.com
+- staging subdomain = staging
+- production subdomain = app
+- prefixes: api=api, realtime=ws, auth=auth, storage=s3
+
+Rules:
+- development URLs are localhost defaults
+- staging/production URLs must use ${domains.*} placeholders
+- include Keycloak + MinIO dev defaults admin/admin
+
+Output ONLY:
+1) Full contents of inputs.yml
+2) Short bullet list of inferred modules/features
+
+Here is my app description:
+<PASTE YOUR APP IDEA HERE>
+
+After Copilot replies, you paste its YAML output into inputs.yml.
+
+PROMPT 2 (Run ONCE per project)
+✅ “Scaffold Generator”
+
+Purpose: Copilot reads your inputs.yml and generates the entire monorepo + compose + devcontainer + CI/CD + shadcn UI.
+
+Paste this into Copilot Chat:
+
+Plain text
+SCAFFOLD GENERATOR
+
+Read ./inputs.yml and ./project.memory.md.
+
+Generate the complete repository:
+- Turborepo + pnpm monorepo
+- apps/web: Next.js App Router + shadcn/ui + shadcnstudio-style application shell
+- apps/api: NestJS
+- packages/shared
+- compose-first with dev/staging/prod profiles
+- Keycloak + MinIO + Postgres + Redis included from day 1
+- Devcontainer included
+- Hydration-safe UI enforced:
+  - layout/page are server-only
+  - interactive components are *.client.tsx with 'use client'
+  - shadcn/ui only in client components
+- Offline + realtime defaults are ALL:
+  - scaffold outbox + sync CONTRACTS + API stub endpoints (not full engine)
+- OpenSpec minimal integration:
+  - openspec/specs and openspec/changes folders
+  - generate starter module specs from inputs.yml modules
+- CI/CD required:
+  - CI: validate inputs, render env, hydration lint
+  - CD: build & push images to GHCR on push to main
+  - include Dockerfiles for apps/web and apps/api
+
+Output:
+- Full folder tree
+- Full file contents for each file grouped by path
+- Commands to run after generation
+
+Then you apply the files Copilot outputs into your repo.
+
+PROMPT 3 (Use repeatedly, for new features)
+✅ “Feature/Module Update”
+
+Purpose: Add a feature safely without regenerating everything.
+
+Paste this whenever you want to add/modify features:
+
+Plain text
+FEATURE/MODULE UPDATE
+
+Read inputs.yml (single source of truth) + project.memory.md.
+
+I will describe a new feature/module in English.
+
+1) Update inputs.yml minimally (modules/features/capabilities only).
+2) Create an OpenSpec change folder:
+   openspec/changes/active/<yyyy-mm-dd>-<short-name>/
+   - proposal.md
+   - tasks.md
+   - spec-delta.md
+3) Update relevant openspec/specs/modules/*.spec.md
+4) Implement ONLY the necessary code changes.
+5) Do NOT regenerate the repo.
+6) Must pass hydration lint rules.
+
+Output:
+- updated inputs.yml (if changed)
+- new/updated OpenSpec files
+- only the changed/new code files
+- commands to run: pnpm check:spec:dev && pnpm lint:hydration && pnpm dev:all
+
+Here is the change:
+<PASTE YOUR NEW FEATURE DESCRIPTION HERE>
+What commands do I run after generation?
+
+Inside devcontainer terminal:
+
+Bash
+pnpm install
+pnpm bootstrap:dev
+pnpm dev:all
+
+After any inputs.yml change:
+
+Bash
+pnpm check:spec:dev
+pnpm lint:hydration
+pnpm dev:all
+The key mental model
+
+You only maintain inputs.yml + specs
+
+Copilot generates and updates code
+
+You never regenerate the entire repo again once it exists
+
+If you paste your first app idea now (5–10 lines), I’ll run it through Prompt 1 logic and show you what your inputs.yml should look like (with tenancy single + offline/realtime all + domain templating).
 
