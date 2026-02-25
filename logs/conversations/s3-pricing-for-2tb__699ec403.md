@@ -2,7 +2,7 @@
 
 - Conversation ID: 699ec403-a818-8321-9fb9-75e2acac06ea
 - Title: S3 Pricing for 2TB
-- Captured: 2026-02-25T10:15:40.032Z
+- Captured: 2026-02-25T10:18:41.652Z
 - URL: https://chatgpt.com/c/699ec403-a818-8321-9fb9-75e2acac06ea
 
 ---
@@ -312,4 +312,8 @@ Or design a scalable production-ready architecture
 Or simulate cost at 10k / 100k users**
 
 Just tell me your expected users in first 6 months.
+
+## User
+
+Design a lean startup architecture with basic security service then design a scalable production-ready architecture and have a simulated cost at 10k to 100k users
 
