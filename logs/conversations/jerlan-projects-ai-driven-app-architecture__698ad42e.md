@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-24T23:59:04.501Z
+- Captured: 2026-02-25T00:02:09.603Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -17727,4 +17727,8 @@ Open .devcontainer/devcontainer.json right now and tell me if it currently conta
 "features": { ... }
 
 If you paste your current devcontainer.json here, I’ll point to the exact lines causing the features build.
+
+## User
+
+i dont see the compose.yml, where can i find it?
 
