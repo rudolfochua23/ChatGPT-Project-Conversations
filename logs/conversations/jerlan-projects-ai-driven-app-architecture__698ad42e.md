@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-25T13:10:20.691Z
+- Captured: 2026-02-25T13:17:27.144Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -17977,5 +17977,310 @@ A) Start Fresh — Fisherfolk IMS (from scratch)
 
 ✅ YOU NEED TO DO THIS
 
-Create a
+Create a new folder (example):
+Fisherfolk-Information-Management-System
+
+Open that folder in VS Code.
+
+B) Prompt #1 (ONLY creates inputs.yml + memory)
+1) Create only 2 files first (manual)
+
+✅ YOU NEED TO DO THIS
+
+Create these files in the root:
+
+project.memory.md
+
+Paste this:
+
+Markdown
+# Project Memory (Cognition)
+
+## Intent
+- Spec-driven development using inputs.yml as the single source of truth
+- OSS-first, secure-by-default, performance-seeking
+- Docker Compose first (dev/staging/prod), Kubernetes-ready scaffold
+- TypeScript end-to-end monorepo (pnpm + turbo)
+- Web: Next.js App Router + shadcn/ui + shadcnstudio-style shell
+- API: NestJS
+- Auth: Keycloak (OIDC)
+- Object storage: MinIO (S3-compatible)
+- Data: Postgres + Redis
+- Hydration-safe UI: interactivity only in *.client.tsx
+
+## Non-negotiables
+- inputs.yml is the single source of truth
+- No hardcoded env domains/URLs in code
+- Next.js hydration safety:
+  - layout/page are server-only by default
+  - interactive components are *.client.tsx + 'use client'
+  - shadcn/ui imports only in client components
+- Staging must NOT require Kubernetes
+
+## Known pitfalls
+- Dead UI happens when:
+  - 'use client' is missing
+  - hooks/event handlers exist in server components
+  - shadcn/ui is imported in server components
+inputs.yml
+
+Create an empty file with this placeholder:
+
+YAML
+version: 1
+inputs: {}
+2) Run Prompt #1 in Copilot Chat (Spec Synthesizer)
+
+✅ YOU NEED TO DO THIS
+
+Open Copilot Chat and paste this:
+
+Plain text
+SPEC SYNTHESIZER (Fisherfolk IMS)
+
+Read ./project.memory.md first.
+
+Generate a complete ./inputs.yml for the Fisherfolk Information Management System.
+
+Hard defaults:
+- tenancy.mode = single
+- deployment.strategy = compose
+- capabilities.offline = all (outbox + auto-sync scaffolding)
+- capabilities.realtime = all
+- charts enabled
+- shadcn/ui + shadcnstudio shell for web
+
+Include this data model:
+- fisherfolk record fields (id number, full name parts, dob, barangay, sex, signature image, profile image, rsbsa number, category, contact number, is president)
+- category enum values (6 categories)
+- barangay list must be the official Calapan City list (I will paste it next if needed)
+
+Output ONLY:
+1) Full contents of inputs.yml (ready to paste)
+2) A short list of modules it inferred
+
+✅ When Copilot outputs the YAML: paste it into inputs.yml and save.
+
+C) IMPORTANT: Switch to Devcontainer RIGHT NOW (before generating more)
+
+This is the step you missed last time.
+
+3) Set up Devcontainer + Compose baseline (Prompt #1.5)
+
+✅ YOU NEED TO DO THIS
+
+Now paste this into Copilot Chat:
+
+Plain text
+DEVCONTAINER + DOCKER COMPOSE BASELINE (MUST WORK)
+
+Read inputs.yml and project.memory.md.
+
+Create the repo baseline so Dev Containers works immediately:
+- docker-compose.yml as the primary compose file
+- docker-compose.dev.yml / docker-compose.staging.yml / docker-compose.prod.yml if needed
+- .devcontainer/devcontainer.json that uses dockerComposeFile and attaches to service "dev"
+- .devcontainer/Dockerfile based on node:20-bookworm
+- Ensure devcontainer does NOT use Dev Container "features"
+  (NO docker-compose-plugin apt install; no Dockerfile-with-features)
+
+Services required in dev profile:
+- dev (workspace container)
+- postgres
+- redis
+- keycloak (admin/admin) with realm import scaffold
+- minio + init bucket (admin/admin)
+
+Output:
+- file tree and exact contents for created files only
+- no app code yet
+
+✅ Apply the generated files.
+
+4) Reopen VS Code in Devcontainer
+
+✅ YOU NEED TO DO THIS
+
+Press Ctrl+Shift+P
+
+Run: Dev Containers: Reopen in Container
+
+If it asks rebuild: choose rebuild.
+
+5) Install deps + validate spec
+
+✅ YOU NEED TO DO THIS (inside devcontainer terminal)
+
+Bash
+pnpm install
+pnpm check:spec:dev
+
+If you don’t have scripts yet, Copilot will add them later, but ideally they exist at baseline.
+
+D) Prompt #2 (Generate the full monorepo scaffold)
+
+Now you’re safely inside devcontainer.
+
+6) Run Prompt #2 — Scaffold Generator
+
+✅ YOU NEED TO DO THIS
+
+Paste this into Copilot Chat:
+
+Plain text
+SCAFFOLD GENERATOR (Fisherfolk IMS)
+
+Read inputs.yml and project.memory.md. inputs.yml is the single source of truth.
+
+Generate the full repo:
+- pnpm + turbo monorepo
+- apps/web: Next.js App Router + shadcn/ui + shadcnstudio shell
+  - hydration-safe: interactive parts in *.client.tsx only
+- apps/api: NestJS
+- packages/shared
+- tools:
+  - validate inputs.yml
+  - render env placeholders to .env.generated.*
+  - hydration-lint
+- CI workflow runs: validate inputs, render, hydration lint
+- OpenSpec minimal folders: openspec/specs and openspec/changes
+
+Web routes required:
+- /dashboard (charts + recent table)
+- /tasks (placeholder ok)
+- /examples (placeholder ok)
+
+API:
+- base health endpoint
+- dashboard endpoints (MOCK FIRST ok)
+- fisherfolk CRUD scaffolding
+
+Output:
+- folder tree
+- exact file contents
+- commands to run after generation
+
+✅ Apply all generated files.
+
+E) Run the system (dev)
+7) Start infra (docker compose dev)
+
+✅ YOU NEED TO DO THIS
+
+Bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+If you only have docker-compose.yml (no dev override), run:
+
+Bash
+docker compose up -d
+8) Run API + Web
+
+✅ YOU NEED TO DO THIS
+
+API:
+
+Bash
+pnpm -C apps/api build
+pnpm -C apps/api start
+
+Web:
+
+Bash
+pnpm -C apps/web dev
+9) Verify the “no dead UI” hydration rule
+
+✅ YOU NEED TO DO THIS
+
+Bash
+pnpm lint:hydration
+
+Must pass.
+
+F) Now apply your Barangay Feature Update (because you already have the official list)
+10) Paste barangay list into inputs.yml
+
+✅ YOU NEED TO DO THIS
+
+Paste your official barangays into inputs.yml under:
+
+inputs.modules.reference_data.barangays.items
+
+Save.
+
+11) Run Feature Update prompt (Barangay Sync)
+
+✅ YOU NEED TO DO THIS
+
+Paste into Copilot Chat:
+
+Plain text
+FEATURE UPDATE — BARANGAY DATASET SYNC (OFFICIAL LIST)
+
+Read inputs.yml and project.memory.md.
+
+Barangays list is now official and complete.
+Do these updates only:
+
+1) Ensure Barangay entity + seed uses inputs.yml items.
+2) Ensure fisherfolk uses barangay_id (FK style), not raw string.
+3) Update DTOs, queries, and dashboard aggregations to group by barangay_id.
+4) Update web types and table columns to show barangay name from reference data.
+5) Do NOT regenerate repo.
+
+Output:
+- only changed files
+- commands I must run
+12) Run the commands Copilot lists
+
+✅ YOU NEED TO DO THIS
+
+Usually:
+
+Bash
+pnpm check:spec:dev
+pnpm -C apps/api build
+pnpm lint:hydration
+What you edit day-to-day
+
+✅ YOU EDIT THESE
+
+inputs.yml (always)
+
+openspec/specs/... (optional but recommended)
+
+❌ You usually don’t touch
+
+devcontainer/compose/CI unless upgrading baseline
+
+The only prompt you keep reusing for features
+
+✅ YOU USE THIS FOREVER
+
+Plain text
+FEATURE/MODULE UPDATE
+
+Read inputs.yml and project.memory.md.
+
+1) Update inputs.yml minimally if needed.
+2) Add/update openspec change + specs.
+3) Implement only the required code changes (no regeneration).
+4) Hydration-safe: interactivity only in *.client.tsx.
+5) Must pass pnpm lint:hydration.
+
+Here is the change:
+<PASTE CHANGE HERE>
+Before we restart: one key thing
+
+Your previous devcontainer error came from Dev Container “features” installing docker-compose-plugin.
+
+So in this restart, we enforce:
+
+devcontainer attaches to docker-compose.yml
+
+no features block
+
+no docker-compose-plugin apt install
+
+If you want, paste your official barangay list one more time and I’ll embed it into the Prompt #1 output expectation so Copilot generates it correctly from day one.
 
