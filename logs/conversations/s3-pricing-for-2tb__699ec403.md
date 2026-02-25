@@ -2,7 +2,7 @@
 
 - Conversation ID: 699ec403-a818-8321-9fb9-75e2acac06ea
 - Title: S3 Pricing for 2TB
-- Captured: 2026-02-25T10:30:54.223Z
+- Captured: 2026-02-25T10:33:56.584Z
 - URL: https://chatgpt.com/c/699ec403-a818-8321-9fb9-75e2acac06ea
 
 ---
@@ -847,5 +847,17 @@ Users	Monthly Cost (Lean)
 50K	$1.5K–2.5K
 100K	$3K+
 
-(Bandwidth and auth become pri
+(Bandwidth and auth become primary drivers.)
+
+If you’d like, I can next:
+
+Break down cost per user
+
+Or simulate “what if users upload short videos?”
+
+Or design a $100/month ultra-lean MVP architecture
+
+Or calculate when you should move from serverless to containers**
+
+Just tell me which direction you want.
 
