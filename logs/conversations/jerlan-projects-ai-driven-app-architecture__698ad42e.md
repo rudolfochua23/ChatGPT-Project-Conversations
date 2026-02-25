@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-25T13:07:08.012Z
+- Captured: 2026-02-25T13:10:20.691Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -17957,4 +17957,25 @@ JSON
 "service": "___"
 
 so it attaches correctly.
+
+## User
+
+ok, from our recent conversation. can you review again our last development before this error issue we had from devcontainer? i think the last development topic we had is about Feature Update because we updated the barangay list in inputs.yml (see the screenshot upload here). i want you to give me again complete full instruction from the the very start again. I want to start my Fisherfolk information management system project from scratch again but this time I will run it right away after the 1st prompt because i forgot to shift to devcontainer after running the 1st prompt
+
+## Assistant
+
+Got it. We’ll restart cleanly and I’ll give you a complete, no-missed-steps flow where you switch to Devcontainer immediately after Prompt #1.
+
+I’ll label every step as:
+
+✅ YOU NEED TO DO THIS
+
+❌ NO ACTION (EXPLANATION ONLY)
+
+A) Start Fresh — Fisherfolk IMS (from scratch)
+0) Create a brand-new empty repo folder
+
+✅ YOU NEED TO DO THIS
+
+Create a
 
