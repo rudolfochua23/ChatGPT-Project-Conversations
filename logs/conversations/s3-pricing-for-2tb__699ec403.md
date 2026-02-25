@@ -2,7 +2,7 @@
 
 - Conversation ID: 699ec403-a818-8321-9fb9-75e2acac06ea
 - Title: S3 Pricing for 2TB
-- Captured: 2026-02-25T10:18:41.652Z
+- Captured: 2026-02-25T10:21:43.148Z
 - URL: https://chatgpt.com/c/699ec403-a818-8321-9fb9-75e2acac06ea
 
 ---
@@ -316,4 +316,123 @@ Just tell me your expected users in first 6 months.
 ## User
 
 Design a lean startup architecture with basic security service then design a scalable production-ready architecture and have a simulated cost at 10k to 100k users
+
+## Assistant
+
+Below is a practical way to estimate AWS costs for a starter social app, plus a lean startup architecture and a production-ready scalable architecture, with simulated monthly costs for ~10k vs ~100k users.
+
+I’ll assume US East (N. Virginia / us-east-1) pricing unless noted, and I’ll call out the big variables (egress + request volume) because those usually dominate.
+
+1) S3 pricing example: “I have 2TB in S3—how much per month?”
+
+S3 is billed mainly on:
+
+Storage (GB-month)
+
+Requests (PUT/GET/LIST)
+
+Data transfer out (egress) (often the real bill if users download media)
+
+For S3 Standard storage, a common baseline rate in major regions is ~$0.023 per GB-month (tiered at higher usage). 
+handbook.vantage.sh
++1
+
+Storage-only estimate (no requests / no egress)
+
+2 TB ≈ 2,048 GB
+
+2,048 GB × $0.023 ≈ $47.10 / month
+
+That’s just storage. If you serve images/videos directly from S3 to users, egress can dwarf storage. Most teams front S3 with CloudFront.
+
+2) Your “starter setup” (EC2 + S3 + RDS + daily snapshots): what to expect
+A) EC2 (3 instances, 2 vCPU / ~6GB RAM, 80GB disk each)
+
+AWS doesn’t have an exact “2 vCPU / 6GB” standard shape, so teams often land near:
+
+t3.large (2 vCPU, 8 GiB) or
+
+t4g.large (2 vCPU, 8 GiB, Graviton/ARM)
+
+Example on-demand starting points:
+
+t4g.large ~ $0.0672/hr (~$49/mo) 
+Holori Cloud Calculator
++1
+
+So 3 instances ≈ $147/mo compute before load balancers, bandwidth, etc.
+
+EBS volumes (80GB each): gp3 is commonly modeled around ~$0.08/GB-month (varies by region/config). 
+Amazon Web Services, Inc.
++1
+
+So 240GB total ≈ $19.20/mo for disks.
+
+Daily snapshots: EBS snapshots are billed by GB-month of snapshot data stored (incremental). AWS cites $0.05 per GB-month for standard snapshot storage in many regions. 
+Amazon Web Services, Inc.
++2
+Repost
++2
+
+Rule of thumb: if your 80GB disks change ~5–10% daily and you keep ~30 days, you might land around $5–$30/mo in snapshot storage (very workload dependent).
+
+B) S3 (200GB/month growth for 12 months + “daily snapshot”)
+
+S3 doesn’t do “snapshots” like EBS—typically you’d use:
+
+Versioning + Lifecycle rules, or
+
+Cross-Region Replication, or
+
+Periodic backup exports
+
+Storage growth: if you add 200GB per month, after 12 months you have ~2.4TB total, and your average stored over the year is about ~1.2TB.
+
+Average storage cost over that year ≈ 1,200GB × $0.023 ≈ $27.60/mo average (ramps up monthly). 
+handbook.vantage.sh
++1
+
+C) RDS (5GB/month growth + daily snapshots)
+
+Compute is typically the biggest part; storage is often smaller early on.
+
+RDS “backup/snapshot” storage behavior depends on engine/settings, but you generally pay for storage and any backup storage above free allocations (details vary). AWS provides the RDS pricing structure and free-tier notes on its pricing page. 
+Amazon Web Services, Inc.
++1
+
+3) Lean startup architecture (cheap idle cost + basic security)
+
+Goal: near-zero cost when users are low, and scale automatically.
+
+Recommended lean stack
+
+Edge + static/media
+
+CloudFront (flat-rate “Pro” plan) + S3
+
+CloudFront flat-rate plans bundle CDN + WAF/DDoS/DNS/logging/edge compute allowances into a fixed monthly price. 
+Amazon Web Services, Inc.
++1
+
+S3 buckets: uploads/, processed/, static/
+
+API
+
+API Gateway (HTTP API) → Lambda
+
+HTTP API requests can be $1.00 per million (example shown on pricing page). 
+Amazon Web Services, Inc.
+
+Optional: WebSockets (later) via API Gateway if you add realtime chat/notifications 
+Amazon Web Services, Inc.
+
+Database
+
+Early stage:
+
+DynamoDB on-demand (great for spiky read/write without capacity planning)
+
+Or Aurora Serverless (if you want relational from day 1)
+
+Auth
 
