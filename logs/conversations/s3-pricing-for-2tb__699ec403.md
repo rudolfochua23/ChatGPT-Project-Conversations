@@ -2,7 +2,7 @@
 
 - Conversation ID: 699ec403-a818-8321-9fb9-75e2acac06ea
 - Title: S3 Pricing for 2TB
-- Captured: 2026-02-25T10:21:43.148Z
+- Captured: 2026-02-25T10:24:48.002Z
 - URL: https://chatgpt.com/c/699ec403-a818-8321-9fb9-75e2acac06ea
 
 ---
@@ -435,4 +435,242 @@ DynamoDB on-demand (great for spiky read/write without capacity planning)
 Or Aurora Serverless (if you want relational from day 1)
 
 Auth
+
+Cognito User Pools
+
+Free tier includes 10,000 MAU/month for certain tiers. 
+Amazon Web Services, Inc.
+
+Async / future-proofing
+
+SQS for background jobs (image/video processing, email fanout)
+
+EventBridge for event routing (later)
+
+Basic security (do this even in lean mode)
+
+IAM least privilege + separate dev/stage/prod accounts
+
+KMS encryption for S3 + DB
+
+CloudTrail, CloudWatch alarms
+
+WAF (basic rules) if you’re public-facing (or rely on CloudFront plan that bundles it) 
+Amazon Web Services, Inc.
++1
+
+4) Production-ready scalable architecture (10k → 100k users)
+
+Goal: high availability, controlled blast radius, predictable scaling.
+
+Production stack
+
+Networking
+
+VPC across 2–3 AZs
+
+Public subnets: ALB, NAT (or avoid NAT with VPC endpoints where possible)
+
+Private subnets: app + DB
+
+Compute
+
+ECS on Fargate (fast ops) or EKS (if you need Kubernetes)
+
+Autoscaling based on CPU, memory, RPS, queue depth
+
+Ingress
+
+ALB (Layer 7 routing)
+
+ALB billed per hour + LCUs (example shows $0.0225/hour and $0.008 per LCU-hour in US East examples). 
+Amazon Web Services, Inc.
+
+Data
+
+Aurora (Multi-AZ) or RDS Multi-AZ
+
+ElastiCache Redis (feed caching, sessions, rate limiting)
+
+OpenSearch (search) if needed
+
+Media
+
+CloudFront + S3
+
+Processing pipeline: S3 → SQS → Lambda/ECS workers → store derivatives in S3
+
+Security hardening
+
+AWS WAF (Web ACL + managed rules)
+
+Example pricing components: $5/Web ACL, $1/rule, $0.60 per million requests (base WAF example). 
+Amazon Web Services, Inc.
+
+GuardDuty/Security Hub/Inspector (as you mature)
+
+5) Simulated monthly cost at ~10k vs ~100k users (two scenarios)
+Assumptions (so the math is meaningful)
+
+10k users (MAU):
+
+API requests: 3M / month
+
+CDN requests (images/video): 30M / month
+
+New uploads stored: +100GB / month
+
+CDN data transfer: ~1TB / month
+
+100k users (MAU):
+
+API requests: 60M / month
+
+CDN requests: 300M / month
+
+New uploads stored: +1TB / month
+
+CDN data transfer: ~10TB / month
+
+These are conservative for a media-heavy app; real social feeds can be higher.
+
+A) Lean (serverless) estimated monthly cost
+
+10k users
+
+CloudFront flat-rate:
+
+Business plan $200/mo includes 125M requests + 50TB transfer (fits 30M req + 1TB) 
+Amazon Web Services, Inc.
++1
+
+Cognito:
+
+$0 if you stay within 10,000 MAU free tier 
+Amazon Web Services, Inc.
+
+API Gateway HTTP API:
+
+3M × $1/million ≈ $3 
+Amazon Web Services, Inc.
+
+Lambda:
+
+Requests are priced (commonly $0.20 per 1M requests) + compute; pricing is described on Lambda pricing page 
+Amazon Web Services, Inc.
+
+Ballpark: $2–$20 depending on function duration/memory
+
+S3 storage (say you have ~500GB stored early on):
+
+~$10–$15 storage-only (plus requests)
+
+Lean total (10k MAU): ~ $230 – $300 / month (dominated by CloudFront Business)
+
+100k users
+
+CloudFront:
+
+Likely Premium $1,000/mo to cover ~300M requests (Premium includes 500M requests + 50TB transfer). 
+Amazon Web Services, Inc.
++1
+
+Cognito Essentials:
+
+(100k − 10k) × $0.015 = $1,350/mo 
+Amazon Web Services, Inc.
+
+API Gateway:
+
+60M × $1/million ≈ $60 (still small) 
+Amazon Web Services, Inc.
+
+Lambda:
+
+Roughly $50–$400 depending on compute
+
+S3 storage (say several TB):
+
+$50–$150 storage-only
+
+Lean total (100k MAU): ~ $2,400 – $3,200 / month (Cognito + CloudFront dominate)
+
+Note: If Cognito MAU pricing becomes your biggest driver, you’ll want to evaluate tier choices and/or alternative auth patterns—but don’t prematurely optimize early.
+
+B) Production (containers + ALB + RDS Multi-AZ) estimated monthly cost
+
+10k users (baseline always-on)
+
+2× ECS/Fargate tasks or 2× EC2 t4g.large equivalents:
+
+~$100–$250 compute (depends on sizing/always-on vs autoscale) 
+Holori Cloud Calculator
++1
+
+ALB:
+
+$0.0225/hr ≈ $16.43/mo + LCU (say +$5–$30) 
+Amazon Web Services, Inc.
+
+RDS (Multi-AZ) small instance:
+
+Example instance pricing reference: db.t4g.medium starts ~$0.065/hr (~$47/mo); Multi-AZ roughly doubles instance-side cost 
+Vantage
+
+So ballpark: $100–$250 including storage/IO/backup early on
+
+WAF:
+
+If you run WAF: minimum $5/Web ACL + rules + request fees 
+Amazon Web Services, Inc.
+
+CloudFront:
+
+likely still Business $200/mo 
+Amazon Web Services, Inc.
++1
+
+Production total (10k MAU): ~ $450 – $900 / month
+
+100k users
+
+App compute (autoscaled):
+
+$600 – $2,000 (depends heavily on CPU time per request and caching)
+
+ALB + LCUs:
+
+$50 – $250
+
+RDS/Aurora (Multi-AZ + read replica, bigger instance):
+
+$500 – $2,000
+
+CloudFront Premium:
+
+$1,000/mo 
+Amazon Web Services, Inc.
++1
+
+Cognito:
+
+~$1,350/mo (Essentials example math) 
+Amazon Web Services, Inc.
+
+WAF:
+
+Could be $50–$300+ depending on request volume and managed rules 
+Amazon Web Services, Inc.
+
+Production total (100k MAU): ~ $3,500 – $7,000 / month
+
+What I’d do in your situation
+
+Start with Lean serverless + CloudFront plan (cheap ops, fast iteration).
+
+Add SQS-based async processing early (media processing + notifications).
+
+Move to containers + RDS/Aurora Multi-AZ + Redis once you see sustained growth and performance bottlenecks.
+
+If you tell me (a) region, (b) average photo/video size, and (c) expected CDN egress (GB/month), I can tighten these estimates a lot—those 3 inputs usually determine 80% of the bill.
 
