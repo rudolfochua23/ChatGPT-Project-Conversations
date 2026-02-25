@@ -2,7 +2,7 @@
 
 - Conversation ID: 699ec403-a818-8321-9fb9-75e2acac06ea
 - Title: S3 Pricing for 2TB
-- Captured: 2026-02-25T11:16:33.632Z
+- Captured: 2026-02-25T11:19:36.193Z
 - URL: https://chatgpt.com/c/699ec403-a818-8321-9fb9-75e2acac06ea
 
 ---
@@ -2400,4 +2400,74 @@ Investor Q&A defense sheet
 Sensitivity analysis (conservative vs aggressive growth)
 
 Just tell me how deep you'd like to go.
+
+## User
+
+can you repeat this last presentation but make a detailed breakdown for AWS services
+
+## Assistant
+
+Absolutely. Below is the revised investor-ready financial section, with a detailed breakdown of AWS services (compute, storage, networking, monitoring) clearly itemized.
+
+This version is structured for board and investor review, emphasizing transparency in AWS cost drivers and scalability mechanics.
+
+📊 Investor-Ready Financial Section
+Infrastructure & Cloud Cost Model (Detailed AWS Breakdown)
+1️⃣ Financial Overview
+
+Current Active Users: 5,000 MAU
+Deployment Model: Cloud-native (AWS + Cloudflare)
+Infrastructure Type: Multi-instance, production-ready
+Total Annual Operating Cost (Infra + Tools): ~$4,520
+Total AWS-Only Annual Cost: ~$3,085
+
+2️⃣ Detailed AWS Infrastructure Breakdown (Annual)
+A. Compute Layer (EC2)
+Service	Configuration	Monthly	Annual
+EC2 Instances	3 × t4g.medium (2 vCPU / 4GB RAM)	$153	$1,836
+
+Purpose:
+
+Application servers
+
+API handling
+
+Business logic processing
+
+Notes:
+
+Multi-instance redundancy
+
+Horizontally scalable
+
+B. Block Storage (EBS)
+Service	Configuration	Monthly	Annual
+EBS gp3 Volumes	120GB total (40GB × 3)	$9.60	$115
+EBS Snapshots	Daily backup retention	$5	$60
+
+Purpose:
+
+OS & application storage
+
+Persistent logs
+
+Backup & disaster recovery
+
+C. Object Storage (S3)
+Service	Usage	Monthly	Annual
+S3 Standard Storage	300GB media	$7	$84
+S3 Requests (PUT/GET)	Light workload	$5	$60
+
+Purpose:
+
+Media uploads
+
+Static assets
+
+Long-term scalable storage
+
+Scalable without server upgrade.
+
+D. CDN & Traffic Distribution (CloudFront)
+Service	Usage	Monthly	Annual
 
