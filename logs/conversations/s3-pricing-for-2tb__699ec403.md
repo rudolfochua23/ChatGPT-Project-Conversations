@@ -2,7 +2,7 @@
 
 - Conversation ID: 699ec403-a818-8321-9fb9-75e2acac06ea
 - Title: S3 Pricing for 2TB
-- Captured: 2026-02-25T10:33:56.584Z
+- Captured: 2026-02-25T10:36:58.627Z
 - URL: https://chatgpt.com/c/699ec403-a818-8321-9fb9-75e2acac06ea
 
 ---
@@ -860,4 +860,8 @@ Or design a $100/month ultra-lean MVP architecture
 Or calculate when you should move from serverless to containers**
 
 Just tell me which direction you want.
+
+## User
+
+ok since you told me that For only 5K users, that’s overkill for EC2, can you adjust the specs of 3 EC2 instances, cloudfront + S3 etc that match for 5k users. I prefer 3 instances for ALB so just lessen the specs
 
