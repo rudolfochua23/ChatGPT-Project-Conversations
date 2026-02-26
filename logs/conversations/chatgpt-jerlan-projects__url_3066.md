@@ -2,7 +2,7 @@
 
 - Conversation ID: url_3066646202
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-26T09:40:36.922Z
+- Captured: 2026-02-26T13:28:37.296Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/project
 
 ---
@@ -11,10 +11,14 @@
 
 Jerlan Projects
 
-based on my previous AI-driven App Architecture, since the conversation there is too much now and the chat is running slow because of a lot of conversation. i want to create a new chat based on that. can you check it
+
+
 
 Chats
 Sources
+New Chat Request
+Below is the recent prompt from my last converstation in the chat box: Below is your Platform Identity Block (copy-paste into any new chat) that includes the fixes we learned from the issues you hit
+Feb 26
 AI-driven App Architecture
 yes please do that because as I ran your prompt to the new chat, it responses like this: " I can do it — but I cannot “build the requested project” yet because your non-negotiables require: inputs.
 Feb 26
