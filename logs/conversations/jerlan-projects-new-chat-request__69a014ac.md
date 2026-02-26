@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a014ac-5a94-8323-8e42-cd39da3cd32e
 - Title: Jerlan Projects - New Chat Request
-- Captured: 2026-02-26T14:45:41.817Z
+- Captured: 2026-02-26T14:48:44.188Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a014ac-5a94-8323-8e42-cd39da3cd32e
 
 ---
@@ -443,4 +443,15 @@ RUN corepack prepare pnpm@9.12.0 --activate
 Add exactly what you wrote under your “Known pitfalls” section in project.memory.md.
 
 If you paste your current devcontainer.json + devcontainer Dockerfile, I can tell you the exact safest place to insert the mkdir -p so it won’t get reordered by layer caching or tooling.
+
+## User
+
+devcontainer.json
+File
+Dockerfile
+File
+- attached here are the devcontainer and Dockerfile already fixed by copilot.
+- from that working files i want you to create a new fresh AI driven prompt
+- make a clear input file (inputs.yml) for what should be filled up and make a default values 
+- maintain top of the line, latest, scalable prompt for any project to build based on inputs.yml features and ideas for the app to be build
 
