@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-26T07:56:19.572Z
+- Captured: 2026-02-26T07:59:23.062Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -18727,4 +18727,71 @@ Only then run Copilot scaffold prompts
 Only then run pnpm install
 
 If you want, I can also give you the exact “paste-ready official barangay YAML block” (with IDs + names + aliases) again so you can paste it instantly into inputs.yml.
+
+## User
+
+ok for this last prompt, can we migrate this to a new chat because its slowing down now
+
+## Assistant
+
+Yes — that’s actually a very good idea. ✅
+
+This thread is already very long, so moving to a fresh chat will:
+
+🚀 Load faster
+
+🧠 Reduce context confusion
+
+🎯 Keep the Fisherfolk IMS restart clean
+
+🛠 Prevent old devcontainer errors from polluting new instructions
+
+✅ How To Migrate Cleanly
+
+When you open a new chat, paste this as your first message:
+
+📌 PASTE THIS INTO THE NEW CHAT
+Plain text
+We are restarting my Fisherfolk Information Management System project from scratch.
+
+Context:
+- Spec-driven architecture
+- inputs.yml is the single source of truth
+- Single tenancy
+- Offline = all (outbox + auto sync)
+- Realtime = all
+- Next.js App Router + shadcn/ui
+- NestJS API
+- Postgres + Redis
+- Keycloak (admin/admin)
+- MinIO (admin/admin)
+- Hydration-safe boundaries enforced
+- Devcontainer-first setup (no docker-compose-plugin issues)
+- No devcontainer features
+- PNPM_HOME already handled in Dockerfile
+
+I want step-by-step instructions:
+1. What files to manually create first
+2. What exact devcontainer config to use
+3. What first Copilot prompt to run
+4. What to execute after each step
+
+Treat me as needing very explicit run instructions.
+Clearly mark:
+- YOU NEED TO RUN THIS
+- NO ACTION (explanation only)
+
+After that, I will:
+
+Reconstruct everything cleanly
+
+Keep it short and structured
+
+Avoid repeating past broken patterns
+
+Keep compose separate from devcontainer to avoid plugin issues
+
+When you’re ready, open the new chat and paste that block.
+
+I’ll continue fro
 
