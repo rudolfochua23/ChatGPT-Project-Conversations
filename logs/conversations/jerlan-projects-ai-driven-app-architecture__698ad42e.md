@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-26T08:59:30.254Z
+- Captured: 2026-02-26T09:11:06.694Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -19158,4 +19158,397 @@ and if you need to do something, I’ll label it:
 ✅ YOU NEED TO RUN THIS (and I’ll give the exact command or click path)
 
 If you want, I can also give you a single “super prompt” that bundles Prompt 1 + Prompt 2 (inputs.yml + devcontainer + monorepo) for Copilot, but I kept them split because it reduces failure rate and makes debugging easier.
+
+## User
+
+yes please do that because as I ran your prompt to the new chat, it responses like this: 
+
+" I can do it — but I cannot “build the requested project” yet because your non-negotiables require:
+
+inputs.yml is the Single Source of Truth
+
+project.memory.md must be read first and never contradicted
+
+Right now I don’t have either file, so anything I generate would be guessing and would violate your rules. "
+
+✅ YOU NEED TO RUN THIS (provide SoT + memory)
+
+Please add (or paste here) these two files:
+
+inputs.yml
+
+project.memory.md
+
+If you don’t have them yet, create placeholders with your intended values and I’ll take it from there.
+
+❌ NO ACTION (EXPLANATION ONLY): What I will generate immediately after you provide those files
+1) Monorepo scaffold (pnpm + turbo)
+
+apps/web → Next.js App Router + Tailwind + shadcn/ui dashboard shell
+
+apps/api → NestJS (TypeScript)
+
+packages/config → shared config, eslint, tsconfig, env schema tooling
+
+packages/hydration-lint → custom rule set + CI enforcement
+
+infra/compose → compose-first (dev/staging/prod), no K8s requirement for staging
+
+docs/openspec/* (optional) → feature specs that map back to inputs.yml
+
+2) Devcontainer that matches your “critical fixes”
+
+No Dev Container “features”
+
+No docker-compose-plugin apt install
+
+No requirement to run compose inside container (compose from host)
+
+workspaceFolder: /workspaces/repo
+
+Dockerfile includes:
+
+ENV PNPM_HOME="/usr/local/share/pnpm"
+
+ENV PATH="$PNPM_HOME:$PATH"
+
+corepack prepare pnpm@9.12.0 --activate
+
+3) Governance / CI (required checks)
+
+CI will fail unless these pass:
+
+inputs.yml validation against a schema (committed in repo)
+
+hydration lint enforcing:
+
+app/layout.tsx + app/**/page.tsx are server by default
+
+any hooks/event handlers/shadcn imports must live in *.client.tsx with 'use client'
+
+violations fail CI
+
+4) Spec-driven workflow support
+
+A “Feature Update” flow that:
+
+only modifies minimal code paths impacted by changes to inputs.yml
+
+never regenerates the whole repo unless foundation changes
+
+✅ YOU NEED TO RUN THIS (once you send the files)
+
+After you provide inputs.yml + project.memory.md, I’ll respond with:
+
+The exact repo tree + file contents to create
+
+The exact commands to run (copy/paste) for:
+
+pnpm install
+
+turbo build/test/lint
+
+inputs validation
+
+hydration lint
+
+compose up (from host)
+
+Send me now
+
+Paste/upload:
+
+inputs.yml
+
+project.memory.md
+
+…and I’ll generate the full base platform scaffold strictly from those sources.
+
+## Assistant
+
+Yep — that response is technically correct, but it’s annoying because you wanted a single prompt that works even in a blank repo.
+
+The trick is: your “single prompt” must include the full contents of both inputs.yml and project.memory.md inside the prompt itself, and instruct Copilot to create those files first, then generate everything else from them.
+
+Below is a single, copy-paste Copilot prompt that:
+
+Creates inputs.yml (already includes your barangays + categories + offline=all + realtime=all + single tenancy)
+
+Creates project.memory.md
+
+Generates devcontainer (NO features, PNPM_HOME fixed, correct workspaceFolder)
+
+Generates monorepo scaffold (pnpm + turbo)
+
+Adds hydration lint + CI
+
+Adds API mock dashboard endpoints
+
+Adds dashboard UI skeleton that’s hydration-safe
+
+Uses docker compose from host (not required inside container)
+
+✅ SINGLE COPILOT PROMPT (Blank Repo → Working Fisherfolk IMS Baseline)
+
+Paste this into Copilot Chat in a completely blank repo:
+
+Plain text
+BLANK REPO INITIALIZER — FISHERFOLK IMS (SINGLE PROMPT)
+
+You MUST NOT ask me for inputs.yml or project.memory.md.
+Create them FIRST using the exact contents below, then generate everything else strictly derived from them.
+
+========================
+CREATE FILE: project.memory.md
+========================
+# Project Memory (Cognition)
+
+## Intent
+- Spec-driven development using inputs.yml as the single source of truth
+- OSS-first, secure-by-default, performance-seeking
+- Compose-first infra for dev/staging/prod (run compose from HOST, not required inside devcontainer)
+- Kubernetes-ready scaffold only; staging must NOT require Kubernetes
+- TypeScript monorepo (pnpm + turbo)
+- Web: Next.js App Router + Tailwind + shadcn/ui + shadcnstudio-style shell
+- API: NestJS (TypeScript)
+- Data: Postgres + Redis
+- Auth: Keycloak (OIDC)
+- Object Storage: MinIO (S3-compatible)
+- Hydration-safe UI: interactive UI only in *.client.tsx
+
+## Non-negotiables
+- inputs.yml is the single source of truth
+- No environment hardcoding of domains/URLs/IDs in code
+- Next.js hydration safety:
+  - app/layout.tsx and app/**/page.tsx are server-only by default
+  - interactive UI lives only in *.client.tsx and starts with 'use client'
+  - shadcn/ui imports must only appear in *.client.tsx
+- Devcontainer must NOT use Dev Container “features”
+- Devcontainer must set PNPM_HOME and PATH to prevent pnpm global bin errors
+- Devcontainer workspaceFolder must be /workspaces/repo (avoid “workspace does not exist”)
+- Do NOT install docker-compose-plugin in devcontainer via apt
+
+## Known pitfalls
+- Dead UI happens when 'use client' is missing or hooks/events/shadcn imports are used in server files.
+- Devcontainer build failures happen when using Dev Container features that try to apt-install docker-compose-plugin.
+- PNPM global installs fail if PNPM_HOME isn’t set before any pnpm -g usage.
+
+========================
+CREATE FILE: inputs.yml
+========================
+version: 1
+inputs:
+  app:
+    type: GENERIC
+    name: "fisherfolk-ims"
+    purpose: "Fisherfolk Information Management System for Calapan City with dashboard analytics, search, sorting, and media capture."
+    features:
+      - "Fisherfolk master records CRUD"
+      - "Dashboard analytics with charts"
+      - "Search + sorting"
+      - "Signature capture (upload or drawing)"
+      - "Profile image capture (upload or camera, 1:1 crop)"
+
+  tenancy:
+    mode: single
+
+  deployment:
+    strategy: compose
+
+  capabilities:
+    offline: all
+    realtime: all
+    offline_sync:
+      pattern: outbox
+      auto_sync_on_reconnect: true
+      idempotency_keys: true
+
+  modules:
+    dashboard:
+      enabled: true
+      charts:
+        enabled: true
+        provider: recharts
+        layout_preset: fisherfolk-dashboard-v1
+    reference_data:
+      enabled: true
+      categories:
+        source: predefined
+        values:
+          - "Boat Owner/Operator"
+          - "Capture Fishing"
+          - "Gleaning"
+          - "Vendor"
+          - "Fish Processing"
+          - "Aquaculture"
+      barangays:
+        source: predefined
+        locality:
+          country: "PH"
+          province: "Oriental Mindoro"
+          city_municipality: "Calapan City"
+        format:
+          id_strategy: slug
+          name_case: UPPERCASE
+        items:
+          - { id: "BALINGAYAN", name: "BALINGAYAN", aliases: [], active: true }
+          - { id: "BALITE", name: "BALITE", aliases: [], active: true }
+          - { id: "BARUYAN", name: "BARUYAN", aliases: [], active: true }
+          - { id: "BATINO", name: "BATINO", aliases: [], active: true }
+          - { id: "BAYANAN_I", name: "BAYANAN I", aliases: ["BAYANAN 1"], active: true }
+          - { id: "BAYANAN_II", name: "BAYANAN II", aliases: ["BAYANAN 2"], active: true }
+          - { id: "BIGA", name: "BIGA", aliases: [], active: true }
+          - { id: "BONDOC", name: "BONDOC", aliases: [], active: true }
+          - { id: "BUCAYAO", name: "BUCAYAO", aliases: [], active: true }
+          - { id: "BUHUAN", name: "BUHUAN", aliases: [], active: true }
+          - { id: "BULUSAN", name: "BULUSAN", aliases: [], active: true }
+          - { id: "CALERO_POBLACION", name: "CALERO (POBLACION)", aliases: ["CALERO"], active: true }
+          - { id: "CAMANSIHAN", name: "CAMANSIHAN", aliases: [], active: true }
+          - { id: "CAMILMIL", name: "CAMILMIL", aliases: [], active: true }
+          - { id: "CANUBING_I", name: "CANUBING I", aliases: ["CANUBING 1"], active: true }
+          - { id: "CANUBING_II", name: "CANUBING II", aliases: ["CANUBING 2"], active: true }
+          - { id: "COMUNAL", name: "COMUNAL", aliases: [], active: true }
+          - { id: "GUINOBATAN", name: "GUINOBATAN", aliases: [], active: true }
+          - { id: "GULOD", name: "GULOD", aliases: [], active: true }
+          - { id: "GUTAD", name: "GUTAD", aliases: [], active: true }
+          - { id: "IBABA_EAST_POBLACION", name: "IBABA EAST (POBLACION)", aliases: ["IBABA EAST"], active: true }
+          - { id: "IBABA_WEST", name: "IBABA WEST", aliases: [], active: true }
+          - { id: "ILAYA", name: "ILAYA", aliases: [], active: true }
+          - { id: "LALUD", name: "LALUD", aliases: [], active: true }
+          - { id: "LAZARETO", name: "LAZARETO", aliases: [], active: true }
+          - { id: "LIBIS", name: "LIBIS", aliases: [], active: true }
+          - { id: "MAIDLANG", name: "MAIDLANG", aliases: [], active: true }
+          - { id: "MALAMIG", name: "MALAMIG", aliases: [], active: true }
+          - { id: "NAVOTAS", name: "NAVOTAS", aliases: [], active: true }
+          - { id: "PANGOLINAN", name: "PANGOLINAN", aliases: [], active: true }
+          - { id: "PARANG", name: "PARANG", aliases: [], active: true }
+          - { id: "POBLACION_ZONES", name: "POBLACION (VARIOUS ZONES)", aliases: ["POBLACION"], active: true }
+          - { id: "PULONG_BAKAL", name: "PULONG BAKAL", aliases: [], active: true }
+          - { id: "PULONG_MALAKI", name: "PULONG MALAKI", aliases: [], active: true }
+          - { id: "PUTING_TUBIG", name: "PUTING TUBIG", aliases: [], active: true }
+          - { id: "SALONG_SAN_RAPHAEL", name: "SALONG (NOW SAN RAPHAEL)", aliases: ["SALONG","SAN RAPHAEL"], active: true }
+          - { id: "SAN_ANTONIO", name: "SAN ANTONIO", aliases: [], active: true }
+          - { id: "SAN_IGNACIO", name: "SAN IGNACIO", aliases: [], active: true }
+          - { id: "SAN_RAFAEL", name: "SAN RAFAEL", aliases: [], active: true }
+          - { id: "SAN_VICENTE_CENTRAL_POBLACION", name: "SAN VICENTE CENTRAL (POBLACION)", aliases: ["SAN VICENTE CENTRAL"], active: true }
+          - { id: "SAN_VICENTE_EAST_POBLACION", name: "SAN VICENTE EAST (POBLACION)", aliases: ["SAN VICENTE EAST"], active: true }
+          - { id: "SAN_VICENTE_NORTH_POBLACION", name: "SAN VICENTE NORTH (POBLACION)", aliases: ["SAN VICENTE NORTH"], active: true }
+          - { id: "SAN_VICENTE_SOUTH_POBLACION", name: "SAN VICENTE SOUTH (POBLACION)", aliases: ["SAN VICENTE SOUTH"], active: true }
+          - { id: "SAN_VICENTE_WEST_POBLACION", name: "SAN VICENTE WEST (POBLACION)", aliases: ["SAN VICENTE WEST"], active: true }
+          - { id: "SANTA_CRUZ", name: "SANTA CRUZ", aliases: [], active: true }
+          - { id: "SANTA_ISABEL", name: "SANTA ISABEL", aliases: [], active: true }
+          - { id: "SANTA_MARIA_VILLAGE", name: "SANTA MARIA VILLAGE", aliases: [], active: true }
+          - { id: "SANTA_RITA_BUNGAHAN", name: "SANTA RITA (BUNGAHAN)", aliases: ["SANTA RITA"], active: true }
+          - { id: "SANTO_NINO", name: "SANTO NIÑO", aliases: ["SANTO NINO"], active: true }
+          - { id: "SAPUL", name: "SAPUL", aliases: [], active: true }
+          - { id: "SILONAY", name: "SILONAY", aliases: [], active: true }
+          - { id: "SUQUI", name: "SUQUI", aliases: [], active: true }
+          - { id: "TAWAGAN", name: "TAWAGAN", aliases: [], active: true }
+          - { id: "TAWIRAN", name: "TAWIRAN", aliases: [], active: true }
+          - { id: "TIBAG", name: "TIBAG", aliases: [], active: true }
+          - { id: "WAWA", name: "WAWA", aliases: [], active: true }
+
+  ui:
+    theme:
+      default: dark
+    routes:
+      dashboard: true
+      tasks: true
+      examples: true
+
+  governance:
+    enforce_hydration_safe_ui: true
+    enforce_no_env_hardcoding: true
+    enforce_oss_first: true
+    enforce_compose_first: true
+    enforce_k8s_ready: true
+
+========================
+NOW GENERATE THE REPO
+========================
+
+A) Devcontainer (NO FEATURES):
+- Create .devcontainer/devcontainer.json using "build" + Dockerfile (not compose-based)
+- workspaceFolder MUST be /workspaces/repo
+- Create .devcontainer/Dockerfile using mcr.microsoft.com/devcontainers/typescript-node:20
+- Set:
+  ENV PNPM_HOME="/usr/local/share/pnpm"
+  ENV PATH="$PNPM_HOME:$PATH"
+  RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+- Do NOT install docker-compose-plugin.
+- Do NOT use devcontainer "features".
+
+B) Monorepo scaffold:
+- pnpm-workspace.yaml
+- turbo.json
+- tsconfig.base.json
+- root package.json scripts:
+  - dev (turbo dev)
+  - build
+  - lint
+  - lint:hydration (node tools/hydration-lint.mjs)
+- tools/hydration-lint.mjs (same rules: no interactive shadcn/hooks/events in server files; shadcn only in *.client.tsx; interactive requires 'use client')
+
+C) apps/web:
+- Next.js App Router, Tailwind
+- shadcn/ui setup (minimal)
+- Shell:
+  - app/layout.tsx server
+  - components/shell/AppShell.server.tsx server
+  - components/nav/*.client.tsx client
+- pages:
+  - /dashboard uses Dashboard.client.tsx client island for charts and interactivity
+  - /tasks placeholder
+  - /examples placeholder
+- For now, charts can use mock client data OR call API endpoints.
+
+D) apps/api:
+- NestJS minimal app + /health
+- Dashboard endpoints return MOCK DATA first (match response shapes):
+  - GET /dashboard/summary
+  - GET /dashboard/category-counts
+  - GET /dashboard/by-barangay
+  - GET /dashboard/gender
+  - GET /dashboard/age-groups
+  - GET /dashboard/activity-categories
+  - GET /fisherfolk/recent?limit=10
+
+E) CI:
+- .github/workflows/ci.yml runs pnpm install + hydration lint
+
+F) Compose infra (optional but include files now):
+- Provide docker-compose.yml (infra only) with profiles dev/staging/prod for:
+  postgres, redis, keycloak (admin/admin), minio (admin/admin) + init bucket script
+- NOTE: Compose is run from HOST terminal (outside devcontainer). Do not depend on compose inside devcontainer.
+
+OUTPUT FORMAT:
+1) Print the full folder tree you created.
+2) Print EXACT file contents for every file you created.
+3) Print EXACT commands I must run next:
+   - open devcontainer
+   - pnpm install
+   - start web/api
+   - run hydration lint
+4) Do not include extra commentary.
+✅ Why this “single prompt” fixes the previous problems
+
+No “missing inputs.yml” because the prompt creates it
+
+No “workspace does not exist” because devcontainer uses workspaceFolder: /workspaces/repo
+
+No PNPM global bin error because Dockerfile sets PNPM_HOME + PATH before pnpm is used
+
+No docker-compose-plugin error because we explicitly ban devcontainer features and that package install
+
+No confusion about what to do because output must include exact commands
+
+✅ After you run it once
+
+Your next projects will only require:
+
+update inputs.yml
+
+run a “Feature Update” prompt
+
+If you want, I can also provide a smaller “compressed version” of that single prompt (same rules, shorter), but the above is the most reliable for Copilot
 
