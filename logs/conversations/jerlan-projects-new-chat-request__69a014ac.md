@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a014ac-5a94-8323-8e42-cd39da3cd32e
 - Title: Jerlan Projects - New Chat Request
-- Captured: 2026-02-26T14:48:44.188Z
+- Captured: 2026-02-26T14:51:46.934Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a014ac-5a94-8323-8e42-cd39da3cd32e
 
 ---
@@ -454,4 +454,268 @@ File
 - from that working files i want you to create a new fresh AI driven prompt
 - make a clear input file (inputs.yml) for what should be filled up and make a default values 
 - maintain top of the line, latest, scalable prompt for any project to build based on inputs.yml features and ideas for the app to be build
+
+## Assistant
+
+According to a document from (today), your devcontainer.json is already in the “good” shape we want for a reusable platform baseline: builds from Dockerfile, no Dev Container features, workspaceFolder /workspaces/repo, and remoteUser: node. 
+
+devcontainer
+
+Below is a fresh, reusable AI-driven prompt pack + a clear inputs.yml template (with sane defaults) that you can use for any project. It keeps your spec-driven workflow, hydration safety, and devcontainer stability (including the .corepack pitfall you discovered).
+
+1) New “Platform Identity Block v2” (paste as FIRST message in any new chat)
+Markdown
+PLATFORM IDENTITY v2 — Spec-Driven AI App Builder (Inputs-First)
+
+This chat is for building production-grade apps from a single spec file: inputs.yml.
+Treat this as an architecture system, not a one-off answer.
+
+NON-NEGOTIABLES
+1) inputs.yml is the Single Source of Truth (SoT)
+   - All project-specific values live ONLY in inputs.yml.
+   - No hardcoded domains/URLs/IDs/secrets in code.
+
+2) project.memory.md is architectural memory
+   - Read it before generating output.
+   - Never contradict it; append new “Known pitfalls” entries when discovered.
+
+3) Spec-driven workflow
+   - Add/change features by editing inputs.yml (and optional /spec docs).
+   - Apply changes via “FEATURE UPDATE” prompts with minimal diffs.
+   - Never regenerate the repo unless foundation changes.
+
+4) Hydration-safe Next.js (App Router)
+   - app/layout.tsx and app/**/page.tsx are SERVER components by default.
+   - All interactivity (hooks, event handlers, charts, shadcn/ui imports) must live in *.client.tsx starting with 'use client'.
+   - Enforce with a hydration lint script that fails CI.
+
+DEFAULT STACK (override only via inputs.yml)
+- Monorepo: pnpm + turbo
+- Web: Next.js App Router + Tailwind + shadcn/ui + dashboard shell
+- API: NestJS (TypeScript)
+- DB: Postgres
+- Cache: Redis
+- Auth: Keycloak (OIDC)
+- Object storage: MinIO (S3)
+- Compose-first infra (dev/staging/prod), K8s-ready scaffold only (staging must NOT require K8s)
+
+DEVCONTAINER RULES (stability-first)
+- NO Dev Container “features”.
+- workspaceFolder MUST be /workspaces/repo.
+- Do NOT require docker compose inside container.
+- PNPM_HOME must be set in Dockerfile:
+  ENV PNPM_HOME="/usr/local/share/pnpm"
+  ENV PATH="$PNPM_HOME:$PATH"
+- Known pitfall (remoteUser: node):
+  Ensure /usr/local/share/.corepack exists to avoid VS Code injected chown failures:
+  RUN mkdir -p /usr/local/share/.corepack
+
+GOVERNANCE / CI
+- CI must run:
+  - inputs.yml validation (schema)
+  - hydration lint
+- Every output must include exact commands to run.
+- Label steps:
+  ✅ YOU NEED TO RUN THIS
+  ❌ NO ACTION (EXPLANATION ONLY)
+
+Now build the requested project using these rules.
+2) inputs.yml template (copy/paste, then fill values later)
+
+This is intentionally generic, scalable, and “AI-buildable” for any app.
+
+YAML
+# inputs.yml — Single Source of Truth (SoT)
+meta:
+  spec_version: "2.0"
+  generated_by: "spec-driven-ai-platform"
+  environment_defaults:
+    timezone: "Asia/Manila"
+    locale: "en-PH"
+
+project:
+  name: "My App"
+  slug: "my-app"
+  description: "Replace with one sentence."
+  domain:
+    industry: "general"
+    problem_statement: "What problem are we solving?"
+    success_metrics:
+      - "Example: weekly active users"
+      - "Example: < 200ms p95 dashboard queries"
+
+org:
+  owner: "Your Name / Org"
+  repo:
+    provider: "github"
+    name: "repo-name"
+  compliance:
+    data_classification: "internal" # public | internal | confidential
+    pii: true
+    audit_log_required: true
+
+stack:
+  monorepo:
+    package_manager: "pnpm"
+    pnpm_version: "9.12.0"
+    turbo: true
+
+  web:
+    framework: "nextjs"
+    nextjs_major: 15
+    router: "app"
+    ui:
+      tailwind: true
+      shadcn: true
+      dashboard_shell: "shadcnstudio"
+    hydration_policy:
+      server_by_default: true
+      client_components_suffix: ".client.tsx"
+      require_use_client: true
+
+  api:
+    framework: "nestjs"
+    language: "typescript"
+    openapi: true
+
+  data:
+    database: "postgres"
+    orm: "prisma" # prisma | typeorm | drizzle
+    cache: "redis"
+    object_storage: "minio"
+
+  auth:
+    provider: "keycloak"
+    protocol: "oidc"
+
+deployment:
+  strategy: "compose" # compose | k8s-scaffold
+  compose:
+    profiles:
+      - dev
+      - staging
+      - prod
+  staging_requires_k8s: false
+
+devcontainer:
+  enabled: true
+  workspaceFolder: "/workspaces/repo"
+  remoteUser: "node"
+  pnpm_home: "/usr/local/share/pnpm"
+  corepack_dir: "/usr/local/share/.corepack"
+  notes:
+    - "No devcontainer features."
+    - "No docker compose inside container."
+
+ci:
+  provider: "github-actions"
+  checks:
+    inputs_validation: true
+    hydration_lint: true
+    typecheck: true
+    unit_tests: true
+
+modules:
+  web_app:
+    enabled: true
+    route_prefixes:
+      dashboard: "/dashboard"
+      auth: "/auth"
+
+  api_service:
+    enabled: true
+    base_path: "/api"
+    versioning: "uri" # uri | header | none
+
+  reference_data:
+    enabled: true
+    managed_in_spec: true
+    datasets: [] # add datasets with id/name/items
+
+  storage:
+    enabled: true
+    buckets:
+      - id: "public"
+        access: "public-read"
+      - id: "private"
+        access: "private"
+
+features:
+  realtime:
+    enabled: true
+    mechanism: "websocket" # websocket | sse
+  offline:
+    enabled: false
+    strategy: "outbox" # outbox | cache-only
+  notifications:
+    enabled: false
+    channels: ["inapp"] # inapp | email | sms | push
+  audit_log:
+    enabled: true
+  roles_permissions:
+    enabled: true
+    model: "rbac" # rbac | abac
+  uploads:
+    enabled: true
+    types:
+      - id: "image"
+        max_mb: 10
+        allowed_mime:
+          - "image/jpeg"
+          - "image/png"
+
+data_model:
+  entities: []
+  # Example entity:
+  # - name: "User"
+  #   fields:
+  #     - { name: "id", type: "uuid", primary: true }
+  #     - { name: "email", type: "string", unique: true }
+  #   relations: []
+
+ui:
+  theme:
+    mode: "dark" # dark | light | system
+  dashboard:
+    enabled: true
+    kpis: []
+    charts: []
+    tables: []
+
+ai:
+  enabled: true
+  provider: "openai" # openai | azure-openai | none
+  use_cases:
+    - id: "spec_synthesis"
+      enabled: true
+    - id: "validation"
+      enabled: true
+    - id: "smart_search"
+      enabled: false
+  guardrails:
+    pii_redaction: true
+    prompt_injection_defense: true
+
+observability:
+  enabled: true
+  logging: "pino" # pino | winston
+  tracing: false
+  metrics: false
+
+security:
+  secrets:
+    store: "env" # env | vault
+  headers:
+    enabled: true
+  rate_limit:
+    enabled: true
+    default_rpm: 120
+3) New “Fresh Prompt Pack” (run these in order in the new chat)
+Prompt A — Spec fill + default ideas (fast start)
+Markdown
+SPEC SYNTHESIS — GENERIC APP (inputs.yml)
+
+Using the Platform Identity rules:
+1) Ask me only the 8–12 most critical questions needed to finalize inputs.yml.
+2) Meanwhile, propose 3 stro
 
