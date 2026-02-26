@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-26T07:40:51.289Z
+- Captured: 2026-02-26T07:44:03.530Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -18726,5 +18726,5 @@ Only then run Copilot scaffold prompts
 
 Only then run pnpm install
 
-If you want, I can also give you the exact “paste-ready official barangay YAML block” (with IDs + names + aliases) again so you can paste it instantly into `inp
+If you want, I can also give you the exact “paste-ready official barangay YAML block” (with IDs + names + aliases) again so you can paste it instantly into inputs.yml.
 
