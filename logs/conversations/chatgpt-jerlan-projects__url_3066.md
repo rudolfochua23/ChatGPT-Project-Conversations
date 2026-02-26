@@ -2,7 +2,7 @@
 
 - Conversation ID: url_3066646202
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-26T08:31:24.006Z
+- Captured: 2026-02-26T09:31:25.470Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/project
 
 ---
@@ -11,69 +11,13 @@
 
 Jerlan Projects
 
-We are restarting my Fisherfolk Information Management System project from scratch.
 
 
-
-
-Context:
-
-- Spec-driven architecture
-
-- inputs.yml is the single source of truth
-
-- Single tenancy
-
-- Offline = all (outbox + auto sync)
-
-- Realtime = all
-
-- Next.js App Router + shadcn/ui
-
-- NestJS API
-
-- Postgres + Redis
-
-- Keycloak (admin/admin)
-
-- MinIO (admin/admin)
-
-- Hydration-safe boundaries enforced
-
-- Devcontainer-first setup (no docker-compose-plugin issues)
-
-- No devcontainer features
-
-- PNPM_HOME already handled in Dockerfile
-
-
-
-
-I want step-by-step instructions:
-
-1. What files to manually create first
-
-2. What exact devcontainer config to use
-
-3. What first Copilot prompt to run
-
-4. What to execute after each step
-
-
-
-
-Treat me as needing very explicit run instructions.
-
-Clearly mark:
-
-- YOU NEED TO RUN THIS
-
-- NO ACTION (explanation only)
 
 Chats
 Sources
 AI-driven App Architecture
-ok for this last prompt, can we migrate this to a new chat because its slowing down now
+yes please do that because as I ran your prompt to the new chat, it responses like this: " I can do it — but I cannot “build the requested project” yet because your non-negotiables require: inputs.
 Feb 26
 Devcontainer pnpm error fix
 i got this error inside devcontainer: efa69e824bca% pnpm install  ERR_PNPM_NO_PKG_MANIFEST  No package.json found in /workspace efa69e824bca% pnpm check:spec:dev  ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND 
