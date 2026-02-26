@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a014ac-5a94-8323-8e42-cd39da3cd32e
 - Title: Jerlan Projects - New Chat Request
-- Captured: 2026-02-26T15:22:12.038Z
+- Captured: 2026-02-26T15:25:15.097Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a014ac-5a94-8323-8e42-cd39da3cd32e
 
 ---
@@ -923,5 +923,63 @@ ai:
     smart_search: false
   guardrails:
     pii_redaction: true
-    prompt_injection_defense: t
+    prompt_injection_defense: true
+3) Copilot Prompt Set (the “engine” you’ll reuse per project)
+Prompt 0 — Starter Checklist (no generation yet)
+Markdown
+STARTER CHECKLIST — SPEC-DRIVEN PROJECT
+
+Read inputs.yml and project.memory.md.
+
+1) List ONLY the minimal files/folders I must ensure exist before generation.
+2) Confirm devcontainer assumptions (workspaceFolder, remoteUser, PNPM_HOME, corepack dir).
+3) Propose the repo generation plan (phases), but DO NOT generate code yet.
+
+Output:
+✅ YOU NEED TO RUN THIS
+❌ NO ACTION
+Prompt 1 — Spec Expansion (turn vague idea → concrete spec)
+Markdown
+SPEC EXPANSION — COMPLETE inputs.yml
+
+Read inputs.yml and project.memory.md.
+Ask me only the 10 most important questions to finalize the spec.
+
+While waiting, propose 3 strong app directions (modern + scalable), and for each:
+- core loop
+- MVP scope
+- data entities needed
+- main screens
+
+Then output an updated inputs.yml with:
+- safe defaults
+- TODO markers
+Output ONLY the YAML.
+Prompt 2 — Baseline Generator (when you finally decide to build)
+
+(Keep this for later; you won’t run it yet.)
+
+Markdown
+BASELINE GENERATOR — DEVCONTAINER + MONOREPO
+
+Read inputs.yml and project.memory.md.
+Generate monorepo baseline + hydration lint + CI.
+Output full file tree + full file contents + exact commands.
+Prompt 3 — Feature Build / Feature Update (later)
+Markdown
+FEATURE UPDATE — <feature-name>
+
+Read inputs.yml and project.memory.md.
+Apply minimal diffs only. Output changed files only + commands.
+Must pass hydration lint + CI.
+
+If you want the “prompt system” to be even more Copilot-effective, tell me which Copilot mode you use most:
+
+Copilot Chat (interactive)
+
+Copilot Edits (multi-file changes)
+
+Copilot in terminal (command suggestions)
+
+I’ll tailor the prompts for that workflow without generating any app code.
 
