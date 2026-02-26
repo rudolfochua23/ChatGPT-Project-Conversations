@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-26T14:52:29.241Z
+- Captured: 2026-02-26T15:10:53.624Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -19551,4 +19551,301 @@ update inputs.yml
 run a “Feature Update” prompt
 
 If you want, I can also provide a smaller “compressed version” of that single prompt (same rules, shorter), but the above is the most reliable for Copilot accuracy.
+
+## User
+
+from this sample project, can you make a full prompt from scratch again for general used app making prompt from start to finish? make sure that you do it step by step and tell what should be created in file and what should be in copilot prompt
+
+## Assistant
+
+Below is a general-use, spec-driven “from scratch → running system” Copilot workflow you can reuse for any app. It’s based on everything we learned from your sample project (devcontainer issues, PNPM_HOME, hydration-safe UI, no Dev Container features, compose run from host, etc.).
+
+I’m giving you:
+
+What files you create manually first (minimum)
+
+The exact Copilot prompts to run (in order)
+
+What commands you run (in order)
+
+I’ll keep the same clarity rules:
+
+✅ YOU NEED TO DO THIS
+
+❌ NO ACTION (EXPLANATION ONLY)
+
+A) One-time bootstrap in a blank repo
+1) Create a new empty folder & open it in VS Code
+
+✅ YOU NEED TO DO THIS
+
+2) Create these files manually (minimal, always the same)
+2.1 Create .devcontainer/devcontainer.json
+
+✅ YOU NEED TO DO THIS
+
+JSON
+{
+  "name": "Spec-Driven Base Platform",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspaces/repo",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
+2.2 Create .devcontainer/Dockerfile
+
+✅ YOU NEED TO DO THIS
+
+dockerfile
+FROM mcr.microsoft.com/devcontainers/typescript-node:20
+
+ENV PNPM_HOME="/usr/local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+RUN apt-get update && apt-get install -y git curl ca-certificates netcat-traditional && rm -rf /var/lib/apt/lists/*
+2.3 Create project.memory.md
+
+✅ YOU NEED TO DO THIS
+
+Markdown
+# Project Memory (Cognition)
+
+## Intent
+- Spec-driven development using inputs.yml as the single source of truth
+- OSS-first, secure-by-default, performance-seeking
+- Compose-first infra for dev/staging/prod (run compose from HOST; not required inside devcontainer)
+- Kubernetes-ready scaffold only; staging must NOT require Kubernetes
+- TypeScript monorepo (pnpm + turbo)
+- Web: Next.js App Router + Tailwind + shadcn/ui + shadcnstudio-style shell
+- API: NestJS
+- Data: Postgres + Redis
+- Auth: Keycloak (OIDC)
+- Object storage: MinIO (S3-compatible)
+- Hydration-safe UI: interactive UI only in *.client.tsx
+
+## Non-negotiables
+- inputs.yml is the single source of truth
+- No env hardcoding of domains/URLs/IDs in code
+- Next.js hydration safety:
+  - app/layout.tsx and app/**/page.tsx are server-only by default
+  - interactive UI lives only in *.client.tsx and starts with 'use client'
+  - shadcn/ui imports must only appear in *.client.tsx
+- Devcontainer must NOT use Dev Container “features”
+- Devcontainer workspaceFolder must be /workspaces/repo
+- Do NOT install docker-compose-plugin in devcontainer via apt
+
+## Known pitfalls
+- Dead UI happens when 'use client' is missing or hooks/events/shadcn imports are used in server files.
+2.4 Create an empty inputs.yml
+
+✅ YOU NEED TO DO THIS
+
+YAML
+version: 1
+inputs: {}
+3) Open Devcontainer immediately
+
+✅ YOU NEED TO DO THIS
+
+VS Code:
+
+Ctrl+Shift+P
+
+Dev Containers: Reopen in Container
+
+B) Copilot Prompt #1 — Generate inputs.yml (app-specific spec)
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Paste:
+
+Plain text
+SPEC SYNTHESIS (inputs.yml)
+
+Read project.memory.md first.
+
+Ask me ONLY for app-specific info if missing:
+- app name
+- purpose (one sentence)
+- top 5–10 features/modules
+- any special domain constraints (offline, realtime, tenancy)
+
+Then generate a complete inputs.yml that includes:
+- app metadata
+- capabilities (offline/realtime)
+- deployment strategy (compose)
+- tenancy (single default; multi optional)
+- modules (auth, dashboard, CRUD, reference data, uploads, etc.)
+- UI routes required
+- governance flags (hydration-safe UI, no env hardcoding, OSS-first, compose-first, k8s-ready)
+
+Output ONLY:
+1) Full inputs.yml content
+2) A short module list inferred
+
+✅ After Copilot outputs YAML, paste into inputs.yml and save.
+
+C) Copilot Prompt #2 — Generate the base monorepo + validators + UI shell + API
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Paste:
+
+Plain text
+BASE PLATFORM GENERATOR (Monorepo + UI + API + Validators)
+
+Read inputs.yml and project.memory.md. inputs.yml is single source of truth.
+
+Generate the full repo baseline:
+
+1) Monorepo:
+- pnpm-workspace.yaml
+- turbo.json
+- tsconfig.base.json
+- root package.json scripts:
+  - dev, build, lint
+  - lint:hydration (node tools/hydration-lint.mjs)
+  - check:spec (inputs validation + env rendering if implemented)
+
+2) Web (apps/web):
+- Next.js App Router + Tailwind + shadcn/ui
+- shadcnstudio-style shell with:
+  - app/layout.tsx (server)
+  - components/shell/AppShell.server.tsx (server)
+  - nav components (*.client.tsx)
+- Required routes from inputs.yml (dashboard/tasks/examples/auth pages if enabled)
+- Hydration-safe:
+  - interactive components only in *.client.tsx + 'use client'
+  - no shadcn/ui imports in server files
+
+3) API (apps/api):
+- NestJS minimal app
+- /health endpoint
+- If dashboard enabled: create mock dashboard endpoints for now (can be replaced later)
+
+4) Tooling:
+- tools/hydration-lint.mjs enforcing the hydration rules
+- tools/validate-inputs.mjs using Ajv + YAML parsing
+- inputs.schema.json generated to validate inputs.yml
+
+5) CI:
+- .github/workflows/ci.yml runs:
+  - pnpm install
+  - pnpm validate:inputs
+  - pnpm lint:hydration
+
+6) Compose files (infra only):
+- docker-compose.yml (and optional docker-compose.dev.yml etc.)
+- services: postgres, redis, keycloak(admin/admin), minio(admin/admin) + bucket init script
+- IMPORTANT: Compose will be run from HOST, not required inside devcontainer.
+
+Output:
+- Full folder tree
+- Full file contents for every new file
+- Commands I must run next (copy/paste)
+D) Commands to run after generation
+1) Install dependencies
+
+✅ YOU NEED TO DO THIS
+
+Inside devcontainer terminal:
+
+Bash
+pnpm install
+2) Validate spec + hydration
+
+✅ YOU NEED TO DO THIS
+
+Bash
+pnpm validate:inputs
+pnpm lint:hydration
+3) Run the apps
+
+✅ YOU NEED TO DO THIS
+
+Bash
+pnpm -C apps/api build
+pnpm -C apps/api start
+
+In another terminal:
+
+Bash
+pnpm -C apps/web dev
+E) Optional infra (Compose) — run from HOST terminal
+
+❌ NO ACTION (EXPLANATION ONLY)
+You only do this if you want Postgres/Redis/Keycloak/MinIO running locally.
+
+✅ YOU NEED TO DO THIS (HOST terminal, not devcontainer):
+
+Bash
+docker compose up -d
+F) Updating the app later (feature additions)
+Rule
+
+✅ YOU NEED TO DO THIS
+
+Update inputs.yml
+
+Run a Feature Update prompt (targeted changes only)
+
+Copilot Feature Update Prompt
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Plain text
+FEATURE UPDATE (Targeted)
+
+Read inputs.yml + project.memory.md.
+
+I updated inputs.yml with this change:
+<PASTE WHAT CHANGED>
+
+Do:
+1) Identify only the affected modules/files
+2) Apply minimal changes (do not regenerate repo)
+3) Keep hydration-safe boundaries
+4) Ensure CI checks still pass:
+   - validate inputs
+   - hydration lint
+
+Output:
+- changed files only
+- commands I must run
+After it edits files, run:
+
+✅ YOU NEED TO DO THIS
+
+Bash
+pnpm validate:inputs
+pnpm lint:hydration
+pnpm -C apps/api build
+What you edit most often
+
+✅ YOU EDIT
+
+inputs.yml (main control panel)
+
+web pages/components for UI improvements
+
+api modules for business logic
+
+❌ You usually don’t edit
+
+devcontainer files
+
+hydration lint rules (unless you intentionally change policy)
+
+CI unless upgrading
+
+If you want, I can also produce a “single mega Copilot prompt” version of this general template (like we did for Fisherfolk) where project.memory.md and a generic starter inputs.yml are embedded inside the prompt so Copilot never complains again.
 
