@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a06bb9-3f40-8323-9d45-695d92bbac1c
 - Title: Prisma vs Drizzle
-- Captured: 2026-02-26T15:53:12.626Z
+- Captured: 2026-02-26T15:56:14.166Z
 - URL: https://chatgpt.com/c/69a06bb9-3f40-8323-9d45-695d92bbac1c
 
 ---
