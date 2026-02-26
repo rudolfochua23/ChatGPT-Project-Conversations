@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a014ac-5a94-8323-8e42-cd39da3cd32e
 - Title: Jerlan Projects - New Chat Request
-- Captured: 2026-02-26T15:19:09.711Z
+- Captured: 2026-02-26T15:22:12.038Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a014ac-5a94-8323-8e42-cd39da3cd32e
 
 ---
@@ -769,4 +769,159 @@ If you want, paste your current inputs.yml goals (even rough), and I’ll immedi
 a filled inputs.yml customized to your next project, and
 
 the exact “Prompt A → D” sequence tailored to it (without changing your working devcontainer baseline).
+
+## User
+
+ok just a reminder that we are not yet building nor creating the app here. we just want an AI readable and scalable prompt for creating the app. everything here will be run inside vscode github copilot. are we aligned on this?
+
+## Assistant
+
+Yes—aligned.
+
+We are NOT building code here.
+
+We’re producing a Copilot-friendly “prompt system” + an inputs.yml spec template that you’ll run inside VS Code GitHub Copilot to generate the repo/features.
+
+Output format should be: copy/paste prompts, clear steps, spec-driven, scalable, with defaults.
+
+Here’s the clean deliverable you can use as your new baseline.
+
+1) Copilot Master Prompt (paste into Copilot Chat first)
+Markdown
+You are GitHub Copilot operating inside VS Code on a local monorepo.
+
+GOAL
+Generate and evolve this project ONLY by reading inputs.yml (Single Source of Truth) + project.memory.md (architectural memory).
+
+NON-NEGOTIABLES
+1) inputs.yml is the ONLY place for project-specific config (names, domains, IDs, URLs, feature flags).
+2) project.memory.md must be read first and must never be contradicted. Append “Known pitfalls” when discovered.
+3) Spec-driven workflow:
+   - New capabilities = edit inputs.yml, then run a FEATURE UPDATE prompt for minimal diffs.
+   - Never regenerate the entire repo unless foundation changes.
+4) Hydration-safe Next.js App Router rules:
+   - app/layout.tsx + app/**/page.tsx are SERVER by default.
+   - Interactivity (hooks, events, charts, shadcn/ui imports) ONLY in *.client.tsx with 'use client'.
+   - Enforce via tools/hydration-lint.mjs and fail CI if violated.
+
+DEVCONTAINER RULES
+- No Dev Container “features”.
+- workspaceFolder must be /workspaces/repo.
+- remoteUser may be node. Ensure corepack dir exists to avoid chown failures:
+  Dockerfile must include: RUN mkdir -p /usr/local/share/.corepack
+- PNPM_HOME must be set:
+  ENV PNPM_HOME="/usr/local/share/pnpm"
+  ENV PATH="$PNPM_HOME:$PATH"
+- Do NOT require docker compose inside the container.
+
+OUTPUT FORMAT
+- Always start with:
+  ✅ YOU NEED TO RUN THIS (commands / exact file edits)
+  ❌ NO ACTION (explanation only)
+- When generating files, provide:
+  - file tree
+  - full file contents
+  - exact commands to run
+- For feature changes, output changed files only.
+
+Now: follow the prompts I provide next exactly.
+2) inputs.yml (generic, scalable, with defaults)
+
+Copy this file into the repo root as inputs.yml. It’s intentionally “AI-readable” and supports any project.
+
+YAML
+meta:
+  spec_version: "2.0"
+  timezone: "Asia/Manila"
+  locale: "en-PH"
+
+project:
+  name: "New Project"
+  slug: "new-project"
+  description: "One-line description here."
+  stage: "prototype" # prototype | mvp | production
+
+stack:
+  monorepo:
+    package_manager: "pnpm"
+    pnpm_version: "9.12.0"
+    turbo: true
+
+  web:
+    enabled: true
+    framework: "nextjs"
+    router: "app"
+    ui:
+      tailwind: true
+      shadcn: true
+      dashboard_shell: true
+    hydration_policy:
+      server_by_default: true
+      client_component_suffix: ".client.tsx"
+      require_use_client: true
+
+  api:
+    enabled: true
+    framework: "nestjs"
+    openapi: true
+
+  data:
+    database: "postgres"
+    orm: "prisma"
+    cache: "redis"
+    object_storage: "minio"
+
+  auth:
+    provider: "keycloak"
+    protocol: "oidc"
+
+deployment:
+  strategy: "compose"
+  compose:
+    run_inside_devcontainer: false
+
+devcontainer:
+  workspaceFolder: "/workspaces/repo"
+  remoteUser: "node"
+  pnpm_home: "/usr/local/share/pnpm"
+  corepack_dir: "/usr/local/share/.corepack"
+
+features:
+  dashboard:
+    enabled: true
+  realtime:
+    enabled: false
+    mechanism: "websocket" # websocket | sse
+  offline:
+    enabled: false
+    strategy: "outbox" # outbox | cache-only
+  audit_log:
+    enabled: true
+  roles_permissions:
+    enabled: true
+    model: "rbac"
+
+data_model:
+  entities: [] # fill with entity specs later
+
+reference_data:
+  datasets: [] # fill later (e.g. barangays, categories)
+
+ui:
+  theme: "dark"
+  dashboard:
+    kpis: []
+    charts: []
+    tables: []
+
+ai:
+  enabled: true
+  provider: "openai"
+  use_cases:
+    spec_synthesis: true
+    validation: true
+    smart_search: false
+  guardrails:
+    pii_redaction: true
+    prompt_injection_defense: t
 
