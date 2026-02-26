@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a014ac-5a94-8323-8e42-cd39da3cd32e
 - Title: Jerlan Projects - New Chat Request
-- Captured: 2026-02-26T15:25:15.097Z
+- Captured: 2026-02-26T15:28:18.839Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a014ac-5a94-8323-8e42-cd39da3cd32e
 
 ---
@@ -982,4 +982,203 @@ Copilot Edits (multi-file changes)
 Copilot in terminal (command suggestions)
 
 I’ll tailor the prompts for that workflow without generating any app code.
+
+## User
+
+Copilot Chat (interactive)
+
+## Assistant
+
+Perfect — for Copilot Chat (interactive) you want prompts that:
+
+force Copilot to read files first (inputs.yml, project.memory.md)
+
+keep outputs small per turn (Copilot is best in steps)
+
+always end with exact next command / next prompt
+
+never “spray-generate” the repo unless explicitly told
+
+Below is a Copilot Chat Prompt Pack designed exactly for that.
+
+A) “Copilot Chat Operating Contract” (paste once per new repo)
+Markdown
+You are GitHub Copilot Chat inside VS Code.
+
+RULES (NON-NEGOTIABLE)
+1) Read inputs.yml as Single Source of Truth (SoT). Never hardcode project-specific values outside it.
+2) Read project.memory.md before proposing or generating changes. Never contradict it.
+3) Work iteratively: one phase per message. Do NOT generate the whole repo unless I explicitly say “RUN BASELINE GENERATOR”.
+4) Hydration-safe Next.js App Router:
+   - app/layout.tsx and app/**/page.tsx are server by default
+   - all hooks/events/charts/shadcn imports ONLY in *.client.tsx with 'use client'
+   - enforce via tools/hydration-lint.mjs and fail CI if violated
+5) Devcontainer stability:
+   - no Dev Container “features”
+   - workspaceFolder: /workspaces/repo
+   - PNPM_HOME must be set in Dockerfile
+   - ensure /usr/local/share/.corepack exists when remoteUser is node
+
+OUTPUT FORMAT
+- ✅ YOU NEED TO RUN THIS: (exact commands / exact file edits)
+- ❌ NO ACTION: (explanation only)
+- If editing files: list changed files and show full contents for those files only.
+- End every response with: “NEXT PROMPT:” followed by exactly what I should paste next.
+
+Start by asking what phase I want:
+(1) Validate spec, (2) Expand spec, (3) Baseline generator, (4) Feature build, (5) Feature update.
+B) inputs.yml starter (default values)
+
+(Keep your generic template — this is Copilot-friendly. If you already have one, don’t replace.)
+
+YAML
+meta:
+  spec_version: "2.0"
+  timezone: "Asia/Manila"
+  locale: "en-PH"
+
+project:
+  name: "New Project"
+  slug: "new-project"
+  description: "One-line description here."
+  stage: "prototype" # prototype | mvp | production
+
+stack:
+  monorepo: { package_manager: "pnpm", pnpm_version: "9.12.0", turbo: true }
+  web:
+    enabled: true
+    framework: "nextjs"
+    router: "app"
+    ui: { tailwind: true, shadcn: true, dashboard_shell: true }
+    hydration_policy:
+      server_by_default: true
+      client_component_suffix: ".client.tsx"
+      require_use_client: true
+  api: { enabled: true, framework: "nestjs", openapi: true }
+  data: { database: "postgres", orm: "prisma", cache: "redis", object_storage: "minio" }
+  auth: { provider: "keycloak", protocol: "oidc" }
+
+deployment:
+  strategy: "compose"
+  compose: { run_inside_devcontainer: false }
+
+devcontainer:
+  workspaceFolder: "/workspaces/repo"
+  remoteUser: "node"
+  pnpm_home: "/usr/local/share/pnpm"
+  corepack_dir: "/usr/local/share/.corepack"
+
+features:
+  dashboard: { enabled: true }
+  realtime: { enabled: false, mechanism: "websocket" }
+  offline: { enabled: false, strategy: "outbox" }
+  audit_log: { enabled: true }
+  roles_permissions: { enabled: true, model: "rbac" }
+
+data_model: { entities: [] }
+reference_data: { datasets: [] }
+
+ui:
+  theme: "dark"
+  dashboard: { kpis: [], charts: [], tables: [] }
+
+ai:
+  enabled: true
+  provider: "openai"
+  use_cases: { spec_synthesis: true, validation: true, smart_search: false }
+  guardrails: { pii_redaction: true, prompt_injection_defense: true }
+C) Copilot Chat Prompts (interactive sequence)
+Prompt 1 — Spec sanity check (fast, no code)
+Markdown
+PHASE 1 — SPEC SANITY CHECK (NO CODE)
+
+Read inputs.yml and project.memory.md (if it exists).
+Validate for:
+- missing required fields
+- contradictory settings (e.g., compose inside devcontainer)
+- hydration policy completeness
+- devcontainer pitfalls (remoteUser node + corepack dir)
+Return:
+✅ YOU NEED TO RUN THIS: only the minimal edits needed to inputs.yml / memory
+❌ NO ACTION: explanation
+NEXT PROMPT: give me the exact next prompt to paste
+Prompt 2 — Expand spec into app blueprint (still no repo generation)
+Markdown
+PHASE 2 — APP BLUEPRINT FROM inputs.yml (NO CODE)
+
+Read inputs.yml and project.memory.md.
+Ask ONLY 10 critical questions to finalize:
+- core users
+- main loop
+- top 3 flows
+- entity model
+- permissions
+- offline/realtime needs
+While waiting, propose 3 “buildable MVP directions” that fit the spec.
+Then output:
+1) Final recommended MVP scope (bullets)
+2) data_model.entities draft (YAML snippet only)
+3) ui.dashboard kpis/charts/tables draft (YAML snippet only)
+NEXT PROMPT: the prompt that applies these into inputs.yml
+Prompt 3 — Apply blueprint into inputs.yml (edits only)
+Markdown
+PHASE 2B — APPLY BLUEPRINT INTO inputs.yml (EDITS ONLY)
+
+Using the decisions in this chat:
+- Update inputs.yml with entities, reference_data, and dashboard config.
+Do NOT create new code files.
+Return:
+✅ YOU NEED TO RUN THIS: exact diff or full updated inputs.yml
+NEXT PROMPT: either Baseline Generator or next spec refinement
+Prompt 4 — Baseline generator trigger (only when YOU decide)
+Markdown
+RUN BASELINE GENERATOR (CODE GEN ALLOWED)
+
+Now generate the monorepo baseline per inputs.yml:
+- pnpm + turbo
+- apps/web (Next.js App Router + Tailwind + shadcn/ui shell)
+- apps/api (NestJS)
+- packages/shared
+- tools/hydration-lint.mjs
+- CI: inputs validation + hydration lint
+Devcontainer rules:
+- no features
+- workspaceFolder /workspaces/repo
+- Dockerfile must include mkdir -p /usr/local/share/.corepack
+Output:
+✅ YOU NEED TO RUN THIS: exact commands
+Changed files: list + full contents
+NEXT PROMPT: the first feature build prompt
+Prompt 5 — Feature build (iterative, small)
+Markdown
+FEATURE BUILD — <feature-name> (SMALL ITERATION)
+
+Read inputs.yml and project.memory.md.
+Implement ONLY:
+- one screen or one API module at a time
+Must pass hydration lint.
+Output:
+✅ YOU NEED TO RUN THIS: commands
+Changed files only (full contents)
+NEXT PROMPT: next small feature step
+D) The “Ideas Engine” (optional prompt to generate app ideas from spec)
+
+Use this when you want Copilot to suggest product ideas based on inputs.yml.
+
+Markdown
+IDEATION — PRODUCT DIRECTIONS FROM inputs.yml
+
+Read inputs.yml and propose 5 app ideas that fit:
+- the stack + features toggles
+- scalable growth loop
+- clear monetization path
+For each idea:
+- hook (one-liner)
+- viral loop
+- core entities
+- 3 MVP screens
+- what to put into inputs.yml (exact fields to add)
+End with NEXT PROMPT to apply the chosen idea into inputs.yml.
+
+If you want, I can also give you a project.memory.md template optimized for Copilot Chat (with sections for decisions + known pitfalls + conventions).
 
