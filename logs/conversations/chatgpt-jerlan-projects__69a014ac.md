@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a014ac-5a94-8323-8e42-cd39da3cd32e
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-26T09:46:39.950Z
+- Captured: 2026-02-26T09:49:42.097Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a014ac-5a94-8323-8e42-cd39da3cd32e
 
 ---
@@ -373,4 +373,23 @@ GOVERNANCE / CI
   - hydration lint
 - Outputs must include exact commands I need to run.
 - Always label steps clearly:
+  ✅ YOU NEED TO RUN THIS
+  ❌ NO ACTION (EXPLANATION ONLY)
+
+Now start with this:
+
+I want to start the Fisherfolk Information Management System from scratch using the Platform Identity rules.
+
+Before generating anything big:
+1) Tell me the exact minimal files/folders I must create manually FIRST (with exact contents).
+2) Then tell me the exact VS Code steps to open Devcontainer.
+3) Only after that, give me the first Copilot prompt.
+
+Remember:
+- Devcontainer must NOT use features.
+- workspaceFolder must be /workspaces/repo.
+- PNPM_HOME must be set in Dockerfile.
+- Do not require docker compose inside container.
+
+If you want, paste here what you currently have in your repo (even just ls -la output + whether you’re using /workspace or /workspaces/repo right now), and I’ll tailor Prompt 0 so you don’t repeat the PNPM/manifest issue again.
 
