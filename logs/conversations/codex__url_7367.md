@@ -2,7 +2,7 @@
 
 - Conversation ID: url_736763688
 - Title: Codex
-- Captured: 2026-02-26T13:28:38.016Z
+- Captured: 2026-02-26T13:29:54.552Z
 - URL: https://chatgpt.com/codex/settings/environment/create
 
 ---
@@ -96,9 +96,10 @@ On
 Internet access will be disabled after setup. Codex will only be able to use dependencies installed by the setup script.
 
 Terminal
-Connect interactive terminal
-
-/workspace $
-
+Initializing
+Starting test
+Configuring container
+Downloading repo
+Running setup scripts
 Create environment
 
