@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-26T15:32:40.910Z
+- Captured: 2026-02-26T15:41:07.756Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -19848,4 +19848,347 @@ hydration lint rules (unless you intentionally change policy)
 CI unless upgrading
 
 If you want, I can also produce a “single mega Copilot prompt” version of this general template (like we did for Fisherfolk) where project.memory.md and a generic starter inputs.yml are embedded inside the prompt so Copilot never complains again.
+
+## User
+
+yes sure, i like that. but please make sure that when it comes to top of the line security model, scalability, and functionalities are today's in demand approach, free and open source first and not some pet project setup. i'd rather have a Mega Copilot prompt (not single) which clearly states all what i needed from start to finish and be able to continuously upgrade add new features than to have it in single file but might possibly make copilot hallucinate.
+
+## Assistant
+
+Got it. Here’s a Mega Copilot Prompt Set (multi-prompt, not one mega wall of text) that’s enterprise-grade OSS-first, scalable, secure-by-default, and designed for continuous upgrades without regeneration. It also bakes in the devcontainer fixes you hit (workspace path + PNPM_HOME + no Dev Container features + no docker-compose-plugin).
+
+Use these prompts in order, inside GitHub Copilot Chat.
+
+0) What you create manually first (always the same)
+
+✅ YOU NEED TO DO THIS
+
+Create these files in a blank repo:
+
+.devcontainer/devcontainer.json
+JSON
+{
+  "name": "Spec-Driven Base Platform",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspaces/repo",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
+.devcontainer/Dockerfile
+dockerfile
+FROM mcr.microsoft.com/devcontainers/typescript-node:20
+
+ENV PNPM_HOME="/usr/local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+RUN apt-get update && apt-get install -y git curl ca-certificates netcat-traditional && rm -rf /var/lib/apt/lists/*
+project.memory.md
+Markdown
+# Project Memory (Cognition)
+
+## Intent
+- Spec-driven development using inputs.yml as the single source of truth (SoT)
+- OSS-first, secure-by-default, performance-seeking
+- Compose-first infra (run compose from HOST; not required inside devcontainer)
+- Kubernetes-ready artifacts scaffolded (staging must NOT require K8s)
+- TypeScript monorepo (pnpm + turbo)
+- Web: Next.js App Router + Tailwind + shadcn/ui + shadcnstudio-style shell
+- API: NestJS
+- Data: Postgres + Redis
+- Auth: Keycloak (OIDC)
+- Object storage: MinIO (S3-compatible)
+- Observability: OpenTelemetry-ready scaffolding
+
+## Security baseline (non-negotiables)
+- OIDC/OAuth2 with PKCE for web
+- RBAC roles & permission checks on API
+- Rate limiting + request validation
+- Audit logging for admin actions
+- Secure headers (CSP-ready), CSRF-safe patterns, no secrets in git
+- Multi-env isolation (dev/staging/prod)
+
+## Next.js hydration safety (non-negotiables)
+- app/layout.tsx + app/**/page.tsx are server-only by default
+- interactive UI lives only in *.client.tsx and starts with 'use client'
+- shadcn/ui imports must only appear in *.client.tsx
+- enforce via hydration lint in CI
+
+## Devcontainer non-negotiables
+- No Dev Container “features”
+- No docker-compose-plugin apt installs
+- workspaceFolder must be /workspaces/repo
+- PNPM_HOME must be set before any pnpm global usage
+
+## Known pitfalls
+- Dead UI happens when hooks/events/shadcn are used in server files or missing 'use client'
+inputs.yml placeholder
+YAML
+version: 1
+inputs: {}
+
+Then:
+
+✅ YOU NEED TO DO THIS
+
+VS Code → Ctrl+Shift+P → Dev Containers: Reopen in Container
+
+1) Mega Prompt Set — Start to Finish
+Prompt 1 — Spec Synthesis (inputs.yml + schema)
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Plain text
+PROMPT 1 — SPEC SYNTHESIS + SCHEMA (inputs.yml)
+
+Read project.memory.md first. inputs.yml will be the only source of truth.
+
+Ask me ONLY for app-specific values if missing:
+- app.name
+- purpose (one sentence)
+- primary modules/features list
+- offline/realtime needs (defaults ok)
+- tenancy (default single)
+- any data sensitivity (default medium)
+
+Then generate:
+1) A complete inputs.yml with:
+   - app metadata
+   - deployment strategy = compose
+   - tenancy default single
+   - capabilities (offline, realtime)
+   - auth = keycloak (OIDC)
+   - storage = minio (S3)
+   - db = postgres, cache = redis
+   - governance flags (oss-first, compose-first, k8s-ready, hydration-safe, no env hardcoding)
+   - UI baseline routes: /dashboard /tasks /examples /auth/login /auth/register (enable/disable by flags)
+
+2) inputs.schema.json (JSON Schema) to validate inputs.yml.
+   - Schema must support optional modules and conditional sections (e.g., tenancy.single vs tenancy.multi)
+   - Keep it strict: additionalProperties false where possible.
+
+Output ONLY:
+- Full inputs.yml
+- Full inputs.schema.json
+- A brief list of inferred modules
+
+✅ After Copilot outputs, paste into:
+
+inputs.yml
+
+inputs.schema.json
+
+Prompt 2 — Repo Scaffold (monorepo + tooling + CI)
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Plain text
+PROMPT 2 — BASE PLATFORM REPO SCAFFOLD (pnpm + turbo + tooling + CI)
+
+Read inputs.yml + inputs.schema.json + project.memory.md.
+
+Generate a production-quality OSS-first scaffold:
+
+ROOT:
+- package.json (workspace scripts: dev, build, lint, test, validate:inputs, lint:hydration, check:spec)
+- pnpm-workspace.yaml
+- turbo.json
+- tsconfig.base.json
+- .gitignore
+- README.md (clear steps)
+- tools/:
+  - validate-inputs.mjs (Ajv + js-yaml) validates inputs.yml against inputs.schema.json
+  - hydration-lint.mjs enforces Next.js server/client boundaries (dead UI prevention)
+  - render-inputs.mjs optional (renders env placeholders to .env.generated.*)
+- .github/workflows/ci.yml:
+  - pnpm install
+  - pnpm validate:inputs
+  - pnpm lint:hydration
+  - pnpm build
+
+APPS:
+apps/web:
+- Next.js App Router + Tailwind
+- shadcn/ui baseline (do not assume interactive components in server files)
+- shadcnstudio-style shell:
+  - app/layout.tsx (server)
+  - components/shell/AppShell.server.tsx
+  - components/nav/Sidebar.client.tsx (use client)
+  - components/nav/Topbar.client.tsx (use client)
+- required pages (based on inputs.yml flags):
+  - /dashboard
+  - /tasks
+  - /examples
+  - /auth/login
+  - /auth/register
+
+apps/api:
+- NestJS minimal scaffold
+- /health endpoint
+- global validation pipe
+- security baseline scaffolds:
+  - rate limiting (nestjs/throttler)
+  - request validation
+  - structured logging
+- auth integration placeholder (Keycloak OIDC JWT verification scaffold)
+
+packages/shared:
+- shared types
+
+IMPORTANT RULES:
+- No devcontainer features.
+- No docker-compose-plugin install in container.
+- Hydration lint must catch:
+  - hooks/events/shadcn imports inside layout/page
+  - shadcn imports not in *.client.tsx
+  - interactive code missing 'use client'
+
+Output:
+- Full folder tree
+- Exact file contents for all created files
+Prompt 3 — Infra Compose (Keycloak + MinIO + Postgres + Redis) + safe defaults
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Plain text
+PROMPT 3 — COMPOSE-FIRST INFRA (HOST-RUN)
+
+Read inputs.yml and project.memory.md.
+
+Add Docker Compose infrastructure files meant to be run from HOST (outside devcontainer):
+
+- docker-compose.yml (base)
+- docker-compose.dev.yml
+- docker-compose.staging.yml
+- docker-compose.prod.yml
+- .env.dev / .env.staging / .env.prod (dev defaults admin/admin allowed; staging/prod also have defaults but must be changeable)
+- infra/keycloak/realm-app.json (realm import includes an admin user admin/admin in dev; make it clear to rotate later)
+- infra/minio/init.sh (bucket init)
+
+Services:
+- postgres
+- redis
+- keycloak
+- minio (+ console)
+- minio-mc init
+
+Rules:
+- Profiles or separate override files per environment
+- No code changes needed when switching env
+- Compose must not be required inside devcontainer
+- Document exact HOST commands to bring infra up/down per env in README
+
+Output:
+- Exact file contents for infra files
+- README section: “Running Infra from Host”
+Prompt 4 — Security Baseline Hardening (real OSS best practice)
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Plain text
+PROMPT 4 — SECURITY BASELINE (OSS-FIRST, PRODUCTION-GRADE)
+
+Read inputs.yml + project.memory.md.
+
+Add/ensure:
+WEB:
+- secure headers (Next.js middleware or headers config): CSP-ready, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- auth flow scaffold: OIDC PKCE (NextAuth optional OSS; if used, configure with Keycloak)
+- input validation at UI boundaries
+
+API:
+- rate limiting (nestjs/throttler)
+- request validation (class-validator + ValidationPipe)
+- audit log scaffold for admin actions
+- RBAC scaffold (roles: admin, user)
+- tenancy scaffold (single tenancy default; keep extension points for multi)
+- OpenAPI (Swagger) scaffold (dev-only endpoint)
+- centralized config module (reads env vars, validates required)
+
+CI:
+- ensure validate:inputs + hydration lint remain required
+- add basic dependency auditing step if OSS-friendly
+
+Output:
+- changed/new files only
+- commands I must run
+Prompt 5 — “Feature Module Update” (the forever prompt you use for new features)
+
+✅ YOU NEED TO DO THIS (Copilot Chat)
+
+Plain text
+FEATURE UPDATE (SAFE, NO REGEN)
+
+Read inputs.yml + project.memory.md. inputs.yml is SoT.
+
+I changed inputs.yml to add/modify:
+<PASTE THE CHANGE OR DESCRIBE IT>
+
+Do:
+1) Identify only the impacted modules/files.
+2) Implement minimal changes only.
+3) Update any OpenAPI contracts and shared types.
+4) Keep hydration-safe rules: interactive UI only in *.client.tsx.
+5) Must pass:
+   - pnpm validate:inputs
+   - pnpm lint:hydration
+   - pnpm build
+
+Output:
+- changed files only
+- exact commands I must run
+2) What you run after each phase
+After Prompt 2 (repo scaffold)
+
+✅ YOU NEED TO RUN THIS (inside devcontainer)
+
+Bash
+pnpm install
+pnpm validate:inputs
+pnpm lint:hydration
+pnpm build
+After Prompt 3 (infra compose)
+
+✅ YOU NEED TO RUN THIS (HOST terminal, not devcontainer)
+
+Bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+Run apps
+
+✅ YOU NEED TO RUN THIS (devcontainer)
+
+Bash
+pnpm -C apps/api build
+pnpm -C apps/api start
+pnpm -C apps/web dev
+3) Why this “Mega Set” won’t hallucinate as much
+
+Prompts are small and focused (spec → scaffold → infra → security → feature updates)
+
+Each prompt references only files already created
+
+It prevents “I need inputs.yml” because Prompt 1 generates it, then you paste it in
+
+Devcontainer is manually bootstrapped and stable (no features, correct workspaceFolder, PNPM_HOME fixed)
+
+If you want, I can also include:
+
+OpenTelemetry collector in compose (OSS)
+
+structured logging (pino) in API
+
+database migration tooling scaffold (Prisma or Drizzle; both OSS)
+
+S3 presigned upload pattern for MinIO
+
+background jobs (BullMQ + Redis) for outbox processing
+
+Tell me which you prefer for DB migrations (Prisma vs Drizzle) and I’ll adapt Prompt 2+4 acco
 
