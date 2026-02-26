@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-26T08:17:46.294Z
+- Captured: 2026-02-26T08:25:27.461Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -18927,4 +18927,235 @@ That guarantees alignment.
 If you want, I can now compress your entire base platform into a short reusable "Platform Identity Block" that you can paste into any future chat and it will instantly align the AI to your system.
 
 Would you like that?
+
+## User
+
+yes please do that but please do it clearly, in detailed, and using the updated structure based on the issues encountered upon the the prompt so it wont happen again in the base context for the next projects. And from the new chat just be give me the updated set of prompt for building the fisherfolk IMS
+
+## Assistant
+
+Below is your Platform Identity Block (copy-paste into any new chat) that includes the fixes we learned from the issues you hit (devcontainer workspace path, PNPM_HOME, avoiding Dev Container “features”, and not requiring compose inside the container).
+
+After that, I’m giving you the updated Fisherfolk IMS build prompts (the exact prompts you’ll run in the new chat, in order).
+
+1) Platform Identity Block (paste as FIRST message in any new chat)
+Plain text
+PLATFORM IDENTITY (Spec-Driven AI App Architecture)
+
+This chat is for my reusable, spec-driven base platform. Treat it as an architecture system, not a one-off app.
+
+NON-NEGOTIABLES (MUST FOLLOW)
+1) inputs.yml is the Single Source of Truth (SoT).
+   - All project-specific values live in inputs.yml only.
+   - No hardcoded environment domains/URLs/IDs in code.
+
+2) project.memory.md is architectural memory.
+   - Read it before generating output.
+   - Never contradict it.
+
+3) Spec-driven workflow:
+   - Add/change features by updating inputs.yml (and optional OpenSpec docs).
+   - Use a “Feature Update” prompt to apply minimal code changes.
+   - Do NOT regenerate the whole repo unless foundation changes.
+
+4) Hydration-safe Next.js rules (prevents dead UI):
+   - Next.js App Router.
+   - app/layout.tsx and app/**/page.tsx are server components by default.
+   - All interactivity (hooks, event handlers, charts, shadcn/ui imports) must live in *.client.tsx starting with 'use client'.
+   - Enforce via hydration lint that fails CI.
+
+TECH STACK (DEFAULT)
+- Monorepo: pnpm + turbo
+- Web: Next.js (App Router) + Tailwind + shadcn/ui + shadcnstudio-style dashboard shell
+- API: NestJS (TypeScript)
+- DB: Postgres
+- Cache: Redis
+- Auth: Keycloak (OIDC)
+- Object storage: MinIO (S3-compatible)
+- OSS-first, secure-by-default, performance-aware
+- Compose-first for infra (dev/staging/prod), K8s-ready scaffold only (staging must NOT require K8s)
+
+DEVCONTAINER RULES (CRITICAL FIXES)
+- Devcontainer must be stable and not rely on Dev Container "features" (no Dockerfile-with-features).
+- Do NOT install docker-compose-plugin via apt inside devcontainer (caused failures on Debian).
+- Devcontainer should not require docker-compose inside container; run compose from host if needed.
+- Use a simple devcontainer Dockerfile with PNPM_HOME set to prevent pnpm global install errors:
+  - ENV PNPM_HOME="/usr/local/share/pnpm"
+  - ENV PATH="$PNPM_HOME:$PATH"
+  - corepack prepare pnpm@9.12.0
+- Devcontainer workspaceFolder must match mount path (avoid “workspace does not exist”):
+  - workspaceFolder: /workspaces/repo
+
+GOVERNANCE / CI
+- CI must run:
+  - inputs.yml validation (schema)
+  - hydration lint
+- Outputs must include exact commands I need to run.
+- Always label steps clearly:
+  ✅ YOU NEED TO RUN THIS
+  ❌ NO ACTION (EXPLANATION ONLY)
+
+Now build the requested project using these rules.
+
+That block ensures the next chat starts aligned and avoids the exact devcontainer mistakes you ran into.
+
+2) Updated Fisherfolk IMS build prompts (use in the NEW chat)
+
+You said: “From the new chat just give me the updated set of prompt for building the Fisherfolk IMS.”
+
+Here are the exact prompts, in order, designed to avoid the earlier errors.
+
+Prompt 0 — “Starter Files Checklist” (so you create only the minimum manually)
+
+Paste this first:
+
+Plain text
+I want to start the Fisherfolk Information Management System from scratch using the Platform Identity rules.
+
+Before generating anything big:
+1) Tell me the exact minimal files/folders I must create manually FIRST (with exact contents).
+2) Then tell me the exact VS Code steps to open Devcontainer.
+3) Only after that, give me the first Copilot prompt.
+
+Remember:
+- Devcontainer must NOT use features.
+- workspaceFolder must be /workspaces/repo.
+- PNPM_HOME must be set in Dockerfile.
+- Do not require docker compose inside container.
+
+✅ This makes the assistant output the minimal manual bootstrap you need.
+
+Prompt 1 — Generate inputs.yml (Fisherfolk spec)
+
+Once you have project.memory.md and an empty inputs.yml, paste:
+
+Plain text
+SPEC SYNTHESIS — FISHERFOLK IMS (inputs.yml)
+
+Read project.memory.md.
+
+Generate a complete inputs.yml for:
+Fisherfolk Information Management System (Calapan City)
+
+Requirements:
+- tenancy.mode = single
+- capabilities.offline = all (outbox + auto-sync scaffolding)
+- capabilities.realtime = all
+- deployment.strategy = compose (infra later, not inside devcontainer)
+- Web UI includes dashboard with charts + searchable recent table
+- Include fisherfolk fields:
+  - id_number
+  - last_name, first_name, middle_name
+  - date_of_birth
+  - barangay_id (must reference reference_data barangays)
+  - sex
+  - signature_image (upload or draw)
+  - profile_image (upload or camera, 1:1 crop)
+  - rsbsa_number
+  - category (6 predefined values)
+  - contact_number (stored with +639)
+  - is_president (boolean)
+- Include reference_data:
+  - categories (6 values)
+  - barangays (use placeholder structure + I will paste the list next)
+
+Output ONLY:
+- Full inputs.yml content ready to paste
+Prompt 2 — Generate devcontainer + baseline monorepo files (no features)
+
+After you paste inputs.yml, paste:
+
+Plain text
+BASELINE GENERATOR — DEVCONTAINER + MONOREPO (NO FEATURES)
+
+Read inputs.yml and project.memory.md.
+
+Create a stable devcontainer and monorepo baseline that avoids the previous issues:
+- Devcontainer must NOT use "features" (no Dockerfile-with-features).
+- workspaceFolder must be /workspaces/repo and must exist.
+- Use a devcontainer Dockerfile that sets PNPM_HOME and PATH before any pnpm global usage:
+  ENV PNPM_HOME="/usr/local/share/pnpm"
+  ENV PATH="$PNPM_HOME:$PATH"
+  corepack prepare pnpm@9.12.0
+- Do NOT install docker-compose-plugin via apt.
+- Do NOT require docker compose inside the container.
+
+Then generate the monorepo scaffold:
+- pnpm + turbo
+- apps/web: Next.js App Router + Tailwind + shadcn/ui
+- apps/api: NestJS
+- packages/shared
+- tools/hydration-lint.mjs enforcing:
+  - no hooks/events/shadcn imports in page/layout
+  - shadcn imports only in *.client.tsx
+  - interactive files must have 'use client'
+- CI workflow runs hydration lint + inputs validation
+
+Output:
+- Exact file tree
+- Exact contents for every file created
+- Exact commands I must run after reopening in devcontainer
+Prompt 3 — Dashboard UI (matches screenshot) + Mock API endpoints
+
+After devcontainer is working and pnpm install is done, paste:
+
+Plain text
+FEATURE BUILD — DASHBOARD UI + MOCK DASHBOARD API
+
+Read inputs.yml and project.memory.md.
+
+Implement:
+1) Web dashboard UI (dark, card grid) using shadcn/ui + shadcnstudio-style shell:
+   - KPI summary cards (Total Registered, New, Renewal (optional), Inactive (optional))
+   - Category tiles (6 categories)
+   - Charts: by barangay bar, gender donut, age group bar, activity radial
+   - Recently Registered table with search later
+2) Hydration-safe:
+   - app/dashboard/page.tsx must be server
+   - charts + interactivity in Dashboard.client.tsx with 'use client'
+3) API (NestJS) endpoints return MOCK data for now:
+   - GET /dashboard/summary
+   - GET /dashboard/category-counts
+   - GET /dashboard/by-barangay
+   - GET /dashboard/gender
+   - GET /dashboard/age-groups
+   - GET /dashboard/activity-categories
+   - GET /fisherfolk/recent?limit=10
+4) Must pass pnpm lint:hydration.
+
+Output:
+- changed files only
+- commands I must run to test
+Prompt 4 — Barangay list update + sync (your official list)
+
+After you paste the official list into inputs.yml, paste:
+
+Plain text
+FEATURE UPDATE — OFFICIAL BARANGAY LIST SYNC
+
+Read inputs.yml and project.memory.md.
+
+The official barangay list has been added under inputs.modules.reference_data.barangays.items.
+
+Implement minimal updates:
+- Ensure API reference_data uses these barangays consistently
+- Ensure fisherfolk uses barangay_id referencing these IDs
+- Ensure dashboard aggregations group by barangay_id and also return barangay name for UI
+- Do NOT regenerate repo
+- Must pass pnpm lint:hydration
+
+Output:
+- changed files only
+- exact commands I must run
+3) One thing to keep you unconfused every time
+
+From now on, in the new chat, if something is just explanation, I’ll label it:
+
+❌ NO ACTION (EXPLANATION ONLY)
+
+and if you need to do something, I’ll label it:
+
+✅ YOU NEED TO RUN THIS (and I’ll give the exact command or click path)
+
+If you want, I can also give you a single “super prompt” that bundles Prompt 1 + Prompt 2 (inputs.yml + devcontainer + monorepo) for Copilot, but I kept them split because it reduces failure rate and makes debugging easier.
 
