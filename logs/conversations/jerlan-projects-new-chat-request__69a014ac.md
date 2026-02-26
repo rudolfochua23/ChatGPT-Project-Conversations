@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a014ac-5a94-8323-8e42-cd39da3cd32e
 - Title: Jerlan Projects - New Chat Request
-- Captured: 2026-02-26T14:51:46.934Z
+- Captured: 2026-02-26T14:54:51.091Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a014ac-5a94-8323-8e42-cd39da3cd32e
 
 ---
@@ -717,5 +717,56 @@ SPEC SYNTHESIS — GENERIC APP (inputs.yml)
 
 Using the Platform Identity rules:
 1) Ask me only the 8–12 most critical questions needed to finalize inputs.yml.
-2) Meanwhile, propose 3 stro
+2) Meanwhile, propose 3 strong product directions (viral + scalable) that fit modern trends.
+3) Output an updated inputs.yml with safe defaults + clearly marked TODOs.
+Prompt B — Baseline generator (repo + CI + hydration lint)
+Markdown
+BASELINE GENERATOR — DEVCONTAINER + MONOREPO
+
+Read inputs.yml and project.memory.md.
+Generate:
+- devcontainer (no features) + Dockerfile (PNPM_HOME + corepack dir fix)
+- pnpm + turbo monorepo scaffold
+- apps/web (Next.js App Router + Tailwind + shadcn/ui)
+- apps/api (NestJS)
+- packages/shared
+- tools/hydration-lint (enforced in CI)
+- inputs.yml schema validation in CI
+
+Output:
+- exact file tree
+- exact file contents
+- ✅ commands to run after reopening devcontainer
+Prompt C — First vertical slice (UI + API + data)
+Markdown
+FEATURE BUILD — FIRST VERTICAL SLICE
+
+Read inputs.yml and project.memory.md.
+Implement the first user-visible slice:
+- Web: dashboard shell + one primary flow
+- API: real endpoints (or mock if requested) with DTOs + validation
+- DB: Prisma schema + migrations
+- Seed: reference_data if enabled
+Must pass hydration lint + CI checks.
+
+Output:
+- changed files only
+- ✅ commands to run
+Prompt D — Feature updates (minimal diffs forever)
+Markdown
+FEATURE UPDATE — <FEATURE NAME>
+
+Read inputs.yml and project.memory.md.
+Apply only minimal changes required. Do NOT regenerate the repo.
+Must pass hydration lint + CI checks.
+
+Output:
+- changed files only
+- ✅ commands to run
+
+If you want, paste your current inputs.yml goals (even rough), and I’ll immediately produce:
+
+a filled inputs.yml customized to your next project, and
+
+the exact “Prompt A → D” sequence tailored to it (without changing your working devcontainer baseline).
 
