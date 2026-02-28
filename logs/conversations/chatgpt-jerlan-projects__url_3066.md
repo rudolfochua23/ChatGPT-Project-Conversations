@@ -2,7 +2,7 @@
 
 - Conversation ID: url_3066646202
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-28T15:26:41.489Z
+- Captured: 2026-02-28T15:29:42.858Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/project
 
 ---
@@ -11,8 +11,7 @@
 
 Jerlan Projects
 
-
-
+from my recent chat here in chatGPT, we had created a Phase-based Spec Driven AI Mega Prompt System wherein you will just define what your app would be by just filling the single source of truth, the inputs.yml. and from that filem it will build the app based on the technologies we just planned on how an app that i described 
 
 Chats
 Sources
