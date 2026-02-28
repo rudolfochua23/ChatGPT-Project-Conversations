@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-28T13:41:08.356Z
+- Captured: 2026-02-28T13:46:40.825Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -21107,4 +21107,107 @@ If you want, I can now produce a single copy-paste “New Project Starter Script
 ## User
 
 yes sure please do
+
+## Assistant
+
+Here’s the New Project Starter Script you can copy-paste into GitHub Copilot Chat at the beginning of every new project. It includes:
+
+Phase 0.5 (Feature Declaration)
+
+Phase 1 (Generate inputs.yml + inputs.schema.json)
+
+It’s written so Copilot won’t get confused, and it won’t start generating code too early.
+
+✅ YOU NEED TO DO THIS: Paste this into Copilot Chat (inside devcontainer).
+
+Plain text
+NEW PROJECT STARTER (PHASE 0.5 + PHASE 1)
+
+You are operating under our Spec-Driven Base Platform rules:
+- inputs.yml is Single Source of Truth.
+- project.memory.md must be respected.
+- No code generation yet until inputs.yml + inputs.schema.json are produced.
+- Ask structured questions first, then generate inputs.yml + schema.
+
+STEP A — FEATURE DECLARATION (ASK ME QUESTIONS)
+Ask me these questions ONE BY ONE (wait for my reply after each):
+
+1) App name (kebab-case) + display name
+2) One-sentence purpose
+3) Target users/roles (admin, staff, public, etc.)
+4) Core entities/records (e.g., fisherfolk, orders, products)
+5) Required modules (choose all that apply):
+   - Auth (OIDC / Keycloak)
+   - Admin dashboard (charts + KPIs)
+   - CRUD management
+   - Search + filters + sorting
+   - File uploads (images/docs)
+   - Presigned S3 uploads (MinIO)
+   - Background jobs (BullMQ + Redis)
+   - Offline support (outbox + sync)
+   - Realtime (Socket/WebSocket)
+   - Audit logs
+   - Multi-tenancy (single or multi)
+6) Offline capability required? (none / read-only / all)
+7) Realtime required? (none / notifications / live / chat / all)
+8) Data sensitivity (low / medium / high)
+9) Deployment constraints:
+   - Compose-first dev/staging/prod
+   - K8s-ready later only
+10) Any required UI style references (e.g., shadcn/ui, shadcnstudio)
+
+IMPORTANT:
+- Do NOT generate any files yet.
+- Do NOT generate code yet.
+- Only ask questions and summarize my answers in a short bullet list.
+
+STEP B — GENERATE SPEC FILES (inputs.yml + inputs.schema.json)
+After you finish all questions and confirm the summary, then generate:
+
+1) inputs.yml (production-grade, OSS-first, scalable)
+It must include:
+- app metadata (name, purpose, features)
+- tenancy (single default unless user chose multi)
+- capabilities (offline/realtime)
+- offline_sync config (outbox + auto sync on reconnect when offline=all)
+- background_jobs enabled when requested (BullMQ + Redis)
+- auth settings (Keycloak OIDC)
+- object_storage settings (MinIO S3)
+- database/cache settings (Postgres/Redis)
+- modules section mapping directly to my declared features
+- ui routes flags (dashboard/tasks/examples/auth)
+- governance flags:
+  - enforce_hydration_safe_ui
+  - enforce_no_env_hardcoding
+  - enforce_oss_first
+  - enforce_compose_first
+  - enforce_k8s_ready
+
+2) inputs.schema.json
+Schema rules:
+- strict validation (use additionalProperties: false where possible)
+- conditional validation:
+  - if tenancy.mode=single, tenancy.multi must be absent or ignored
+  - if offline != all, offline_sync may be absent
+  - if background_jobs disabled, bullmq config optional
+  - if uploads enabled, storage config required
+- must validate the generated inputs.yml successfully
+
+OUTPUT FORMAT (IMPORTANT):
+- First output: FINAL SUMMARY of my answers (bulleted)
+- Second output: FULL inputs.yml in a YAML code block
+- Third output: FULL inputs.schema.json in a JSON code block
+No other files. No code. No repo scaffold yet.
+What happens next (so you know the flow)
+
+❌ NO ACTION (EXPLANATION ONLY)
+After Copilot generates inputs.yml + inputs.schema.json, you will paste them into your repo.
+
+Then you run the next phase prompt:
+
+✅ YOU NEED TO DO THIS (Copilot Chat, next prompt)
+
+PHASE 2 — Generate monorepo scaffold (Next.js + NestJS + Prisma + Pino + BullMQ + MinIO presign patterns, etc.)
+
+If you want, I can paste the Phase 2 prompt immediately now in the same style (clean, step-by-step).
 
