@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-28T15:47:55.551Z
+- Captured: 2026-02-28T15:50:57.893Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -975,4 +975,172 @@ If B, paste your current inputs.yml (even if incomplete).
 If C, paste tree -L 3 + your root package.json scripts section.
 
 And we continue cleanly from there.
+
+## User
+
+ok but before that, can you tell where should I add this statement?
+
+"customizations": {
+  "vscode": {
+    "settings": {
+      "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.turbo/**": true,
+        "**/.next/**": true,
+        "**/dist/**": true
+      }
+    }
+  }
+}
+
+## Assistant
+
+Good question 👍
+
+You add that inside:
+
+Code
+.devcontainer/devcontainer.json
+
+It must be a top-level property in the JSON file (same level as "name" and "build").
+
+✅ Final Correct .devcontainer/devcontainer.json
+
+Here’s exactly how your file should look after adding it:
+
+JSON
+{
+  "name": "Spec-Driven App Platform",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        }
+      }
+    }
+  }
+}
+Why this helps
+
+Inside a monorepo with:
+
+pnpm
+
+turbo
+
+Next.js
+
+Prisma
+
+NestJS
+
+VS Code file watchers can become heavy.
+
+This prevents VS Code inside the container from constantly watching:
+
+node_modules
+
+.turbo cache
+
+.next builds
+
+dist builds
+
+Result:
+
+Less CPU usage
+
+Less memory usage
+
+Smoother typing
+
+Fewer UI freezes
+
+Important
+
+After editing:
+
+Code
+Ctrl + Shift + P
+Dev Containers: Rebuild Container
+
+Not just reopen — rebuild.
+
+If you want, I can also give you 2–3 more small devcontainer optimizations that keep this stack extremely stable long-term.
+
+## User
+
+yes sure please do
+
+## Assistant
+
+Here are a few small, safe devcontainer optimizations that help a lot with stability + speed for your pnpm/turbo/Next/Nest/Prisma stack—without adding “features” or docker-compose-in-container.
+
+1) Persist pnpm store (big speed-up on reinstall)
+
+Add this to .devcontainer/devcontainer.json (top-level):
+
+JSON
+"mounts": [
+  "source=pnpm-store,target=/home/node/.pnpm-store,type=volume"
+]
+
+Then set pnpm to use it by adding to .devcontainer/Dockerfile:
+
+dockerfile
+ENV PNPM_STORE_PATH=/home/node/.pnpm-store
+RUN pnpm config set store-dir ${PNPM_STORE_PATH}
+
+Why: pnpm install becomes dramatically faster across rebuilds.
+
+2) Don’t let VS Code index huge folders
+
+You already added watcher excludes. Add search excludes too:
+
+JSON
+"customizations": {
+  "vscode": {
+    "settings": {
+      "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.turbo/**": true,
+        "**/.next/**": true,
+        "**/dist/**": true
+      },
+      "search.exclude": {
+        "**/node_modules/**": true,
+        "**/.turbo/**": true,
+        "**/.next/**": true,
+        "**/dist/**": true
+      }
+    }
+  }
+}
+
+Why: global search won’t melt your container on large repos.
+
+3) Use a consistent user + better git safety
+
+Add these top-level keys in devcontainer.json:
+
+JSON
+"remoteUser": "node",
+"updateRemoteUserUID": true
+
+Why:
+
+avoids root-owned files
+
+prevents permission weirdness with pnpm, prisma, and git
+
+4) Add a post-create hook to “pr
 
