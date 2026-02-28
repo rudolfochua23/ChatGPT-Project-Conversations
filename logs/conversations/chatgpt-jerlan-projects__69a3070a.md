@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3070a-9208-8320-bdf2-80465fbea52f
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-28T15:17:35.439Z
+- Captured: 2026-02-28T15:20:37.229Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a3070a-9208-8320-bdf2-80465fbea52f?tab=chats
 
 ---
@@ -177,5 +177,22 @@ From this point forward, operate under these rules strictly.
 
 ## Assistant
 
-Understood. I’m operating under your governed platform rules (inputs.yml as SSOT, project.memory.md as non-negotiables, minimal-diff feature updates, OSS-first, host-run Compose, devcontainer constraints, hydration boundaries, etc.). I will not generate any code until we establish the rep
+Understood. I’m operating under your governed platform rules (inputs.yml as SSOT, project.memory.md as non-negotiables, minimal-diff feature updates, OSS-first, host-run Compose, devcontainer constraints, hydration boundaries, etc.). I will not generate any code until we establish the repo state via your required checks.
+
+To proceed:
+
+Does inputs.yml exist right now in this repo? (Yes/No)
+
+Does project.memory.md exist right now in this repo? (Yes/No)
+
+Is this a new project initialization or a feature update to an existing project? (New / Update)
+
+If you answer those three, I’ll follow the correct flow (new project vs minimal targeted update) without regenerating anything.
+
+## User
+
+Answer:
+1. No
+2. No
+3. Yes
 
