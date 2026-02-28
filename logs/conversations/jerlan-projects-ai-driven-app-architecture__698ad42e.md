@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-28T13:22:44.721Z
+- Captured: 2026-02-28T13:25:48.647Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -20529,4 +20529,405 @@ Phase 5 – Security
 Phase 6 – Async Processing
 
 Much clearer naming.
+
+## User
+
+yes please do that, make this from start to finish again just like making it from scratch and it should includes the added feature I ask recently. make sure the prompt can barely understand by any AI chat platform specially Github Copilot
+
+## Assistant
+
+Perfect.
+Below is your clean, start-to-finish, phase-based Mega Prompt System.
+
+This version is:
+
+✅ Enterprise-grade
+
+✅ OSS-first
+
+✅ Secure-by-default
+
+✅ Scalable
+
+✅ Spec-driven
+
+✅ Devcontainer-safe (no previous errors)
+
+✅ Works well with GitHub Copilot
+
+✅ Split into safe phases to reduce hallucination
+
+No weird 2B / 3C naming anymore.
+
+🔵 OVERVIEW — WHAT YOU ARE BUILDING
+
+You are building a Reusable Spec-Driven AI App Platform that:
+
+Uses inputs.yml as Single Source of Truth
+
+Uses Next.js + NestJS + Prisma + Postgres + Redis
+
+Uses Keycloak (OIDC)
+
+Uses MinIO (S3 compatible)
+
+Uses Pino for structured logging
+
+Uses BullMQ for background jobs
+
+Uses Prisma migrations
+
+Uses presigned upload pattern
+
+Uses hydration-safe Next.js rules
+
+Uses Compose (host-run)
+
+Is Kubernetes-ready (scaffold only)
+
+🟢 PHASE 0 — Manual Bootstrap (Always the Same)
+✅ YOU NEED TO DO THIS
+
+Create these files manually in a blank repo:
+
+.devcontainer/devcontainer.json
+JSON
+{
+  "name": "Spec-Driven Base Platform",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspaces/repo"
+}
+.devcontainer/Dockerfile
+dockerfile
+FROM mcr.microsoft.com/devcontainers/typescript-node:20
+
+ENV PNPM_HOME="/usr/local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+RUN apt-get update && apt-get install -y git curl ca-certificates netcat-traditional && rm -rf /var/lib/apt/lists/*
+
+⚠️ Important:
+
+No devcontainer features
+
+No docker-compose-plugin
+
+workspaceFolder = /workspaces/repo
+
+project.memory.md
+Markdown
+# Project Memory
+
+## Architecture
+- Spec-driven (inputs.yml is Single Source of Truth)
+- Monorepo: pnpm + turbo
+- Web: Next.js App Router + Tailwind + shadcn/ui
+- API: NestJS
+- DB: Postgres
+- Cache: Redis
+- Auth: Keycloak (OIDC)
+- Storage: MinIO (S3)
+- Logging: Pino
+- Jobs: BullMQ
+- Migrations: Prisma
+
+## Security
+- OIDC PKCE
+- RBAC
+- Rate limiting
+- Structured logs
+- Request validation
+- No secrets in repo
+
+## Hydration Rules
+- layout.tsx + page.tsx are server-only
+- interactive code only in *.client.tsx
+- shadcn/ui only in *.client.tsx
+- enforced via hydration-lint
+inputs.yml
+YAML
+version: 1
+inputs: {}
+✅ YOU NEED TO DO THIS
+
+Open Devcontainer:
+
+Code
+Ctrl + Shift + P
+Dev Containers: Reopen in Container
+🟢 PHASE 1 — SPEC GENERATION
+Copilot Prompt:
+Plain text
+PHASE 1 — GENERATE inputs.yml + JSON SCHEMA
+
+Read project.memory.md.
+
+Generate:
+1) A production-grade inputs.yml template including:
+   - app metadata
+   - tenancy (single default)
+   - capabilities (offline, realtime)
+   - deployment strategy (compose)
+   - auth (keycloak)
+   - storage (minio)
+   - db (postgres)
+   - cache (redis)
+   - governance flags
+   - modules: dashboard, auth, CRUD, uploads, background-jobs
+
+2) inputs.schema.json (strict JSON Schema)
+
+Output only:
+- inputs.yml
+- inputs.schema.json
+🟢 PHASE 2 — BASE PLATFORM SCAFFOLD
+Copilot Prompt:
+Plain text
+PHASE 2 — GENERATE MONOREPO PLATFORM
+
+Read:
+- inputs.yml
+- inputs.schema.json
+- project.memory.md
+
+Generate:
+
+ROOT:
+- package.json (workspace scripts)
+- pnpm-workspace.yaml
+- turbo.json
+- tsconfig.base.json
+- tools/validate-inputs.mjs
+- tools/hydration-lint.mjs
+- .github/workflows/ci.yml
+
+apps/web:
+- Next.js App Router
+- Tailwind
+- shadcn/ui
+- layout.tsx (server)
+- AppShell.server.tsx
+- Sidebar.client.tsx
+- Topbar.client.tsx
+- /dashboard
+- /tasks
+- /examples
+
+apps/api:
+- NestJS scaffold
+- /health endpoint
+- ValidationPipe
+- Rate limiting scaffold
+- RBAC scaffold
+
+packages/shared:
+- shared types
+
+Rules:
+- Hydration safety enforced
+- No devcontainer feature usage
+- No env hardcoding
+
+Output:
+- Folder tree
+- Full file contents
+✅ YOU NEED TO RUN THIS
+
+Inside devcontainer:
+
+Bash
+pnpm install
+pnpm validate:inputs
+pnpm lint:hydration
+pnpm build
+🟢 PHASE 3 — DATABASE + MIGRATIONS (PRISMA)
+Copilot Prompt:
+Plain text
+PHASE 3 — DATABASE + PRISMA MIGRATIONS
+
+Add Prisma to apps/api.
+
+Create:
+- prisma/schema.prisma
+- PrismaService
+- Migration scripts
+- package.json db scripts:
+  - db:generate
+  - db:migrate
+  - db:deploy
+
+Schema must include:
+- outbox_event table
+- user table
+- role table
+- example domain entity
+
+Use DATABASE_URL from env.
+
+Output:
+- new files only
+- commands to run first migration
+✅ YOU NEED TO RUN THIS
+Bash
+pnpm install
+pnpm -C apps/api db:generate
+pnpm -C apps/api db:migrate
+🟢 PHASE 4 — INFRA (COMPOSE, HOST RUN)
+Copilot Prompt:
+Plain text
+PHASE 4 — DOCKER COMPOSE INFRA
+
+Generate:
+- docker-compose.yml
+- .env.dev
+- infra/keycloak/realm.json
+- infra/minio/init.sh
+
+Services:
+- postgres
+- redis
+- keycloak (admin/admin)
+- minio (admin/admin)
+
+Important:
+- Compose run from HOST
+- Not required inside devcontainer
+
+Output:
+- file contents only
+- host commands
+✅ YOU NEED TO RUN THIS (HOST TERMINAL)
+Bash
+docker compose up -d
+🟢 PHASE 5 — STRUCTURED LOGGING (PINO)
+Copilot Prompt:
+Plain text
+PHASE 5 — STRUCTURED LOGGING
+
+Add nestjs-pino logging.
+
+Requirements:
+- requestId support
+- JSON logs in prod
+- pretty logs in dev
+- include userId if available
+
+Output:
+- changed files only
+- commands to test
+🟢 PHASE 6 — PRESIGNED S3 UPLOADS (MINIO)
+Copilot Prompt:
+Plain text
+PHASE 6 — PRESIGNED S3 UPLOAD PATTERN
+
+Add endpoint:
+POST /uploads/presign
+
+Return:
+- uploadUrl
+- objectKey
+- expiresIn
+
+Use AWS SDK v3.
+Validate contentType + size.
+Do not upload file through API.
+
+Add client example in web:
+- request presign
+- PUT file to uploadUrl
+
+Hydration-safe.
+🟢 PHASE 7 — BACKGROUND JOBS (BULLMQ + REDIS + OUTBOX)
+Copilot Prompt:
+Plain text
+PHASE 7 — OUTBOX PROCESSING
+
+Implement:
+- BullMQ queue
+- Worker
+- OutboxProcessor service
+- Redis connection from env
+- idempotency enforcement
+- retry with backoff
+
+Expose:
+GET /outbox/health
+GET /outbox/stats
+
+Start worker inside API process for now.
+🟢 PHASE 8 — FEATURE UPDATES (FOREVER LOOP)
+
+Whenever you change inputs.yml:
+
+Copilot Prompt:
+Plain text
+FEATURE UPDATE
+
+Read inputs.yml + project.memory.md.
+
+I changed:
+<describe change>
+
+Modify only impacted modules.
+Do not regenerate repo.
+Keep hydration rules intact.
+Must pass:
+- validate inputs
+- hydration lint
+- build
+
+Output:
+- changed files only
+- commands
+🟣 What You Now Have
+
+You now have a platform that includes:
+
+Spec-driven architecture
+
+Strict hydration enforcement
+
+Prisma migrations
+
+Structured logging
+
+Presigned S3 uploads
+
+BullMQ background jobs
+
+Outbox pattern
+
+RBAC
+
+Rate limiting
+
+CI enforcement
+
+Compose infra
+
+Devcontainer stability
+
+This is not a pet project setup.
+This is a production-aligned OSS-first architecture.
+
+If you'd like next, I can generate:
+
+OpenTelemetry tracing
+
+Prometheus metrics
+
+Separate worker container pattern
+
+API versioning strategy
+
+Multi-tenant extension design
+
+Zero-downtime migration strategy
+
+Event-driven architecture extension
+
+CQRS extension
+
+Just tell me what direction you want this platform to evolve toward.
 
