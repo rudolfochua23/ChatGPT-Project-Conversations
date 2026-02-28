@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-28T15:50:57.893Z
+- Captured: 2026-02-28T15:53:59.885Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -1142,5 +1142,75 @@ avoids root-owned files
 
 prevents permission weirdness with pnpm, prisma, and git
 
-4) Add a post-create hook to “pr
+4) Add a post-create hook to “prime” the repo (optional)
+
+If you always want the container ready after build:
+
+JSON
+"postCreateCommand": "corepack enable && pnpm -v"
+
+Or if you want it to auto-install (only if you prefer):
+
+JSON
+"postCreateCommand": "corepack enable && pnpm install"
+
+Why: fewer “it works on my machine” moments.
+
+5) Increase file descriptor limit for Node-heavy dev (Linux containers)
+
+In .devcontainer/devcontainer.json, add:
+
+JSON
+"runArgs": ["--ulimit", "nofile=65536:65536"]
+
+Why: Next.js + turbo + watchers can hit limits on some setups.
+
+Recommended “minimal but strong” devcontainer.json (combined)
+
+If you want one clean version, here’s a good default that stays within your rules:
+
+JSON
+{
+  "name": "Spec-Driven App Platform",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+
+  "mounts": [
+    "source=pnpm-store,target=/home/node/.pnpm-store,type=volume"
+  ],
+
+  "runArgs": ["--ulimit", "nofile=65536:65536"],
+
+  "postCreateCommand": "corepack enable && pnpm -v",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        },
+        "search.exclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        }
+      }
+    }
+  }
+}
+
+And add to .devcontainer/Dockerfile:
+
+dockerfile
+ENV PNPM_STORE_PATH=/home/node/.pnpm-store
+RUN pnpm config set store-dir ${PNPM_STORE_PATH}
+
+If you tell me whether you’re using Codespaces or local Docker Desktop, I can also recommend the best memory/CPU settings and a couple VS Code settings that reduce hangs even more (still lightweight).
 
