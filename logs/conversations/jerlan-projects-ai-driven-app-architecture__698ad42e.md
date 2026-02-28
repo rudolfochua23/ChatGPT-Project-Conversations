@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-28T13:19:40.506Z
+- Captured: 2026-02-28T13:22:44.721Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -20400,4 +20400,133 @@ AWS SDK v3 for presigned URLs
 BullMQ + Redis for background jobs
 
 If you’d rather use Drizzle instead of Prisma, say so and I’ll rewrite Prompt 2B accordingly.
+
+## User
+
+what is 2B from Prompt 2B anyway? and there are Prompt 3B and so on
+
+## Assistant
+
+Great question 👍 — this is just naming, not something technical you need to configure.
+
+❌ NO ACTION (EXPLANATION ONLY)
+
+The letters like:
+
+Prompt 2B
+
+Prompt 3B
+
+Prompt 4C
+
+are just phase extensions of earlier prompts.
+
+They mean:
+
+Prompt 2 → Base scaffold
+
+Prompt 2B → Extra part of Phase 2 (database layer)
+
+Prompt 3 → Infra
+
+Prompt 3B → Extra part of Infra (S3 uploads)
+
+Prompt 4 → Security baseline
+
+Prompt 4B → Logging
+
+Prompt 4C → Background jobs
+
+It’s just organizational naming so we don’t create one giant hallucination-prone prompt.
+
+Why I split them like that
+
+Because Copilot works best when:
+
+Each prompt does one responsibility
+
+It modifies specific parts of the system
+
+It doesn’t regenerate the entire repo
+
+If we made a single massive prompt including:
+
+Monorepo scaffold
+
+Prisma
+
+Logging
+
+Presigned uploads
+
+BullMQ
+
+Security hardening
+
+Compose infra
+
+Copilot would likely:
+
+Regenerate files unexpectedly
+
+Overwrite config
+
+Miss dependencies
+
+Break hydration lint
+
+Or hallucinate APIs
+
+So we use incremental phases.
+
+You Can Rename Them If You Want
+
+If the letters are confusing, you can think of it like this:
+
+Phase 1 — Spec
+Phase 2 — Core Platform
+Phase 3 — Infra
+Phase 4 — Security
+
+Then:
+
+Phase 2 – Add Database
+Phase 3 – Add Uploads
+Phase 4 – Add Logging
+Phase 4 – Add Background Jobs
+
+Same idea. The letters just indicate extension steps.
+
+What You Actually Need To Remember
+
+You don’t need to care about “2B”.
+
+You only care about:
+
+Create inputs.yml
+
+Generate base platform
+
+Add database layer
+
+Add infra
+
+Add security
+
+Add background jobs
+
+Add features later via Feature Update prompt
+
+That’s it.
+
+If you want, I can now rewrite the entire Mega Prompt Set in a cleaner structure like:
+
+Phase 1 – Spec
+Phase 2 – Platform
+Phase 3 – Data
+Phase 4 – Infra
+Phase 5 – Security
+Phase 6 – Async Processing
+
+Much clearer naming.
 
