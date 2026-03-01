@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Review
-- Captured: 2026-03-01T10:55:07.088Z
+- Captured: 2026-03-01T10:58:11.093Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -2961,5 +2961,217 @@ Requirements:
 - Compose default deployment
 - K8s scaffold present but disabled
 - Multi-tenant toggle supported
-- Security and observability basel
+- Security and observability baselines included
+
+Output only YAML and JSON.
+
+Copy into root.
+
+🟦 PHASE 3 — GENERATE PLATFORM TEMPLATE
+
+Paste into Copilot:
+
+Code
+Generate full platform scaffold from:
+
+- inputs.yml
+- project.memory.md
+
+Requirements:
+
+Monorepo (pnpm + turbo)
+
+apps/web:
+- Next.js App Router
+- OIDC scaffold (Keycloak)
+- role-based UI gating
+- hydration-safe boundaries
+- error boundary
+
+apps/api:
+- NestJS
+- ValidationPipe strict
+- @nestjs/config with schema validation
+- Global error envelope
+- Versioning /api/v1
+- Swagger disabled in prod
+- Health endpoints
+- /metrics (Prometheus)
+- Helmet + CORS
+- Keycloak JWT validation
+- RBAC guards
+- Tenant context scaffold
+- Prisma
+- outbox_event table
+- audit_log table
+- BullMQ (DLQ + replay)
+- OpenTelemetry scaffold
+
+Infrastructure:
+- deploy/compose/dev
+- deploy/compose/stage
+- deploy/compose/prod
+- deploy/k8s-scaffold (inactive)
+
+CI:
+- lint
+- typecheck
+- test
+- build
+- dependency scan placeholder
+
+Tools:
+- validate-inputs
+- check-env
+- hydration-lint
+
+Do not require Docker inside devcontainer.
+🟦 PHASE 4 — INSTALL & VALIDATE
+
+Inside devcontainer:
+
+Bash
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm tools:validate-inputs
+
+Fix errors if any.
+
+🟦 PHASE 5 — START INFRA (HOST TERMINAL)
+
+Dev:
+
+Bash
+docker compose -f deploy/compose/dev/docker-compose.yml up -d
+
+Stage:
+
+Bash
+docker compose -f deploy/compose/stage/docker-compose.yml up -d
+
+Prod:
+
+Bash
+docker compose -f deploy/compose/prod/docker-compose.yml up -d
+
+Compose remains primary deployment.
+
+🟦 PHASE 6 — PRODUCT UPDATES
+
+If PRODUCT.md changes:
+
+Paste into Copilot:
+
+Code
+PRODUCT UPDATE:
+
+<paste changes>
+
+Ask clarifying questions first.
+Do not generate files yet.
+
+Then:
+
+Code
+Update inputs.yml accordingly.
+Modify only impacted modules.
+Preserve baselines.
+🟦 PHASE 7 — MULTI-TENANT UPGRADE
+
+Edit:
+
+YAML
+tenancy:
+  mode: "multi"
+
+Then:
+
+Code
+pnpm tools:validate-inputs
+
+Then:
+
+Code
+Upgrade platform to multi-tenant.
+Modify Prisma schema, guards, RBAC, and env configs.
+Do not regenerate entire repo.
+🟦 PHASE 8 — ENABLE KUBERNETES (OPTIONAL FUTURE)
+
+Edit:
+
+YAML
+deploy:
+  k8s:
+    enabled: true
+
+Then:
+
+Code
+pnpm tools:validate-inputs
+
+Then:
+
+Code
+Generate full kustomize-based production manifests.
+Keep Compose intact.
+🟦 ARCHITECTURE SUMMARY
+
+Manual file:
+
+docs/PRODUCT.md
+
+AI-generated:
+
+inputs.yml
+
+schema
+
+code
+
+infra
+
+CI
+
+security
+
+observability
+
+Compose:
+
+Default for dev/stage/prod
+
+Kubernetes:
+
+Scaffold only until explicitly enabled
+
+Multi-tenant:
+
+Enabled now or later via spec toggle
+
+🔷 FINAL CONFIRMATION
+
+Yes — this fresh version includes everything previously discussed:
+
+✔ V1 devcontainer
+✔ V2 observability + security
+✔ V3 SRE hardening
+✔ Compose-first deployment
+✔ K8s preparation
+✔ Multi-tenant toggle
+✔ Clear separation of PRODUCT vs SPEC
+
+This is now the canonical version.
+
+If you want next level:
+
+I can convert this into a printable internal “Platform Constitution”
+
+Or create a semantic-diff engine spec for safe regeneration
+
+Or create a multi-app factory model
+
+What direction do you want to evolve the platform next?
 
