@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T04:12:24.564Z
+- Captured: 2026-03-01T04:15:27.459Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -1572,4 +1572,123 @@ CPU cores (e.g. 8 / 12)
 …and I’ll give you the exact best .wslconfig values.
 
 If you don’t want to share specs, the config I gave (10GB, 6 cores) is a solid general-purpose baseline for devcontainers + Next + Nest + Postgres/Redis/Keycloak on host.
+
+## User
+
+here are my laptop specs:
+CPU: Intel core i7-13620H
+Memory: 47GB DDR5
+Storage: 512GB NVME
+Video Card: NVIDIA GeForce RTX 4050 6GB Dedicated
+
+## Assistant
+
+Nice—those specs are plenty. With 47GB RAM and a 13620H, you can make WSL2 + Docker Desktop feel very close to native.
+
+Best .wslconfig for your machine (balanced + fast)
+
+Create/edit this file in Windows:
+
+C:\Users\<YourWindowsUser>\.wslconfig
+
+Paste:
+
+INI
+[wsl2]
+memory=24GB
+processors=10
+swap=8GB
+localhostForwarding=true
+Why these numbers
+
+24GB RAM gives Node/turbo/Next + containers plenty of headroom without starving Windows.
+
+10 processors (you likely have 10 physical cores: 6P + 4E; 16 threads total) is a good cap so Windows stays responsive.
+
+8GB swap prevents hard stalls during spikes (big installs/builds).
+
+Apply it
+
+In Windows PowerShell:
+
+PowerShell
+wsl --shutdown
+
+Then reopen Ubuntu + VS Code.
+
+Docker Desktop settings (WSL2)
+
+In Docker Desktop → Settings:
+
+Resources
+
+With WSL2 engine, Docker uses the WSL VM, so the .wslconfig is the real limiter.
+
+Still, keep “Resources” reasonable if shown.
+
+WSL Integration
+
+Enable integration for Ubuntu-24.04
+
+General
+
+✅ Use the WSL 2 based engine
+
+Storage tip (your 512GB NVMe)
+
+Monorepos + Docker images + volumes will fill 512GB quicker than expected.
+
+Do these habits:
+
+Periodically prune unused stuff:
+
+Bash
+docker system prune -af
+docker volume prune -f
+
+(Only when you’re sure you don’t need old images/volumes.)
+
+Keep your repo inside WSL, e.g.:
+
+Bash
+~/projects/your-repo
+Watcher stability (only if you see hot-reload weirdness)
+
+If Next.js reloads are inconsistent inside container, add a root .env:
+
+Bash
+WATCHPACK_POLLING=true
+CHOKIDAR_USEPOLLING=true
+CHOKIDAR_INTERVAL=300
+
+If everything is already stable, skip this (polling uses more CPU).
+
+VS Code: one more setting that reduces lag
+
+Since you’re inside WSL2, sometimes VS Code Git scanning can be heavy in monorepos.
+
+In VS Code settings (User or Remote), consider:
+
+Git: Auto Repository Detection → openEditors (optional)
+
+Or disable GitLens heavy features if installed
+
+Not required, just a common win.
+
+Quick sanity check after you apply .wslconfig
+
+Inside WSL, run:
+
+Bash
+nproc
+free -h
+
+You should see ~10 CPUs available and ~24GB memory.
+
+If you want, paste the output of these two commands after the restart:
+
+Bash
+nproc && free -h
+
+…and I’ll tell you if WSL actually picked up the limits correctly.
 
