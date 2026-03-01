@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T03:23:45.840Z
+- Captured: 2026-03-01T03:26:48.421Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -1326,4 +1326,117 @@ Local Docker Desktop
 GitHub Codespaces
 
 I can tune memory/CPU allocation next for maximum smoothness.
+
+## User
+
+i'm using Local Docker Desktop
+
+## Assistant
+
+Nice — Local Docker Desktop gives you the most control. Here are the best, low-effort tweaks to reduce hangs and speed everything up, without changing your platform rules.
+
+1) Give Docker Desktop enough resources (most important)
+
+In Docker Desktop → Settings → Resources:
+
+Memory: 8–12 GB (minimum 6 GB)
+
+CPUs: 4–8
+
+Swap: 2–4 GB (or leave default if you have lots of RAM)
+
+Disk image size: 60–100 GB (monorepos + node_modules grow fast)
+
+Why: Next.js + turbo + Nest + Prisma + Keycloak (host) can spike RAM/CPU.
+
+2) Put your repo on a “fast path”
+
+This matters a lot depending on OS:
+
+If you’re on Windows + WSL2
+
+Clone the repo inside WSL (e.g. ~/projects/your-repo)
+
+Open VS Code from WSL (code .)
+
+Do not work from /mnt/c/... (it’s slower)
+
+If you’re on macOS
+
+Keep the repo on the internal SSD
+
+Avoid external drives for devcontainers
+
+Why: devcontainers are extremely sensitive to filesystem latency.
+
+3) Reduce Next.js / turbo watcher pressure
+
+Add these environment variables (safe defaults) for local dev.
+
+Option A (recommended): add .env at repo root
+
+Create ./.env:
+
+Bash
+WATCHPACK_POLLING=true
+CHOKIDAR_USEPOLLING=true
+CHOKIDAR_INTERVAL=500
+
+Why: On some machines, file events between host ↔ container can glitch; polling stabilizes it (slightly more CPU, but fewer “stuck” watchers).
+
+If your machine is strong and things already work well, you can skip this.
+
+4) Add an “easy reset” cleanup script (helps when Docker gets messy)
+
+Add this to your root package.json scripts later (when it exists):
+
+JSON
+{
+  "scripts": {
+    "dev:clean": "rm -rf node_modules .turbo apps/web/.next apps/web/node_modules apps/api/node_modules packages/shared/node_modules"
+  }
+}
+
+Then when stuff is weird:
+
+Bash
+pnpm dev:clean
+pnpm install
+5) Docker Desktop file sharing optimization (macOS/Windows)
+
+In Docker Desktop settings:
+
+Ensure the drive/folder where your repo lives is allowed in File Sharing
+
+Prefer VirtioFS (macOS, if available) for better performance
+
+Why: slow shared mounts = slow installs + slow builds.
+
+6) VS Code extensions: avoid container bloat
+
+Inside the container, keep extensions minimal. The main ones you want:
+
+ESLint
+
+Prettier
+
+Prisma
+
+Docker (optional)
+
+Avoid: heavy “All-in-one” extension packs inside the container.
+
+Quick “If still slow” checklist
+
+If it’s still sluggish after these:
+
+Close other heavy apps (Chrome tabs, Android Studio, etc.)
+
+Rebuild the container
+
+Remove old volumes occasionally:
+
+Docker Desktop → Volumes → remove unused pnpm-store volumes if you want to reset cache
+
+If you tell me your OS (Windows/macOS/Linux) + RAM amount, I can recommend the exact sweet-spot resource numbers and whether polling watchers is worth it.
 
