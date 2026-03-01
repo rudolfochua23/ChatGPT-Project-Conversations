@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T07:08:53.780Z
+- Captured: 2026-03-01T07:11:56.095Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -3244,4 +3244,159 @@ Does VS Code bottom-left show: “WSL: Ubuntu-24.04”?
 Is Continue installed under WSL or only Windows?
 
 And I’ll pinpoint the exact fix.
+
+## User
+
+yes im a bit confused, i really am running my vscode inside WSL: Ubuntu24.04 (see screenshot) but why is it that the extensions of my vscode is installed in windows drive C:
+
+## Assistant
+
+That confusion is totally normal — VS Code “WSL mode” looks like everything is inside Linux, but VS Code is split-brain:
+
+Why extensions still show C:\... even when you’re in WSL
+
+When you connect to WSL: Ubuntu-24.04, VS Code actually runs as:
+
+Windows VS Code UI (always on Windows) ✅
+
+A VS Code Server running inside WSL (Linux) ✅
+
+So you have two extension locations:
+
+1) Windows-side extensions (UI extensions)
+
+Stored under:
+
+C:\Users\<you>\.vscode\extensions\...
+
+These are things like:
+
+Themes
+
+UI helpers
+
+Some tooling that doesn’t need Linux access
+
+2) WSL-side extensions (remote/server extensions)
+
+Stored inside WSL under something like:
+
+~/.vscode-server/extensions/...
+
+These are the ones that run in Linux and can access:
+
+your repo filesystem in WSL
+
+Linux terminals
+
+devcontainers
+
+local services in WSL
+
+✅ In WSL mode, extensions should be installed in the WSL side if they need to interact with your code/tools.
+
+What’s happening to you
+
+Your Continue/Cline schema error references:
+
+file:///c:/Users/jerla/.vscode/extensions/...
+
+That suggests the YAML schema file it’s trying to load is coming from the Windows-side extension, not the WSL-side one.
+
+So likely:
+
+Continue is installed on Windows ✅
+
+but not installed (or not running properly) inside WSL ❌
+
+✅ Fix: Install the extension "in WSL" (not just Windows)
+
+Open VS Code Extensions panel
+
+Search: Continue
+
+You’ll see something like:
+
+Installed (Local - Windows)
+
+Button: Install in WSL: Ubuntu-24.04
+
+Click Install in WSL.
+
+Do the same for:
+
+Cline
+
+Prisma
+
+Any AI agent extension you want to run inside WSL
+
+After installing, reload the WSL window:
+
+Ctrl + Shift + P → Developer: Reload Window
+
+✅ Confirm where it installed
+
+In Extensions panel, there’s a filter dropdown:
+
+Local (Windows)
+
+WSL: Ubuntu-24.04
+
+Switch to WSL: Ubuntu-24.04 and confirm Continue is installed there.
+
+✅ Also: Put Continue config inside WSL
+
+Even if you keep a Windows config file, the clean way is:
+
+Inside WSL terminal:
+
+Bash
+mkdir -p ~/.continue
+nano ~/.continue/config.yaml
+
+Paste:
+
+YAML
+name: Local Config
+version: 1.0.0
+schema: v1
+
+models:
+  - name: Local Qwen 2.5 Coder 7B
+    provider: ollama
+    model: qwen2.5-coder:7b
+    apiBase: http://localhost:11434
+
+defaultModel: Local Qwen 2.5 Coder 7B
+
+This ensures Continue in WSL reads the WSL config.
+
+✅ How to verify extension paths (quick)
+
+Open a WSL terminal and run:
+
+Bash
+ls ~/.vscode-server/extensions | head
+
+If Continue is installed in WSL, you’ll see a folder like:
+
+continue.continue-...
+
+If it’s not there, it’s only installed on Windows.
+
+Important note about the red underline
+
+Even if schema loading fails, Continue can still work.
+But installing Continue in WSL will usually remove the “Problems loading reference … c:\Users …” error.
+
+Do this now (best order)
+
+Install Continue “in WSL: Ubuntu-24.04”
+
+Move config to ~/.continue/config.yaml (WSL)
+
+Reload VS Code window
+
+If you want, tell me which extension is giving you trouble (Continue or Cline first), and I’ll give you the exact click-by-click path + the exact folder where its config should live.
 
