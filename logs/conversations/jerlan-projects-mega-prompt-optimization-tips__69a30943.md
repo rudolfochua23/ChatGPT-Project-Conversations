@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T08:55:25.894Z
+- Captured: 2026-03-01T08:58:28.775Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -4089,4 +4089,187 @@ Show you how to run a 14B model safely on your RTX 4050
 Build the LiteLLM routing layer
 
 Tell me which direction you want.
+
+## User
+
+ok but before doing that, let me show you the CONTINUE chat box using local qwen 2.5 Coder 7B. I found out that the Plan and Agent is in exclamation point which means that "Agent might not work properly with this model". Why is that?
+
+## Assistant
+
+Excellent observation — and this is very important to understand.
+
+The ⚠️ (exclamation mark) next to Plan and Agent in Continue does NOT mean your model is broken.
+
+It means:
+
+⚠️ The model you selected does not officially support structured tool-calling / agent mode.
+
+Let me explain clearly.
+
+🧠 Why Continue Shows ⚠️ For Local Qwen 7B
+
+Continue’s Plan and Agent modes rely on:
+
+Structured tool calls
+
+JSON output formatting
+
+Deterministic response parsing
+
+Multi-step reasoning stability
+
+Local models like:
+
+qwen2.5-coder:7b
+
+deepseek-coder:6.7b
+
+starcoder2
+
+Are:
+
+✅ Good at code generation
+❌ Not reliably trained for OpenAI-style function/tool calling
+
+So Continue warns you:
+
+“Agent might not work properly with this model.”
+
+Because:
+
+The model may not output valid JSON when expected
+
+It may ignore tool schemas
+
+It may hallucinate tool calls
+
+It may not follow multi-step agent protocol strictly
+
+🔬 Why This Happens (Technical Reason)
+
+Agent mode requires models trained with:
+
+Function calling fine-tuning
+
+Tool usage supervision
+
+Structured output enforcement
+
+Examples of models that handle this well:
+
+GPT-4o / GPT-4.1
+
+Claude 3.5
+
+Some Mistral-instruct variants
+
+Certain OpenAI-compatible API models
+
+Most 7B local coder models are trained for:
+
+Code completion
+
+Repo editing
+
+Chat coding
+
+Not tool orchestration
+
+⚖️ So What Does This Mean For You?
+
+It means:
+
+Continue Chat Mode → ✅ Perfect for local 7B
+
+Use it for:
+
+Writing code
+
+Editing files
+
+Refactoring
+
+Generating Prisma schema
+
+Writing controllers
+
+Continue Plan/Agent Mode → ⚠️ Unreliable with local model
+
+May:
+
+Fail to call tools
+
+Break JSON
+
+Get stuck
+
+🔥 This Is Exactly Why Hybrid Setup Is Powerful
+
+You do this:
+
+Mode	Model
+Normal coding	Local Qwen 7B
+Agent / Plan mode	API model (gpt-4o-mini)
+
+That way:
+
+90% free
+
+10% paid
+
+Agent reliability preserved
+
+💡 Alternative: Force local model to behave better
+
+You can improve it by:
+
+Using structured prompts
+
+Forcing JSON format manually
+
+Adding strict output instructions
+
+But it will never be as reliable as a model trained for tool calling.
+
+🧠 The Big Picture
+
+Your RTX 4050 can run 7B models smoothly.
+
+But true agent orchestration requires either:
+
+Larger models (14B+ with tool tuning)
+
+API models trained for tool usage
+
+6GB VRAM limits your local agent-grade performance.
+
+🎯 My Honest Recommendation
+
+Keep:
+
+Local Qwen 7B for daily coding
+
+API model for Agent / Plan mode
+
+LangGraph for your autonomous agent runtime
+
+That gives you:
+
+Power
+
+Reliability
+
+Low cost
+
+Control
+
+If you want next, I can:
+
+Show you how to configure Continue so Chat = local, Agent = API automatically
+
+Explain whether running a 14B quantized model would help
+
+Design your full hybrid routing architecture
+
+Tell me which one you want.
 
