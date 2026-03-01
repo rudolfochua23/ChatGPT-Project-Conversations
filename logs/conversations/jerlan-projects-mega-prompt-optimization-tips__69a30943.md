@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T03:54:07.741Z
+- Captured: 2026-03-01T03:57:09.904Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -1439,4 +1439,137 @@ Remove old volumes occasionally:
 Docker Desktop → Volumes → remove unused pnpm-store volumes if you want to reset cache
 
 If you tell me your OS (Windows/macOS/Linux) + RAM amount, I can recommend the exact sweet-spot resource numbers and whether polling watchers is worth it.
+
+## User
+
+im using Docker using WSL2 Ubuntu 24.04. im also running my vscode inside WSL2
+
+## Assistant
+
+Perfect setup. WSL2 + VS Code in WSL is the fastest path on Windows. Here are the best WSL2-specific tweaks that usually eliminate hangs and make devcontainers + pnpm/turbo feel snappy.
+
+1) Make sure the repo lives in the WSL filesystem (critical)
+
+✅ Good:
+
+/home/<you>/projects/my-repo
+
+❌ Avoid:
+
+/mnt/c/... (Windows filesystem mount)
+
+This one change alone often fixes “random slowness”.
+
+2) Give WSL enough RAM/CPU via .wslconfig
+
+On Windows, create/edit:
+
+C:\Users\<YourWindowsUser>\.wslconfig
+
+Paste this (safe defaults for modern machines):
+
+INI
+[wsl2]
+memory=10GB
+processors=6
+swap=4GB
+localhostForwarding=true
+
+Then apply it:
+
+Close VS Code
+
+In Windows PowerShell (not WSL), run:
+
+PowerShell
+wsl --shutdown
+
+Reopen WSL + VS Code
+
+Notes:
+
+If you have 16GB RAM, use memory=8GB.
+
+If you have 32GB RAM, memory=12GB–16GB is great.
+
+3) Docker Desktop settings for WSL2 integration
+
+In Docker Desktop → Settings → Resources → WSL Integration:
+
+Enable integration for Ubuntu-24.04
+
+Make sure it’s checked
+
+Also in General:
+
+Ensure “Use WSL 2 based engine” is enabled
+
+4) Fix “watchers + hot reload” issues the right way
+
+WSL2 usually works great, but when file events get flaky across containers, do this:
+
+Add a root .env (only if you notice missed reloads)
+
+Create ./.env in the repo root:
+
+Bash
+WATCHPACK_POLLING=true
+CHOKIDAR_USEPOLLING=true
+CHOKIDAR_INTERVAL=300
+
+If everything already reloads perfectly, skip it.
+
+5) Prevent VS Code from indexing build junk
+
+You already added watcher/search excludes in devcontainer.json (good).
+
+Also add a .gitignore early (when you scaffold) so turbo/next/prisma outputs don’t clutter.
+
+Minimum .gitignore:
+
+gitignore
+node_modules
+dist
+.next
+.turbo
+.env
+.env.*
+6) Keep Docker storage in the Linux filesystem (helps performance)
+
+Most WSL2 setups already do this, but double check:
+
+Your Docker Desktop WSL engine should store images/volumes inside its WSL distro (fast)
+
+Avoid storing project volumes on Windows drive mounts
+
+7) Quick diagnostics when it feels “stuck”
+
+Run these inside WSL:
+
+Check WSL memory pressure
+Bash
+free -h
+Check disk speed location
+Bash
+df -h .
+
+If you see you’re in /mnt/c, move the repo.
+
+Check Docker isn’t choking
+Bash
+docker stats
+
+If vmmem is pegged in Windows Task Manager, .wslconfig tuning is the fix.
+
+My recommended “sweet spot” (if you tell me your specs)
+
+Reply with:
+
+RAM (e.g. 16GB / 32GB)
+
+CPU cores (e.g. 8 / 12)
+
+…and I’ll give you the exact best .wslconfig values.
+
+If you don’t want to share specs, the config I gave (10GB, 6 cores) is a solid general-purpose baseline for devcontainers + Next + Nest + Postgres/Redis/Keycloak on host.
 
