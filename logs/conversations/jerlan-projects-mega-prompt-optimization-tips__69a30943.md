@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T04:24:35.707Z
+- Captured: 2026-03-01T04:27:38.053Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -2367,5 +2367,106 @@ Poison message handling / dead letter strategy
 
 Fix: Add to Part 8 prompt:
 
-Outbox table columns: id, aggregateType, `aggregateI
+Outbox table columns: id, aggregateType, aggregateId, eventType, payload, status, attempts, nextRunAt, lockedAt, lockedBy, idempotencyKey, timestamps
+
+Unique index on idempotencyKey
+
+Processor claims rows with SELECT … FOR UPDATE SKIP LOCKED (or Prisma equivalent strategy)
+
+Worker updates status + increments attempts
+
+Move to FAILED after max attempts
+
+/outbox/health returns queue + DB lag metrics
+
+7) Presigned uploads: you need a “complete pattern”
+
+Presign endpoint is good, but a production pattern also needs:
+
+objectKey naming scheme (tenant/user/date)
+
+content-type restrictions + content-length restrictions (MinIO supports some; S3 policies differ)
+
+optional POST policy vs PUT presign
+
+callback/confirm endpoint or event record (so you know upload completed)
+
+public/private bucket policy rules
+
+Fix: Extend Part 7 prompt with:
+
+deterministic objectKey format
+
+allowlist MIME types
+
+max size
+
+“confirm upload” endpoint: client calls back with objectKey; API records metadata + creates outbox event
+
+8) Web app hydration rules need enforcement method
+
+You mention tools/hydration-lint.mjs, but you don’t define what it checks. If this is a core rule, enforce it:
+
+block use client in layout.tsx and page.tsx
+
+require .client.tsx naming for client components
+
+optional ESLint rule or custom script
+
+Fix: In Part 3 prompt, explicitly define:
+
+what hydration-lint checks
+
+CI runs it
+
+9) Missing “how to run dev”
+
+The playbook says build, but you don’t give the dev commands:
+
+pnpm dev (turbo)
+
+which ports to visit (web, api)
+
+how to verify Keycloak login works
+
+Fix: Add a Part after scaffolding:
+
+PART 3.5 — RUN
+
+pnpm dev starts web + api
+
+apps/api on http://localhost:3001 (or whatever)
+
+apps/web on http://localhost:3000
+
+health checks
+
+login flow notes
+
+Minimal patch to your playbook (keep everything, just insert these parts)
+
+If you only want the smallest edits while keeping your structure:
+
+Part 3: add enforce validate:inputs + hydration-lint in CI
+
+After Part 5: add Part 5.5 Config Discipline
+
+After Part 6: add Part 6.5 Security Baseline
+
+Part 4: strengthen Prisma scripts + migrate deploy
+
+Part 7: add confirm endpoint + objectKey convention
+
+Part 8: add proper outbox schema + locking/idempotency
+
+Add Part 3.5: run instructions
+
+That makes it truly “no missing steps” and “production-grade” rather than “good scaffold”.
+
+The biggest single improvement
+
+If you do only one upgrade: Config Discipline + Validation (Part 5.5 + CI validation).
+That’s what keeps spec-driven platforms from turning into “random env drift”.
+
+If you want, I can rewrite your playbook into a v2 that includes all these inserts while staying copy/paste-friendly (same style, same phases, still Copilot driven).
 
