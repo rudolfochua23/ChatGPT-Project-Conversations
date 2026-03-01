@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T14:02:59.744Z
+- Captured: 2026-03-01T14:06:03.249Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -4559,4 +4559,324 @@ If you answer that in one line, I’ll give you:
 the exact Continue + Cline provider settings for your choice
 
 and (if you want) the LiteLLM router config mapping local + API models under one URL.
+
+## User
+
+from this recent conversation about Spec driven AI development with VSCode, Cline, Continue and OLLAMA + Qwen, provide me an AI understandable review prompt of all this conversation we had because i want to migrate this conversation to my other chatGPT account
+
+## Assistant
+
+Perfect move 👍 — this is exactly how you should migrate long, complex AI-dev conversations: compress the intent + architecture + decisions into a single AI-understandable context block.
+
+Below is a clean, structured, AI-ingestable review prompt you can paste into your other ChatGPT account to resume seamlessly.
+
+✅ AI MIGRATION CONTEXT PROMPT
+
+(Copy everything below into the new chat)
+
+CONTEXT: SPEC-DRIVEN AI DEVELOPMENT ENVIRONMENT (WSL2 + HYBRID AGENT SETUP)
+
+You are continuing a long-term architecture discussion about building a Spec-Driven AI Development Platform using a hybrid local + API agent setup.
+
+This is not a toy project. It is production-aligned.
+
+1️⃣ MACHINE & ENVIRONMENT
+
+Hardware:
+
+CPU: Intel i7-13620H
+
+RAM: 47GB DDR5
+
+Storage: 512GB NVMe
+
+GPU: RTX 4050 6GB
+
+OS Setup:
+
+Windows 11
+
+WSL2 Ubuntu 24.04
+
+VS Code running in WSL mode
+
+Docker Desktop with WSL integration
+
+Devcontainers used for project isolation
+
+Host-run docker compose (infra outside container)
+
+2️⃣ DEVELOPMENT STACK
+
+Monorepo:
+
+pnpm
+
+turbo
+
+TypeScript
+
+Apps:
+
+Web: Next.js App Router + Tailwind + shadcn/ui
+
+API: NestJS
+
+ORM: Prisma
+
+DB: Postgres (Docker)
+
+Cache: Redis (Docker)
+
+Auth: Keycloak (Docker)
+
+Storage: MinIO (Docker)
+
+Background Jobs: BullMQ
+
+Logging: Pino (nestjs-pino)
+
+Rules:
+
+inputs.yml is Single Source of Truth
+
+Compose-first infra (host-run)
+
+No compose inside devcontainer
+
+No environment hardcoding
+
+Hydration-safe Next.js architecture
+
+Spec-driven development
+
+3️⃣ DEVCONTAINER SETUP
+
+Devcontainer includes:
+
+Node 20
+
+pnpm via corepack
+
+Persistent pnpm store volume
+
+File watcher exclusions
+
+High ulimit
+
+Remote user: node
+
+Everything optimized for WSL2 performance.
+
+4️⃣ AI TOOLING SETUP
+
+Extensions:
+
+Continue
+
+Cline
+
+Prisma
+
+Thunder Client
+
+TODOs
+
+ESLint
+
+Prettier
+
+Markdown tools
+
+Models:
+
+Local:
+
+Ollama
+
+qwen2.5-coder:7b
+
+Backup API:
+
+gpt-4o-mini (planned)
+
+5️⃣ OBSERVED LIMITATION
+
+Continue shows ⚠️ for Plan/Agent when using qwen2.5-coder:7b.
+
+Reason:
+
+Local 7B models are not reliably trained for tool-calling.
+
+Agent/Plan mode requires structured tool output.
+
+Local model works well for:
+
+Code generation
+
+Refactoring
+
+Small edits
+
+But unreliable for:
+
+Multi-step orchestration
+
+Tool calling
+
+Strict JSON formatting
+
+Conclusion:
+Hybrid setup required.
+
+6️⃣ TARGET ARCHITECTURE (HYBRID + AUTONOMOUS)
+
+Goal:
+
+Implement BOTH:
+
+B) Hybrid setup (local + API backup)
+C) True autonomous agent runtime
+
+LAYER 1 — IDE
+
+Continue:
+
+Chat → Local Qwen
+
+Agent/Plan → API model
+
+Cline:
+
+Local for normal tasks
+
+API for escalation
+
+LAYER 2 — ROUTING
+
+Option A:
+
+Direct Ollama + Direct OpenAI (manual switch)
+
+Option B:
+
+LiteLLM local router
+
+Single OpenAI-compatible endpoint
+
+Routes:
+
+local/qwen → Ollama
+
+api/gpt-mini → OpenAI
+
+LAYER 3 — AUTONOMOUS AGENT
+
+Planned:
+
+LangGraph-based agent inside repo:
+
+tools/agent/
+agent.py
+prompts/
+state/
+
+Agent responsibilities:
+
+Read inputs.yml
+
+Generate/update tasks
+
+Modify repo files
+
+Run:
+
+pnpm validate:inputs
+
+pnpm lint
+
+pnpm build
+
+Retry on failure
+
+Produce summary
+
+Escalate to API if:
+
+Repeated failures
+
+Large refactor
+
+Architecture decision
+
+Complex reasoning needed
+
+7️⃣ CURRENT STATUS
+
+Ollama installed in WSL
+
+Continue connected via JSON config
+
+Cline configured to use Ollama OpenAI-compatible endpoint
+
+WSL resource limits tuned
+
+Devcontainer optimized
+
+Hybrid routing not fully finalized yet.
+
+8️⃣ OBJECTIVE FOR THIS NEW CHAT
+
+I want you to:
+
+Review this architecture.
+
+Suggest improvements or simplifications.
+
+Confirm best hybrid routing pattern for my hardware.
+
+Help design a clean implementation roadmap.
+
+Keep it mostly free / open source.
+
+Minimize recurring API cost.
+
+Ensure spec-driven discipline remains central.
+
+Do not suggest enterprise cloud solutions.
+Do not assume unlimited budget.
+Prioritize local-first architecture.
+
+END CONTEXT
+✅ Why This Prompt Works
+
+This format:
+
+Removes conversation noise
+
+Preserves architectural decisions
+
+Preserves constraints
+
+Preserves hardware limits
+
+Preserves tooling state
+
+Clearly defines objective
+
+Any capable LLM can now resume exactly where we left off.
+
+If you want, I can also generate:
+
+A shorter compressed version (for models with smaller context)
+
+A version optimized specifically for GPT-4o
+
+A version optimized for Claude
+
+A version optimized for local LLM ingestion
+
+A “technical only” version without narrative framing
+
+Tell me which variant you want.
 
