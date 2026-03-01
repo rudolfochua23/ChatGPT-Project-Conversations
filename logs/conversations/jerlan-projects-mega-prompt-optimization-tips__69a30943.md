@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T05:13:15.106Z
+- Captured: 2026-03-01T05:16:17.655Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -2469,4 +2469,327 @@ If you do only one upgrade: Config Discipline + Validation (Part 5.5 + CI valida
 That’s what keeps spec-driven platforms from turning into “random env drift”.
 
 If you want, I can rewrite your playbook into a v2 that includes all these inserts while staying copy/paste-friendly (same style, same phases, still Copilot driven).
+
+## User
+
+- in my vscode + WSL2 Ubuntu, i have Cline, SpecStory, Continue, Prisma, Thunder Client & TODOs extensions. 
+- i want to setup my own AI Code Agent but i want everything to be as free as possible and everything is open source. i can manage small amount fees if that's really necessary
+- i'm not that very code savvy but i just want to built an app based on spec driven prompt
+- suggest the best setup for my laptop that has a specification of:
+CPU: Intel core i7-13620H 
+Memory: 47GB DDR5 
+Storage: 512GB NVME 
+Video Card: NVIDIA GeForce RTX 4050 6GB Dedicated
+
+## Assistant
+
+Perfect. With your machine, you can build a serious local AI coding agent setup without depending heavily on paid APIs.
+
+You have:
+
+i7-13620H (very solid)
+
+47GB RAM (excellent)
+
+RTX 4050 6GB (usable for 7B–14B models)
+
+WSL2 Ubuntu
+
+Docker
+
+VS Code inside WSL
+
+You’re in a very strong position.
+
+Let me give you a realistic, production-minded, mostly-open-source setup tailored to:
+
+Spec-driven development
+
+Not extremely code savvy
+
+Want agent behavior
+
+Want low or near-zero recurring cost
+
+🎯 Goal
+
+You want:
+
+“My own AI Code Agent that reads spec, edits repo, scaffolds app, and works locally.”
+
+Without heavy OpenAI bills.
+
+🔵 High-Level Architecture (Recommended)
+
+You will use:
+
+🧠 Local Model (Primary Brain)
+
+Ollama
+
+Model: qwen2.5-coder:7b OR deepseek-coder:6.7b
+
+Runs locally on RTX 4050
+
+🤖 VS Code Agent Layer
+
+Continue (open source)
+
+Or Cline (good for agent-style)
+
+Connected to Ollama
+
+☁ Optional Smart Assist (Small Paid Backup)
+
+Cheap OpenAI API key (for very complex reasoning only)
+
+Use sparingly
+
+🔵 Why This Is The Best Setup For You
+Option	Cost	Power	Control	Fit for You
+Full OpenAI GPT-4	$$$	🔥🔥🔥	Low	Overkill
+Claude API	$$	🔥🔥🔥	Low	Not needed daily
+Self-host 30B model	Free	Heavy GPU need	High	RTX 4050 too small
+Ollama + 7B model	Free	🔥🔥	High	✅ Perfect
+Ollama + 14B	Free	🔥🔥🔥	Medium	Borderline on 6GB VRAM
+
+For your GPU (6GB VRAM):
+
+7B models = smooth
+
+14B = possible with quantization but slower
+
+30B+ = not practical
+
+🔵 Step-by-Step: Your Ideal Setup
+1️⃣ Install Ollama in WSL2 (Linux side)
+
+Inside Ubuntu:
+
+Bash
+curl -fsSL https://ollama.com/install.sh | sh
+
+Then pull a model:
+
+Bash
+ollama pull qwen2.5-coder:7b
+
+Alternative:
+
+Bash
+ollama pull deepseek-coder:6.7b
+
+I recommend:
+
+qwen2.5-coder:7b for structured generation.
+
+Test it:
+
+Bash
+ollama run qwen2.5-coder:7b
+2️⃣ Connect Continue Extension to Ollama
+
+In VS Code:
+
+Continue → Settings → Models
+
+Add:
+
+JSON
+{
+  "models": [
+    {
+      "title": "Local Qwen Coder",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b"
+    }
+  ]
+}
+
+Now your AI runs locally.
+
+No API cost.
+
+3️⃣ Best Agent Mode Setup
+
+For spec-driven architecture:
+
+Use Continue for:
+
+Scaffold generation
+
+Refactoring
+
+Code patching
+
+Reading repo context
+
+Use Cline when:
+
+You want tool-execution behavior
+
+It modifies files automatically
+
+Runs shell commands
+
+Cline is closer to “agent.”
+
+🔵 How You Should Use It (Since You're Not Very Code Savvy)
+
+Do NOT freestyle prompt.
+
+Instead, create:
+
+Code
+/ai/
+  engine.md
+  rules.md
+  inputs.yml
+
+Then instruct your agent:
+
+Code
+You are an AI Code Agent.
+
+Rules:
+- inputs.yml is SSOT
+- Modify only impacted modules
+- Never regenerate entire repo
+- Follow project.memory.md
+
+Local models perform MUCH better when given structure.
+
+🔵 What About SpecStory?
+
+SpecStory is good for:
+
+Tracking requirements evolution
+
+Writing structured product specs
+
+But it is not a strong code agent.
+
+Keep it for documentation, not generation.
+
+🔵 What About Prisma + Thunder Client?
+
+Perfect.
+
+Your setup is actually very clean:
+
+Prisma extension → DB safety
+
+Thunder Client → API testing
+
+Continue/Cline → Code agent
+
+Docker host infra
+
+Devcontainer for isolation
+
+This is a very modern dev setup.
+
+🔵 Performance Expectations On Your Machine
+
+With qwen2.5-coder 7B:
+
+15–35 tokens/sec
+
+Feels interactive
+
+Good at Nest + Next + Prisma
+
+Handles scaffolding well
+
+Struggles with extremely complex reasoning
+
+For complex reasoning:
+
+Occasionally use OpenAI GPT-4o mini (cheap)
+
+Or DeepSeek API (cheap)
+
+🔵 If You Want MAX POWER (Hybrid Setup)
+
+Use:
+
+Local Ollama 7B for:
+
+File edits
+
+Refactors
+
+Code fixes
+
+Routine generation
+
+Cheap API model for:
+
+Architecture design
+
+Complex multi-phase reasoning
+
+You’d spend maybe:
+
+$5–$15/month
+
+Instead of $100+.
+
+🔵 Advanced (Optional): GPU Acceleration Check
+
+Inside WSL:
+
+Bash
+nvidia-smi
+
+If visible → Ollama will use GPU.
+
+If not:
+You need to enable CUDA in WSL2 (I can guide you).
+
+🔵 What I Recommend For YOU Specifically
+
+Given:
+
+Not very code savvy
+
+Want spec-driven generation
+
+Want mostly free
+
+Want agent-like automation
+
+Your Best Stack:
+
+Ollama (local)
+
+qwen2.5-coder:7b
+
+Continue extension
+
+Cline for command execution
+
+Rare OpenAI GPT-4o-mini fallback
+
+This gives you:
+
+Autonomy
+
+Low cost
+
+Control
+
+Good performance
+
+Stability inside WSL2
+
+🔵 Final Question For You
+
+Do you want:
+
+A) Pure local-only setup (100% free, some limitations)
+B) Hybrid setup (local + small API backup for hard tasks)
+C) More advanced “true autonomous agent” architecture (LangGraph, AutoGen, etc.)
+
+Tell me which direction and I’ll design the exact implementation architecture for your machine.
 
