@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Review
-- Captured: 2026-03-02T13:40:10.586Z
+- Captured: 2026-03-02T13:43:13.677Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -7646,4 +7646,66 @@ CI checkout uses fetch-depth: 0 ✅
 package.json script hook ✅
 
 If you want, I can also provide a “strictest” variant that additionally fails when inputs.schema.json should change (e.g., PRODUCT changes that introduce a new spec field).
+
+## User
+
+- ok i want that too but please generate again a clearly stated from start to finish process of our mega prompt and adding this new "strictest" variant. 
+- at first, you should state what files and folders that needs to be to manually created and clearly state what should we run in copilot and clearly what should we run in terminal
+- double check everything so we don't miss any details
+
+## Assistant
+
+Below is your single, self-contained, double-checked, start-to-finish MASTER PROMPT — V3.6 (STRICTEST).
+
+It includes everything:
+
+V1 devcontainer (with watcherExclude + search.exclude)
+
+Dynamic devcontainer name placeholder → replaced once from inputs.yml.app.name
+
+PRODUCT.md = only manual features file
+
+inputs.yml + inputs.schema.json = AI generated
+
+Full app + platform scaffold (web/api/infra/CI/tools)
+
+Compose-first for dev/stage/prod
+
+K8s scaffold inactive until enabled
+
+Multi-tenant toggle now or later
+
+Mandatory AI change logs + implementation map
+
+Mandatory “review logs first”
+
+CI guard MAX STRICT + STRICTEST variant:
+
+If PRODUCT.md changed → requires inputs.yml + changelog + implementation map and
+
+Additionally enforces schema sync: if PRODUCT.md changed and inputs.yml changed, then schema must be updated too (unless explicitly unchanged, see note).
+
+This is the one you save.
+
+🔷 SPEC-DRIVEN PLATFORM MASTER PROMPT — V3.6 (STRICTEST CANON)
+Goal
+
+Build a reusable internal platform template and a real application scaffold from product requirements, with strict governance, CI enforcement, Compose-first deployment, and future Kubernetes readiness.
+
+✅ DEFINITIONS (NO CONFUSION)
+Human writes only:
+
+docs/PRODUCT.md (features/workflows/how the app works)
+
+AI generates and maintains:
+
+inputs.yml
+
+inputs.schema.json
+
+all code in apps/*, packages/*
+
+infra in deploy/*
+
+tools sc
 
