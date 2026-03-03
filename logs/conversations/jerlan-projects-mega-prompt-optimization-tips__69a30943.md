@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-03T15:58:43.414Z
+- Captured: 2026-03-03T16:01:46.179Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -4968,4 +4968,50 @@ whether it will fit well on your 6GB VRAM
 the best quantization/tag to pick
 
 and whether it’s likely to improve tool/agent behavior in Continue/Cline.
+
+## User
+
+https://huggingface.co/Qwen/Qwen3.5-9B
+
+taht the link from edsa revolution?
+
+## Assistant
+
+Good question — and short answer:
+
+No. That Hugging Face link has nothing to do with EDSA Revolution.
+
+It’s just a coincidence in naming.
+
+What That Link Actually Is
+
+https://huggingface.co/Qwen/Qwen3.5-9B
+
+That is:
+
+A model published by Qwen team (Alibaba)
+
+Version: Qwen 3.5
+
+Size: 9 Billion parameters
+
+Hosted on Hugging Face
+
+Completely unrelated to Philippine history
+
+There is no connection to EDSA Revolution.
+
+The word “Revolution” in model releases often just means:
+
+“major improvement”
+
+“big update”
+
+marketing language
+
+AI companies love dramatic naming 😄
+
+Now let’s talk technically about Qwen3.5-9B for your machine
+
+Your specs:
 
