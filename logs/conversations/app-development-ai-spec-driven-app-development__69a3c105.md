@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Development
-- Captured: 2026-03-04T14:40:09.055Z
+- Captured: 2026-03-04T14:43:12.695Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -9964,4 +9964,558 @@ docker compose (host-only) ✅ correct
 devcontainer steps ✅ correct
 
 If you want one more upgrade (optional but common for monorepos): I can add a matrix that runs turbo tasks with caching and separate jobs for faster feedback, while still keeping the strictest governance step up front.
+
+## User
+
+yes please do that and please provide again the whole mega prompt which includes the new features here and please be clear and specific about your instructions of what should be created by me and what should be told in copilot prompt or if it is automatically generated from copilot prompt
+
+## Assistant
+
+Below is your updated CI “matrix + Turbo cache” setup, and then a single, clean, start-to-finish MEGA MASTER PROMPT (V6 STRICTEST) that includes it and is crystal-clear about:
+
+✅ what YOU create manually
+
+✅ what Copilot must generate
+
+✅ what you run in devcontainer terminal
+
+✅ what you run on host terminal
+
+No missing steps.
+
+1) CI v2: Matrix + Turbo caching (paste-ready)
+
+This version:
+
+Uses Turbo to run tasks per pipeline (lint, typecheck, test, build) in separate jobs
+
+Runs governance gates first in a dedicated job:
+
+tools:validate-inputs
+
+tools:check-env
+
+tools:check-product-sync (STRICTEST)
+
+Uses Turbo cache via actions/cache on .turbo (works even without remote cache)
+
+Still uses fetch-depth: 0
+
+Cancels redundant runs
+
+📄 .github/workflows/ci.yml
+YAML
+name: CI
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  governance:
+    name: Governance gates (spec/env/product sync)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout (full history for diff guards)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate spec (inputs.yml vs inputs.schema.json)
+        run: pnpm tools:validate-inputs
+
+      - name: Validate environment expectations (fail-fast)
+        run: pnpm tools:check-env
+
+      - name: Product sync guard (STRICTEST)
+        run: pnpm tools:check-product-sync
+
+  quality:
+    name: Turbo ${{ matrix.task }}
+    needs: governance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [lint, typecheck, test, build]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ github.ref_name }}-
+            turbo-${{ runner.os }}-
+
+      - name: Run turbo ${{ matrix.task }}
+        run: pnpm turbo run ${{ matrix.task }} --cache-dir=.turbo
+
+Assumption: you have turbo pipeline tasks named lint, typecheck, test, build in turbo.json and package scripts delegate to turbo or at least turbo can run them.
+
+2) FULL MEGA MASTER PROMPT — V6 STRICTEST (CANONICAL)
+
+Copy/paste this whole prompt into your notes.
+
+🔷 SPEC-DRIVEN PLATFORM MASTER PROCESS — V6 STRICTEST (CANONICAL)
+What this builds
+
+Reusable internal platform template
+
+Full app scaffold (web + api) driven by product requirements
+
+Compose-first dev/stage/prod deployment
+
+Kubernetes scaffold (inactive until enabled)
+
+Multi-tenant toggle now or later
+
+Strict AI logging + implementation snapshot
+
+Strictest CI discipline (PRODUCT change requires spec+schema+logs+map)
+
+CI optimized with Turbo matrix + caching
+
+✅ GLOBAL RULES (STRICTEST)
+Rule 1 — Human-only features file
+
+You describe the app ONLY in:
+
+docs/PRODUCT.md
+
+No feature narrative elsewhere.
+
+Rule 2 — AI-only spec contract + schema
+
+AI generates/maintains:
+
+inputs.yml
+
+inputs.schema.json
+
+Rule 3 — AI must log every change
+
+Every AI change MUST update:
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+Rule 4 — AI must review before changing anything
+
+Before any change, AI must read:
+
+docs/PRODUCT.md
+
+inputs.yml
+
+inputs.schema.json
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+project.memory.md
+
+Rule 5 — Compose-first dev/stage/prod
+
+Compose is default deployment for all environments.
+
+Rule 6 — K8s scaffold disabled unless enabled in spec
+
+Only enabled when:
+
+YAML
+deploy:
+  k8s:
+    enabled: true
+Rule 7 — Multi-tenant toggle now or later
+YAML
+tenancy:
+  mode: single | multi
+Rule 8 — Devcontainer name placeholder replaced ONCE
+
+.devcontainer/devcontainer.json starts with:
+
+JSON
+"name": "Spec-Driven Platform - {{APP_NAME}}"
+
+AI replaces {{APP_NAME}} with inputs.yml.app.name only during initial scaffold, then never touches .devcontainer again.
+
+Rule 9 — STRICTEST CI governance
+
+If docs/PRODUCT.md changes, CI must fail unless ALL of these also change:
+
+inputs.yml
+
+inputs.schema.json
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+Enforced by:
+
+tools/check-product-sync.mjs
+
+🟦 PHASE 0 — MANUAL BOOTSTRAP (YOU CREATE THESE)
+Create folders manually
+.devcontainer/
+docs/
+Create files manually
+.gitignore
+gitignore
+node_modules
+dist
+.next
+.turbo
+.env
+.env.*
+coverage
+*.log
+.DS_Store
+*.tsbuildinfo
+.nvmrc
+Plain text
+20
+package.json (bootstrap only)
+JSON
+{
+  "name": "spec-driven-platform",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": { "node": ">=20" }
+}
+.devcontainer/devcontainer.json (with watchers)
+JSON
+{
+  "name": "Spec-Driven Platform - {{APP_NAME}}",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "mounts": [
+    "source=pnpm-store,target=/home/node/.pnpm-store,type=volume"
+  ],
+  "runArgs": ["--ulimit", "nofile=65536:65536"],
+  "postCreateCommand": "pnpm -v",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        },
+        "search.exclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        }
+      }
+    }
+  }
+}
+.devcontainer/Dockerfile (permission-safe pnpm/corepack)
+dockerfile
+FROM mcr.microsoft.com/devcontainers/typescript-node:20
+
+ENV PNPM_HOME="/home/node/.local/share/pnpm"
+ENV COREPACK_HOME="/home/node/.corepack"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+
+ENV PNPM_STORE_PATH=/home/node/.pnpm-store
+RUN pnpm config set store-dir ${PNPM_STORE_PATH}
+
+RUN apt-get update && \
+    apt-get install -y git curl ca-certificates netcat-traditional && \
+    rm -rf /var/lib/apt/lists/*
+project.memory.md
+Markdown
+# Project Memory — V6 STRICTEST
+
+- docs/PRODUCT.md is the ONLY feature/workflow description file.
+- inputs.yml + inputs.schema.json define the spec contract; AI maintains them.
+- Compose-first for dev/stage/prod (host runs compose).
+- K8s scaffold exists but is disabled unless enabled in inputs.yml.
+- Devcontainer name placeholder replaced ONCE during initial scaffold only; feature updates must not touch .devcontainer.
+- Every AI change must update docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md.
+- Before any change, AI must review PRODUCT.md, inputs.yml, inputs.schema.json, CHANGELOG_AI.md, IMPLEMENTATION_MAP.md.
+- STRICTEST CI: PRODUCT change requires inputs.yml + inputs.schema.json + CHANGELOG_AI + IMPLEMENTATION_MAP updates.
+docs/PRODUCT.md (YOU fill app details here)
+Markdown
+# Product Definition
+
+## App Name
+## Purpose
+## Target Users
+## Core Entities
+## User Roles
+## Main Workflows (step-by-step)
+## Realtime Features (if any)
+## Background Jobs (if any)
+## Storage Requirements (types, size limits)
+## Data Sensitivity (PII? retention? export/delete?)
+## Tenancy Model (single / multi / undecided)
+## Environments Needed (dev / stage / prod)
+## Domain / Base URL Expectations (optional)
+docs/CHANGELOG_AI.md
+Markdown
+# AI Change Log
+
+## YYYY-MM-DD
+- Why change was made
+- What modules/files changed
+- What schema/migrations changed
+- What routes/pages changed
+- What infra/CI/tools changed
+docs/IMPLEMENTATION_MAP.md
+Markdown
+# Implementation Map (Current Snapshot)
+
+- Entities/tables + migrations
+- API modules + routes
+- Web pages/screens + layouts
+- Jobs/queues/workers + DLQ/replay
+- Storage buckets/policies
+- Auth/RBAC + tenancy handling
+- Observability endpoints/exporters
+- Deployment entrypoints (compose paths, k8s scaffold status)
+
+✅ Manual phase ends here.
+
+🟦 PHASE 1 — OPEN DEVCONTAINER (YOU DO THIS)
+
+VS Code → “Dev Containers: Reopen in Container”
+
+🟦 PHASE 2 — COPILOT DISCOVERY (QUESTIONS ONLY)
+What you do in Copilot Chat
+
+Paste:
+
+Plain text
+We are building using Spec-Driven Platform V6 STRICTEST.
+
+1) Read:
+- docs/PRODUCT.md
+- project.memory.md
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+2) Ask structured technical questions:
+- confirm app name (for devcontainer name replacement)
+- domain/base URLs for dev/stage/prod
+- tenancy mode now + upgrade plan
+- Keycloak issuer/client IDs/role claim mapping
+- RBAC permissions model
+- PII governance + retention/export/delete
+- storage buckets + mime + size limits
+- background jobs + DLQ/replay needs
+- observability exporters + metrics needs
+- security constraints (CORS, CSRF mode, rate limits)
+- confirm Compose default for dev/stage/prod
+- confirm K8s scaffold disabled by default
+
+Do NOT generate files yet.
+Only ask questions.
+🟦 PHASE 3 — COPILOT GENERATES SPEC FILES (AI OUTPUT → YOU SAVE)
+What you do in Copilot Chat
+
+Paste:
+
+Plain text
+Generate:
+- inputs.yml (version: 3)
+- inputs.schema.json (strict JSON schema with conditionals)
+
+Rules:
+- Derived strictly from docs/PRODUCT.md + my answers.
+- Compose default for dev/stage/prod.
+- K8s scaffold exists but deploy.k8s.enabled defaults to false.
+- Tenancy supports single now and upgrade to multi later.
+
+ALSO (initial scaffold only):
+- Replace {{APP_NAME}} in .devcontainer/devcontainer.json with inputs.yml.app.name.
+- After this, do NOT modify .devcontainer on feature updates.
+
+Output ONLY YAML and JSON.
+What you do manually after Copilot outputs
+
+Copy/paste into root files:
+
+inputs.yml
+
+inputs.schema.json
+
+🟦 PHASE 4 — COPILOT GENERATES PLATFORM + APP + TOOLS + CI (AI GENERATED)
+What you do in Copilot Chat
+
+Paste:
+
+Plain text
+Generate the full monorepo scaffold using:
+- inputs.yml
+- inputs.schema.json
+- docs/PRODUCT.md
+- project.memory.md
+
+STRICT:
+1) Read docs/CHANGELOG_AI.md + docs/IMPLEMENTATION_MAP.md first.
+2) Generate web/app + api + shared packages + infra.
+3) Generate tools (MUST create files):
+   - tools/validate-inputs.mjs
+   - tools/check-env.mjs
+   - tools/hydration-lint.mjs
+   - tools/check-product-sync.mjs (STRICTEST guard)
+4) Generate compose deploy:
+   - deploy/compose/dev/docker-compose.yml
+   - deploy/compose/stage/docker-compose.yml
+   - deploy/compose/prod/docker-compose.yml
+5) Generate deploy/k8s-scaffold (inactive until enabled).
+6) Generate env templates:
+   - .env.example
+   - deploy/compose/dev/.env.example
+   - deploy/compose/stage/.env.example
+   - deploy/compose/prod/.env.example
+7) Generate CI:
+   - .github/workflows/ci.yml must be Turbo matrix + cache version:
+     - Job 1: governance: validate-inputs, check-env, check-product-sync
+     - Job 2: quality matrix: lint/typecheck/test/build via turbo
+     - actions/checkout fetch-depth: 0
+8) Update docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md.
+9) Do NOT modify .devcontainer after this phase.
+
+STRICTEST check-product-sync behavior:
+If docs/PRODUCT.md changed, require changes to:
+- inputs.yml
+- inputs.schema.json
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+Else exit(1).
+
+✅ This phase is where tools/check-product-sync.mjs is generated by Copilot (not manual).
+
+🟦 PHASE 5 — DEVCONTAINER TERMINAL (YOU RUN THESE)
+Bash
+pnpm install --frozen-lockfile
+pnpm tools:validate-inputs
+pnpm tools:check-env
+pnpm tools:check-product-sync
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+🟦 PHASE 6 — HOST TERMINAL (YOU RUN COMPOSE)
+Bash
+docker compose -f deploy/compose/dev/docker-compose.yml up -d
+
+(Use stage/prod compose files similarly.)
+
+🟦 PHASE 7 — FOREVER FEATURE UPDATE LOOP (STRICTEST)
+You do manually
+
+Edit docs/PRODUCT.md only.
+
+You do in Copilot Chat
+
+Paste:
+
+Plain text
+FEATURE UPDATE — V6 STRICTEST
+
+1) Read:
+- docs/PRODUCT.md
+- inputs.yml
+- inputs.schema.json
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+- project.memory.md
+
+2) Summarize current state (Implementation Map) + recent history (Change Log).
+3) Ask clarifying questions only if required.
+
+4) Implement:
+- update inputs.yml
+- update inputs.schema.json (STRICTEST: always updated when PRODUCT changes)
+- modify only impacted modules/files
+- add Prisma migrations if needed
+- update tests if needed
+- do NOT touch .devcontainer
+
+5) MUST update:
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+Then you run (devcontainer terminal)
+Bash
+pnpm tools:validate-inputs
+pnpm tools:check-env
+pnpm tools:check-product-sync
+pnpm test
+pnpm build
+🟦 OPTIONAL TOGGLES
+Enable multi-tenant later
+YAML
+tenancy:
+  mode: multi
+Enable Kubernetes later
+YAML
+deploy:
+  k8s:
+    enabled: true
+
+Then Copilot updates only impacted modules + logs/map.
+
+Done.
+
+If you want, I can also provide a turbo.json reference pipeline (so you’re guaranteed those tasks exist), but this should already fit your existing “pnpm + turbo” standard.
 
