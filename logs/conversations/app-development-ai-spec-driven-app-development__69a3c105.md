@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Development
-- Captured: 2026-03-04T14:18:44.891Z
+- Captured: 2026-03-04T14:21:48.215Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -9428,4 +9428,155 @@ pnpm tools:check-product-sync
 If the file exists and runs, your governance system is installed correctly.
 
 If you'd like, I can also give you the V5 version of your master system that fixes three additional small structural gaps I spotted in V4 (they are subtle but important for long-term stability).
+
+## User
+
+yes please do now
+
+## Assistant
+
+Below is V5 of your master system — rewritten cleanly and fixing the subtle gaps that typically bite later.
+
+What V5 fixes (the “gaps”)
+
+Devcontainer permission trap (Corepack EACCES): moves PNPM_HOME + COREPACK_HOME to /home/node and avoids corepack enable in postCreateCommand.
+
+Governance script placement ambiguity: explicitly says PHASE 4 generates tools/check-product-sync.mjs (and other tools), not manual.
+
+CI reliability: enforces actions/checkout@v4 with fetch-depth: 0, uses corepack enable, caches pnpm properly, and runs governance/validation before lint/test/build.
+
+Environment discipline: adds .env.example and deploy/compose/*/.env.example expectation + tools/check-env.mjs run order.
+
+Prisma lifecycle clarity: adds a consistent migration workflow (generate/migrate/seed) and where it runs (devcontainer vs host).
+
+Everything else you already designed remains: PRODUCT-only features, AI-generated spec, logs+map, Compose-first, K8s scaffold toggle, multi-tenant toggle, strictest CI guard.
+
+🔷 SPEC-DRIVEN PLATFORM MASTER PROCESS — V5 STRICTEST (CANONICAL)
+The only “manual features file”
+
+docs/PRODUCT.md is the only file where you write how the app works.
+
+AI generates/maintains
+
+inputs.yml
+
+inputs.schema.json
+
+All code + infra + CI + tools
+
+docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md are mandatory updates on every AI change.
+
+Strictest CI discipline
+
+If docs/PRODUCT.md changes, CI must fail unless ALL also changed:
+
+inputs.yml
+
+inputs.schema.json
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+🟦 PHASE 0 — MANUAL BOOTSTRAP (CREATE THESE FIRST)
+0.1 Create repo
+
+GitHub repo → clone → open in VS Code.
+
+0.2 Create folders manually
+.devcontainer/
+docs/
+0.3 Create files manually (exact)
+.gitignore
+gitignore
+node_modules
+dist
+.next
+.turbo
+.env
+.env.*
+coverage
+*.log
+.DS_Store
+*.tsbuildinfo
+.nvmrc
+Plain text
+20
+package.json (bootstrap only)
+JSON
+{
+  "name": "spec-driven-platform",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": { "node": ">=20" }
+}
+✅ .devcontainer/devcontainer.json (V1 + placeholder + customizations + safe postCreate)
+JSON
+{
+  "name": "Spec-Driven Platform - {{APP_NAME}}",
+
+  "build": { "dockerfile": "Dockerfile" },
+
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+
+  "mounts": [
+    "source=pnpm-store,target=/home/node/.pnpm-store,type=volume"
+  ],
+
+  "runArgs": ["--ulimit", "nofile=65536:65536"],
+
+  "postCreateCommand": "pnpm -v",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        },
+        "search.exclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        }
+      }
+    }
+  }
+}
+✅ .devcontainer/Dockerfile (V5 permission-safe PNPM/COREPACK paths)
+dockerfile
+FROM mcr.microsoft.com/devcontainers/typescript-node:20
+
+# Put pnpm + corepack state in node's home (writable)
+ENV PNPM_HOME="/home/node/.local/share/pnpm"
+ENV COREPACK_HOME="/home/node/.corepack"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Enable pnpm via corepack (build-time)
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+
+# Persist pnpm store for faster installs
+ENV PNPM_STORE_PATH=/home/node/.pnpm-store
+RUN pnpm config set store-dir ${PNPM_STORE_PATH}
+
+RUN apt-get update && \
+    apt-get install -y git curl ca-certificates netcat-traditional && \
+    rm -rf /var/lib/apt/lists/*
+project.memory.md (platform invariants only)
+Markdown
+# Project Memory — V5 STRICTEST
+
+- docs/PRODUCT.md is the ONLY feature/workflow description file.
+- inputs.yml + inputs.schema.json are AI-maintained and define the spec contract.
+- Compose-first for dev/stage/prod. Host runs compose.
+- K8s scaffold exists but disabled unless enabled in inputs.yml.
+- Devcontainer name placeholder replaced ONCE during initial scaffold only; feature updates must not touch .devcontainer.
+- Every AI change must update docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md.
+- Before any AI chan
 
