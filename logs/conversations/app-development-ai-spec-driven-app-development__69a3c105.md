@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Development
-- Captured: 2026-03-04T14:21:48.215Z
+- Captured: 2026-03-04T14:24:51.670Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -9578,5 +9578,261 @@ Markdown
 - K8s scaffold exists but disabled unless enabled in inputs.yml.
 - Devcontainer name placeholder replaced ONCE during initial scaffold only; feature updates must not touch .devcontainer.
 - Every AI change must update docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md.
-- Before any AI chan
+- Before any AI change, AI must read PRODUCT.md, inputs.yml, inputs.schema.json, CHANGELOG_AI.md, IMPLEMENTATION_MAP.md.
+- Strictest CI: PRODUCT change requires inputs.yml + inputs.schema.json + changelog + implementation map changes.
+docs/PRODUCT.md (YOU fill)
+Markdown
+# Product Definition
+
+## App Name
+## Purpose
+## Target Users
+## Core Entities
+## User Roles
+## Main Workflows (step-by-step)
+## Realtime Features (if any)
+## Background Jobs (if any)
+## Storage Requirements (types, size limits)
+## Data Sensitivity (PII? retention? export/delete?)
+## Tenancy Model (single / multi / undecided)
+## Environments Needed (dev / stage / prod)
+## Domain / Base URL (optional)
+docs/CHANGELOG_AI.md (bootstrap file)
+Markdown
+# AI Change Log
+
+## Rules
+- Every AI-generated change MUST be recorded here.
+- Use date headers (YYYY-MM-DD).
+- Include: why, what changed, impacted files/modules.
+
+## Template
+
+## YYYY-MM-DD
+- Why change was made (reference PRODUCT.md update)
+- What modules/files changed
+- What schema/migrations changed
+- What routes/pages changed
+- What infra/CI/tools changed
+docs/IMPLEMENTATION_MAP.md (bootstrap file)
+Markdown
+# Implementation Map (Current Snapshot)
+
+Must list:
+- Entities/tables + migration summary
+- API modules + routes/endpoints
+- Web pages/screens + major layouts
+- Jobs/queues/workers + DLQ/replay
+- Storage buckets/policies
+- Auth/RBAC mapping + tenancy handling
+- Observability endpoints/exporters
+- Deployment entrypoints (compose paths, k8s scaffold status)
+🟦 PHASE 1 — OPEN DEVCONTAINER
+
+VS Code → Ctrl+Shift+P → Dev Containers: Reopen in Container
+
+🟦 PHASE 2 — COPILOT DISCOVERY (QUESTIONS ONLY)
+
+Copilot Chat – paste:
+
+Plain text
+We are building using Spec-Driven Platform V5 STRICTEST.
+
+1) Read:
+- docs/PRODUCT.md
+- project.memory.md
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+2) Ask structured technical questions to finalize spec:
+- confirm app name (for devcontainer name replacement)
+- domain/base URLs for dev/stage/prod
+- tenancy mode now + upgrade plan
+- auth (Keycloak issuer/client IDs/role claim mapping)
+- RBAC permissions model
+- PII governance + retention/export/delete
+- storage buckets + allowed mime + size limits
+- background jobs + DLQ/replay needs
+- observability exporters + metrics needs
+- security constraints (CORS, CSRF mode, rate limits)
+- confirm Compose default for dev/stage/prod
+- confirm K8s scaffold disabled by default
+
+Do NOT generate files yet.
+Only ask questions.
+🟦 PHASE 3 — COPILOT GENERATES SPEC FILES (AI OUTPUT → YOU SAVE)
+
+Copilot Chat – paste:
+
+Plain text
+Generate:
+- inputs.yml (version: 3)
+- inputs.schema.json (strict JSON schema with conditionals)
+
+Rules:
+- Derived strictly from docs/PRODUCT.md and my answers.
+- Compose default for dev/stage/prod.
+- K8s scaffold exists but deploy.k8s.enabled defaults to false.
+- Tenancy supports single now and upgrade to multi later.
+- Include: app, environments, tenancy, auth, security, observability, storage, jobs, database, api, ci, deploy.
+
+ALSO (initial scaffold only):
+- Replace {{APP_NAME}} in .devcontainer/devcontainer.json with inputs.yml.app.name.
+- After this, do NOT modify .devcontainer on feature updates.
+
+Output ONLY YAML and JSON.
+
+✅ You create these files by copy-paste into repo root:
+
+inputs.yml
+
+inputs.schema.json
+
+🟦 PHASE 4 — COPILOT GENERATES FULL PLATFORM + FULL APP + TOOLS + CI
+
+Copilot Chat – paste:
+
+Plain text
+Generate the full monorepo scaffold using:
+- inputs.yml
+- inputs.schema.json
+- docs/PRODUCT.md
+- project.memory.md
+
+STRICT:
+1) Read docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md first.
+2) Generate the platform + app.
+3) Generate tools (MUST exist):
+   - tools/validate-inputs.mjs
+   - tools/check-env.mjs
+   - tools/hydration-lint.mjs
+   - tools/check-product-sync.mjs (STRICTEST)
+4) Generate CI: .github/workflows/ci.yml
+   - actions/checkout@v4 with fetch-depth: 0
+   - corepack enable
+   - pnpm install --frozen-lockfile
+   - pnpm tools:validate-inputs
+   - pnpm tools:check-product-sync
+   - pnpm lint
+   - pnpm typecheck
+   - pnpm test
+   - pnpm build
+5) Generate deploy/compose/dev|stage|prod docker-compose.yml (host-run)
+6) Generate deploy/k8s-scaffold (inactive until enabled)
+7) Generate env templates:
+   - .env.example
+   - deploy/compose/dev/.env.example
+   - deploy/compose/stage/.env.example
+   - deploy/compose/prod/.env.example
+8) Update docs/CHANGELOG_AI.md with what was generated.
+9) Update docs/IMPLEMENTATION_MAP.md with the full current snapshot.
+10) Do NOT modify .devcontainer after this phase.
+
+STRICTEST RULE for tools/check-product-sync.mjs:
+If docs/PRODUCT.md changed, require changes to:
+- inputs.yml
+- inputs.schema.json
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+Else exit(1).
+
+✅ This is the phase where tools/check-product-sync.mjs is created. Not manual.
+
+🟦 PHASE 5 — DEVCONTAINER TERMINAL (RUN THESE)
+
+Run inside devcontainer terminal:
+
+Bash
+pnpm install
+pnpm tools:validate-inputs
+pnpm tools:check-env
+pnpm tools:check-product-sync
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+🟦 PHASE 6 — HOST TERMINAL (RUN COMPOSE)
+
+On your host machine (outside devcontainer):
+
+Bash
+docker compose -f deploy/compose/dev/docker-compose.yml up -d
+
+(Use stage/prod compose files similarly.)
+
+🟦 PHASE 7 — FOREVER FEATURE UPDATE LOOP
+You do manually
+
+Edit only: docs/PRODUCT.md
+
+Copilot Chat prompt
+Plain text
+FEATURE UPDATE — V5 STRICTEST
+
+1) Read:
+- docs/PRODUCT.md
+- inputs.yml
+- inputs.schema.json
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+- project.memory.md
+
+2) Summarize:
+- current implementation snapshot (IMPLEMENTATION_MAP)
+- recent changes (CHANGELOG_AI)
+
+3) Ask clarifying questions only if required.
+
+4) Implement changes:
+- update inputs.yml
+- update inputs.schema.json (STRICTEST: always update when PRODUCT changes)
+- modify only impacted modules
+- add Prisma migrations if needed
+- update tests if needed
+- do NOT touch .devcontainer
+
+5) MUST update:
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+Do NOT regenerate entire repo.
+Then run (devcontainer terminal)
+Bash
+pnpm tools:validate-inputs
+pnpm tools:check-env
+pnpm tools:check-product-sync
+pnpm test
+pnpm build
+🟦 PHASE 8 — OPTIONAL TOGGLES
+Multi-tenant upgrade later
+
+In inputs.yml:
+
+YAML
+tenancy:
+  mode: multi
+Enable Kubernetes later
+
+In inputs.yml:
+
+YAML
+deploy:
+  k8s:
+    enabled: true
+
+Then use Copilot to modify only impacted modules and update logs/map.
+
+✅ V5 Summary Diagram
+Plain text
+PRODUCT.md (you)
+   ↓
+inputs.yml + inputs.schema.json (AI)
+   ↓
+Generated code + infra + CI + tools (AI)
+   ↓
+CHANGELOG_AI + IMPLEMENTATION_MAP (AI)
+   ↓
+CI enforces strictest sync (check-product-sync)
+
+If you want, I can also provide a “strictest” ci.yml full file (ready to paste) that includes pnpm caching + concurrency + separate PR/push triggers cleanly.
 
