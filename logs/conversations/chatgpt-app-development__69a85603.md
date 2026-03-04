@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: ChatGPT - App Development
-- Captured: 2026-03-04T16:33:16.884Z
+- Captured: 2026-03-04T16:36:18.903Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -779,5 +779,512 @@ E-commerce marketplace
 
 GIS-grade vessel tracking (future module)
 
-National registry synchronization
+National registry synchronization (future; unless explicitly required)
+
+2) Personas & roles (required)
+Personas (human descriptions)
+
+Persona A: Registration Clerk (City Hall staff)
+Registers fisherfolk, verifies documents, edits records, prints/export lists.
+
+Persona B: Field Enumerator (mobile-first user)
+Captures registrations on-site (photo/signature), later syncs, needs fast search.
+
+Persona C: Program Officer / Analyst
+Generates reports, monitors beneficiaries, checks permit renewal status and catch summaries.
+
+System roles (for RBAC)
+
+Role: viewer — can search and view fisherfolk profiles and reports; no create/edit/delete
+
+Role: user — can create profiles, edit allowed fields, attach media (photo/signature), create operational records (catch/program entries) based on permissions
+
+Role: moderator — can resolve duplicates, approve merges, correct critical identity fields, manage barangay reference data (if allowed)
+
+Role: admin — full access, manage users/roles, system configuration, audit logs, export controls
+
+Per-entity rules (important):
+
+user cannot delete fisherfolk profiles; only moderator/admin
+
+Only moderator/admin can edit unique identity fields (ID Number, Full Name, RSBSA Number) after initial creation (or require approval workflow)
+
+Only admin can perform bulk imports/exports (if enabled)
+
+3) Core entities & relationships (required)
+Entity: Barangay (reference)
+
+Fields: id, city (fixed = Calapan City), name, code, isActive
+
+Relationships: hasMany Fisherfolk
+
+Constraints: unique(city, name)
+
+Entity: Fisherfolk
+
+Fields:
+
+id (system UUID)
+
+idNumber (manual input, unique)
+
+lastName, firstName, middleName
+
+fullNameNormalized (system-generated for uniqueness checking)
+
+dateOfBirth
+
+sex (Male|Female)
+
+addressCity (fixed = Calapan City)
+
+barangayId
+
+contactNumberE164 (stored as +63...)
+
+rsbsaNumber (manual input, unique)
+
+isBarangayPresident (boolean)
+
+status (active|inactive|deceased|moved) (optional but recommended)
+
+createdAt, updatedAt
+
+Relationships:
+
+belongsTo Barangay
+
+hasMany FisherfolkCategory (join table)
+
+hasMany future modules: VesselOwnership, Permit, CatchRecord, ProgramBeneficiary (links)
+
+hasOne FisherfolkPhoto
+
+hasOne FisherfolkSignature
+
+Constraints / rules:
+
+unique(idNumber)
+
+unique(rsbsaNumber)
+
+unique(fullNameNormalized) AND rule: “no multiple IDs can exist for one full name”
+
+contactNumberE164 must match +63 then 9 then 9 digits (PH mobile pattern)
+
+barangayId required
+
+Entity: Category (reference)
+
+Fields: id, code, name, isActive
+
+Seed values:
+
+Boat Owner/Operator
+
+Capture Fishing
+
+Gleaning
+
+Vendor
+
+Fish Processing
+
+Aquaculture
+
+Entity: FisherfolkCategory (join)
+
+Fields: id, fisherfolkId, categoryId, createdAt
+
+Constraints: unique(fisherfolkId, categoryId)
+
+Entity: MediaObject (generic upload record)
+
+Fields: id, bucket, objectKey, mimeType, sizeBytes, checksum, createdAt, createdBy
+
+Relationships: referenced by FisherfolkPhoto and FisherfolkSignature
+
+Entity: FisherfolkPhoto
+
+Fields: id, fisherfolkId, mediaObjectId, capturedVia (upload|camera), createdAt
+
+Constraints: unique(fisherfolkId)
+
+Entity: FisherfolkSignature
+
+Fields: id, fisherfolkId, mediaObjectId, capturedVia (upload|draw), createdAt
+
+Constraints: unique(fisherfolkId)
+
+Entity: AuditLog
+
+Fields: id, actorUserId, action, entityType, entityId, beforeJson, afterJson, createdAt, ip (optional)
+
+Required events: create/update/delete, merge, role changes, exports
+
+(Future module entities can be listed now as “planned” to influence architecture without implementing immediately.)
+
+4) Primary workflows (required, step-by-step)
+Workflow A: Register fisherfolk profile (clerk/enumerator)
+
+User opens “New Registration”
+
+System shows form + barangay selection list (Calapan City only)
+
+User inputs ID Number, full name parts, DOB, sex, address barangay, RSBSA, contact number
+
+User selects one or more fisherfolk categories
+
+User checks “Is President?” if applicable
+
+User captures photo (upload or camera) → system enforces 1:1 crop
+
+User captures signature (upload or draw) → system crops to signed area
+
+System validates uniqueness: idNumber, rsbsaNumber, fullNameNormalized
+
+System stores Fisherfolk + joins + media objects
+
+System responds with created profile + printable/view page
+
+Workflow B: Search & view fisherfolk profile
+
+User searches by ID Number / name / RSBSA / barangay
+
+System returns paginated results with key identity fields and status
+
+User opens profile view with linked operational records (empty if none)
+
+Workflow C: Update fisherfolk profile
+
+User opens profile → Edit
+
+System enforces field-level permissions (unique identity fields gated)
+
+System validates changes (including uniqueness if edited)
+
+System saves update + writes AuditLog
+
+Workflow D: Deactivate record (soft delete)
+
+Moderator/Admin selects “Deactivate” with reason
+
+System marks status + locks new operational entries if required
+
+AuditLog recorded
+
+Workflow E: Resolve duplicates (merge)
+
+Moderator searches suspected duplicates
+
+System compares identity fields + shows merge preview
+
+Moderator chooses “primary record” and merges
+
+System re-links all foreign keys to primary record
+
+System archives secondary record + logs merge event
+
+5) Screens & navigation (recommended)
+Public screens
+
+/: redirect to login or app (depending on auth)
+
+/auth/login
+
+/auth/callback
+
+App screens (authenticated)
+
+/dashboard: summary counts (registered today, by barangay, by category)
+
+/fisherfolk: list + filters (barangay, category, status)
+
+/fisherfolk/new: registration form + photo/signature capture
+
+/fisherfolk/[id]: profile view (tabs: Profile, Vessels, Permits, Programs, Catch, Audit)
+
+/fisherfolk/[id]/edit
+
+/reports: predefined reports exportable
+
+/settings/profile: user profile
+
+Admin screens (role-gated)
+
+/admin
+
+/admin/users
+
+/admin/roles
+
+/admin/reference/barangays
+
+/admin/reference/categories
+
+/admin/audit-logs
+
+/admin/import-export (if enabled)
+
+6) API expectations (recommended)
+
+API base path: /api/v1
+
+Response envelope: { code, message, requestId, data, error }
+
+Pagination: cursor-based for lists
+
+Filtering/sorting:
+
+?q= for search
+
+?barangayId=
+
+?categoryId=
+
+?status=
+
+?sort=createdAt:desc
+
+Error handling:
+
+409 Conflict for uniqueness violations (idNumber/fullName/rsbsa)
+
+422 for validation errors (DOB format, contact format, required fields)
+
+7) Authentication & authorization (required)
+Auth provider
+
+Keycloak realm name: enterprise (or fms if isolated)
+
+Required identity fields: sub (userId), email, name
+
+Login method: email/password (SSO later)
+
+Token type: JWT
+
+JWT claims mapping
+
+userId: sub
+
+roles: realm_access.roles (or specify exact claim)
+
+tenantId: none (single tenant for now)
+
+RBAC rules
+
+viewer: read-only
+
+user: create/edit non-critical fields, add operational records
+
+moderator: merge, deactivate, edit critical fields, resolve reports
+
+admin: everything + user/role management + exports + reference data
+
+8) Tenancy model (required)
+
+Tenancy mode: single (module within a larger enterprise system)
+
+Future-ready note: if multi-tenant later, prefer row partition (tenantId column) with strict isolation on fisherfolk and operational records.
+
+9) Data sensitivity & governance (required)
+
+Contains PII? yes (name, DOB, address, contact, photo, signature)
+
+Data retention policy: retain while active + per LGU policy; soft-delete only
+
+Data export requirement: yes (CSV/PDF reports)
+
+Right-to-delete requirement: likely yes (but may be constrained by government record policies)
+
+Audit log required events:
+
+login (optional)
+
+create/update fisherfolk
+
+critical field changes (ID/name/RSBSA)
+
+merges
+
+deactivation/reactivation
+
+exports
+
+role changes
+
+10) Storage & uploads (required)
+
+Upload types: images
+
+Max file size: (recommend) 5–10MB per image
+
+Allowed MIME types: image/jpeg, image/png, image/webp
+
+Virus scanning required? later (recommended)
+
+Public or private objects? private
+
+Object lifecycle rules: delete objects only when record is permanently removed (if allowed)
+
+Buckets needed:
+
+fisherfolk-photos
+
+fisherfolk-signatures
+
+Upload workflow (presigned S3)
+
+Client requests presign (type=photo|signature, fisherfolkId optional)
+
+API validates size/type and returns { uploadUrl, objectKey }
+
+Client uploads to MinIO
+
+Client calls API to attach object to fisherfolk record
+
+API generates derived versions if needed (thumbnail, normalized crop)
+
+11) Realtime requirements (optional)
+
+Not required for v1. (Optional later: live “registration count today”, but can be polling.)
+
+12) Background jobs & async workflows (required if any)
+Job: Generate report exports
+
+Trigger: user requests export
+
+Inputs: filters, format
+
+Steps: query DB → generate file → store in object storage → notify user
+
+Retries/backoff: yes
+
+Idempotency key: exportRequestId
+
+Failure handling: mark failed + allow retry
+
+DLQ + replay: yes
+
+Job: Permit renewal reminders (future module)
+
+Trigger: daily scheduled
+
+Inputs: permits expiring in X days
+
+Steps: create notifications
+
+Scheduled: yes (daily)
+
+13) Notifications (optional)
+
+Email: no (v1), later optional
+
+In-app: yes (exports ready, permit renewals later)
+
+Push: later
+
+14) Performance & scale (recommended)
+
+Expected DAU/MAU: 20–200 staff users (typical LGU) + growth for enterprise usage
+
+Peak requests/sec: low (<50 rps) but must be reliable
+
+Upload volume/day: 50–500 images/day (depends on registrations)
+
+DB size: grows steadily; must support years of historical operational data
+
+15) Environments & domains (required)
+
+Environments: dev / stage / prod
+
+Domain/base URL:
+
+dev: TBD
+
+stage: TBD
+
+prod: TBD
+
+Local dev URLs:
+
+web: http://localhost:3000
+
+api: http://localhost:3001
+
+16) Observability requirements (recommended)
+
+Logs: JSON in prod, pretty in dev: yes
+
+Metrics: Prometheus: yes (optional in v1)
+
+Tracing: OpenTelemetry: later
+
+Health endpoints:
+
+liveness
+
+readiness
+
+17) Security requirements (required)
+
+CORS policy: allow only approved web origins
+
+CSRF: yes (if cookie-based session); if pure JWT header auth, document approach
+
+Rate limiting: e.g. 60 req/min/user; stricter on auth + upload presign endpoints
+
+Admin endpoint protections: admin role only + audit logs
+
+Allowed origins: stage/prod domains + localhost dev
+
+Secrets handling: env-only yes
+
+18) Acceptance criteria (required)
+
+User can login/logout successfully via Keycloak
+
+User can register fisherfolk profile end-to-end (including photo + signature)
+
+Uniqueness enforcement works (ID Number, full name, RSBSA)
+
+Contact number stored as +63 format and validated
+
+Barangay selection list is available and restricted to Calapan City
+
+Fisherfolk category multi-select is saved correctly
+
+Search works (ID/name/RSBSA/barangay) with pagination
+
+Audit logs record create/update/merge/deactivate actions
+
+Upload works via presigned URLs and objects are private
+
+CI passes and compose brings infra online
+
+Health endpoints return OK
+
+Governance guard blocks unsynced spec changes
+
+19) Open questions (optional)
+
+Should “Full Name uniqueness” be strict exact match, or normalized (case/spacing)?
+
+Do we support suffixes (Jr., Sr.) and multiple middle names?
+
+Should DOB be required or optional (some registrations may not know exact DOB)?
+
+Should photo/signature be mandatory for registration, or optional with “pending” status?
+
+Should offline-first mobile capture be required for field enumeration?
+
+Are exports allowed for all roles, or admin-only?
+
+If you want, I can also rewrite this into an even more “agent-friendly” format by:
+
+defining exact validation regex for PH contact numbers,
+
+specifying merge conflict rules for duplicates,
+
+and listing future module entity stubs (Vessel, Gear, Permit, Catch, Program) so your downstream modules plug in cleanly without schema refactors.
 
