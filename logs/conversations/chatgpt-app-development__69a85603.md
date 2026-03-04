@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: ChatGPT - App Development
-- Captured: 2026-03-04T17:34:07.479Z
+- Captured: 2026-03-04T17:37:10.563Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -3732,4 +3732,120 @@ compression quality targets
 
 max dimensions
 without rewriting the code later.
+
+## User
+
+in 3) Add to FMS entities (Section 3) — small update to MediaObject, i cant find the mediaobject you are refering
+
+## Assistant
+
+Good catch 👍 — the reason you couldn’t find MediaObject might be one of these:
+
+1️⃣ You pasted the Enterprise PRODUCT.md, not the FMS PRODUCT.md
+2️⃣ The section you are looking at is collapsed or scrolled past
+3️⃣ The text editor search didn’t catch it because it's inside Section 3: Core entities
+
+But the entity does exist in the FMS PRODUCT.md I gave earlier.
+
+Look for this section:
+
+## 3) Core entities & relationships (required)
+
+Inside it you should see:
+
+### Entity: MediaObject (generic upload record)
+
+with fields like:
+
+Fields:
+id
+bucket
+objectKey
+mimeType
+sizeBytes
+checksum
+createdByUserId
+createdAt
+
+and it is referenced by:
+
+FisherfolkPhoto
+FisherfolkSignature
+What you need to modify there
+
+Update the MediaObject entity so it supports image variants.
+
+Replace the existing MediaObject section with this improved version.
+
+Entity: MediaObject (generic upload record)
+Fields:
+id
+bucket
+objectKey
+mimeType
+sizeBytes
+checksum
+variant (original | display | thumb)
+purpose (fisherfolk_photo | fisherfolk_signature | other)
+parentMediaObjectId (nullable reference to MediaObject.id)
+processingStatus (pending | processing | ready | failed)
+createdByUserId
+createdAt
+
+Relationships:
+referenced by FisherfolkPhoto
+referenced by FisherfolkSignature
+
+Constraints:
+index(bucket)
+unique(bucket, objectKey)
+index(parentMediaObjectId)
+Why this is important (future-proofing)
+
+This small change allows the system to support multiple optimized versions of the same upload.
+
+Example for one fisherfolk photo:
+
+variant	size	purpose
+original	8MB	optional storage
+display	512px	profile page
+thumb	128px	search list
+
+Your UI then loads:
+
+thumb → table views
+display → profile view
+
+and never loads the original.
+
+This keeps:
+
+page loads fast
+
+storage growth controlled
+
+mobile performance good
+
+Example storage structure in MinIO
+fms-fisherfolk-photos/
+   fisherfolkId/
+      original.jpg
+      display.webp
+      thumb.webp
+Very important architectural note
+
+This MediaObject system becomes the universal upload model across your enterprise.
+
+Later modules will reuse it:
+
+Module	Upload
+FMS	fisherfolk photo, signature
+VMS	vessel photo
+Permits	scanned permits
+Programs	distribution proof photos
+Catch	landing proof photos
+
+So designing this properly now avoids redesign later.
+
+If you want, I can also show you a very clean enterprise upload architecture that will make your system support images, PDFs, and future documents without redesigning the database.
 
