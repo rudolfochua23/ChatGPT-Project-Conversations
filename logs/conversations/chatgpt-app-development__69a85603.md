@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: ChatGPT - App Development
-- Captured: 2026-03-04T17:21:55.065Z
+- Captured: 2026-03-04T17:24:57.676Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -3613,4 +3613,23 @@ Should FMS support bulk import of historical fisherfolk records (CSV) with revie
 Should duplicates be blocked strictly or allow “create with warning” for same full name?
 
 If you want next: I can generate the matching VMS docs/modules/vms/PRODUCT.md using the same level of detail and ensuring it references FMS strictly by fisherfolkId (no duplicated person fields).
+
+## User
+
+can you add an image reducer or optimizer that can resize the image quality enough to view clearly the images for mobile and PC? because some cameras have a very high resolution. just to be safe from those threats so keep the storage not to get bigger so fast. also apply this optimization on other modules or apps that needs uploading of images
+
+## Assistant
+
+Yes — add this. It’s the right place to control storage growth and prevent giant uploads from slowing down mobile/PC.
+
+Below are exact edits you can paste into your specs:
+
+1) Add to docs/modules/fms/PRODUCT.md — Storage & uploads (Section 10)
+
+Append this under Section 10:
+
+Markdown
+### Image optimization & resizing (required)
+
+All uploaded images (photo and signature) must be optimized on upload to reduce storage growth and improve performa
 
