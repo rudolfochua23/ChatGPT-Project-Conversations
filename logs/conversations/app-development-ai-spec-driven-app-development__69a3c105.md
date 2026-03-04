@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Development
-- Captured: 2026-03-04T15:35:14.395Z
+- Captured: 2026-03-04T15:38:17.791Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -10518,4 +10518,152 @@ Then Copilot updates only impacted modules + logs/map.
 Done.
 
 If you want, I can also provide a turbo.json reference pipeline (so you’re guaranteed those tasks exist), but this should already fit your existing “pnpm + turbo” standard.
+
+## User
+
+ok thanks for this, just to clarify something. should I fill up first the docs/PRODUCT.md file before running the PHASE 2 — COPILOT DISCOVERY (QUESTIONS ONLY) copilot prompt or after?
+
+## Assistant
+
+Short answer: fill docs/PRODUCT.md before running PHASE 2.
+
+PHASE 2’s purpose is for Copilot to read your product description and ask technical clarification questions so it can generate a correct inputs.yml and inputs.schema.json in PHASE 3.
+
+If PRODUCT.md is empty, Copilot has nothing to reason from and will ask generic questions.
+
+Correct Order (Very Important)
+1️⃣ Phase 0 — Create files (manual)
+
+You create the bootstrap files including:
+
+docs/PRODUCT.md
+2️⃣ Fill docs/PRODUCT.md FIRST (manual step)
+
+Before running Copilot discovery, you should write the product idea.
+
+Example:
+
+Markdown
+# Product Definition
+
+## App Name
+Countdown Arena
+
+## Purpose
+A TikTok-like infinite feed of competitive content battles where users
+join themed challenges (arenas) before a countdown ends.
+
+## Target Users
+Content creators and casual viewers.
+
+## Core Entities
+Arena
+Entry
+Vote
+User
+
+## User Roles
+Viewer
+Participant
+Moderator
+Admin
+
+## Main Workflows
+1. Admin creates an Arena
+2. Users submit Entries before countdown
+3. After countdown → voting phase
+4. Users swipe vertically through entries to vote
+
+## Realtime Features
+Live vote count
+Participant counter
+
+## Background Jobs
+Arena phase transitions
+Vote aggregation
+
+## Storage Requirements
+Video uploads via presigned URLs
+
+## Data Sensitivity
+Basic PII for user accounts
+
+## Tenancy Model
+Single tenant
+
+## Environments Needed
+dev
+stage
+prod
+
+This does NOT need to be perfect.
+It just needs enough information for Copilot to understand the product.
+
+3️⃣ Now run PHASE 2 — Copilot Discovery
+
+Paste this in Copilot:
+
+Plain text
+We are building using Spec-Driven Platform V6 STRICTEST.
+
+1) Read:
+- docs/PRODUCT.md
+- project.memory.md
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+2) Ask structured technical questions:
+- confirm app name (for devcontainer name replacement)
+- domain/base URLs for dev/stage/prod
+- tenancy mode now + upgrade plan
+- Keycloak issuer/client IDs/role claim mapping
+- RBAC permissions model
+- PII governance + retention/export/delete
+- storage buckets + mime + size limits
+- background jobs + DLQ/replay needs
+- observability exporters + metrics needs
+- security constraints (CORS, CSRF mode, rate limits)
+- confirm Compose default for dev/stage/prod
+- confirm K8s scaffold disabled by default
+
+Do NOT generate files yet.
+Only ask questions.
+
+Now Copilot asks questions based on your product description.
+
+4️⃣ Phase 3 — Copilot generates
+inputs.yml
+inputs.schema.json
+
+based on:
+
+PRODUCT.md
++
+your answers
+Mental Model
+
+Think of it like this:
+
+PRODUCT.md
+   ↓
+Copilot Discovery Questions
+   ↓
+inputs.yml
+inputs.schema.json
+   ↓
+Platform + App generation
+Small Best Practice (Highly Recommended)
+
+When writing PRODUCT.md, always include:
+
+- workflows
+- entities
+- roles
+- storage
+- realtime
+- background jobs
+
+Those sections dramatically improve AI scaffolding accuracy.
+
+If you'd like, I can also show you a "perfect PRODUCT.md template" optimized for AI scaffolding, which will make Copilot generate much better architectures on the first run.
 
