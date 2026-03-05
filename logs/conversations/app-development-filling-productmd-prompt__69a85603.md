@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T15:37:26.801Z
+- Captured: 2026-03-05T15:40:31.814Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -16915,4 +16915,274 @@ Update modules to inject TenantPrismaService instead of PrismaClient.
 Update schema.prisma so all tenant-scoped models include tenantId and composite unique keys where needed.
 
 If you want, I can tailor the TENANT_MODELS set precisely to your current ENTITY_REGISTRY once you paste it (or just the list of models).
+
+## User
+
+ok but starting from "Layer 3: Schema-level safety (composite unique + required tenantId)" step, i dont get precisely how to put this in the file
+
+## Assistant
+
+Great question. This part confuses many developers the first time, so let’s make it very concrete.
+
+You do NOT put Layer 3 in a NestJS file.
+
+Layer 3 is implemented inside your Prisma schema file:
+
+Plain text
+packages/database/prisma/schema.prisma
+
+So we will modify the database schema, not a TypeScript file.
+
+What “Schema-level safety” actually means
+
+Every tenant-owned table must include:
+
+prisma
+tenantId String
+
+Then we add indexes or unique constraints like:
+
+prisma
+@@index([tenantId])
+
+or
+
+prisma
+@@unique([tenantId, someField])
+
+This ensures the database itself enforces tenant isolation.
+
+Even if a developer writes bad code, the database won’t allow cross-tenant collisions.
+
+Example 1 — Fisherfolk (IMPORTANT)
+
+Your Fisherfolk table must include tenantId.
+
+Before (unsafe)
+prisma
+model Fisherfolk {
+  id        String   @id @default(uuid())
+  idNumber  String   @unique
+  rsbsaNumber String @unique
+  firstName String
+  lastName  String
+}
+
+This is dangerous in multi-tenant systems.
+
+Two LGUs might have the same ID numbers.
+
+After (safe)
+prisma
+model Fisherfolk {
+  id        String   @id @default(uuid())
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  idNumber        String
+  rsbsaNumber     String
+  fullNameNormalized String
+
+  firstName String
+  lastName  String
+  middleName String?
+  dateOfBirth DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+
+  @@unique([tenantId, idNumber])
+  @@unique([tenantId, rsbsaNumber])
+  @@unique([tenantId, fullNameNormalized])
+}
+
+Now the database enforces:
+
+Rule	Effect
+Same fisherfolk ID allowed across LGUs	✅
+Duplicate within same LGU	❌ blocked
+
+Exactly what you want.
+
+Example 2 — Vessel
+
+Same rule.
+
+Correct schema
+prisma
+model Vessel {
+  id        String   @id @default(uuid())
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  ownerFisherfolkId String
+  ownerFisherfolk   Fisherfolk @relation(fields: [ownerFisherfolkId], references: [id])
+
+  registrationNumber String
+  vesselName String?
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+
+  @@unique([tenantId, registrationNumber])
+}
+
+Two LGUs can have the same registration number.
+
+But not within the same LGU.
+
+Example 3 — Catch Reports
+prisma
+model CatchReport {
+  id String @id @default(uuid())
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  vesselId String
+  vessel   Vessel @relation(fields: [vesselId], references: [id])
+
+  landingSiteId String
+  landingSite LandingSite @relation(fields: [landingSiteId], references: [id])
+
+  catchDate DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+}
+Which models MUST have tenantId?
+
+From your architecture:
+
+Must include tenantId
+
+FMS:
+
+Plain text
+Fisherfolk
+FisherfolkCategory
+FisherfolkPhoto
+FisherfolkSignature
+IDPrintTemplate
+IDPrintJob
+IDPrintJobItem
+
+VMS:
+
+Plain text
+Vessel
+PermitApplication
+PermitDocument
+CatchReport
+CatchReportItem
+Program
+ProgramEnrollment
+Distribution
+DistributionItem
+
+Reference data (tenant configurable):
+
+Plain text
+Barangay
+LandingSite
+PermitType
+Species (optional tenant)
+
+Media:
+
+Plain text
+MediaObject
+
+Audit:
+
+Plain text
+AuditLog
+Which models DO NOT need tenantId?
+
+Global tables:
+
+Plain text
+Tenant
+Role
+Permission
+Module
+Category
+
+These are platform-wide.
+
+Quick rule you can remember
+
+If a record belongs to one LGU, it must have:
+
+prisma
+tenantId String
+
+If it belongs to the platform, it does not.
+
+Where you actually add this
+
+Open:
+
+Plain text
+packages/database/prisma/schema.prisma
+
+Inside each tenant model add:
+
+prisma
+tenantId String
+tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+@@index([tenantId])
+
+And replace global @unique fields with composite ones:
+
+prisma
+@@unique([tenantId, fieldName])
+Example of full correct Fisherfolk model
+prisma
+model Fisherfolk {
+  id String @id @default(uuid())
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  idNumber String
+  rsbsaNumber String
+  fullNameNormalized String
+
+  firstName String
+  lastName String
+  middleName String?
+  dateOfBirth DateTime
+
+  barangayId String
+  barangay Barangay @relation(fields: [barangayId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+
+  @@unique([tenantId, idNumber])
+  @@unique([tenantId, rsbsaNumber])
+  @@unique([tenantId, fullNameNormalized])
+}
+
+This is production-grade multi-tenant design.
+
+Good news
+
+Your SPEC + IMPLEMENTATION_MAP already assumed this architecture.
+
+So once Copilot generates schema.prisma, you only need to verify tenantId exists on tenant tables.
+
+If you want, I can also show you something extremely valuable next:
+
+“The Prisma pattern that makes it impossible for developers to accidentally bypass tenant filters.”
+
+It removes 90% of multi-tenant bugs before they even happen.
 
