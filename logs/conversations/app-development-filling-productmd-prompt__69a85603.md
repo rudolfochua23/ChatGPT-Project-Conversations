@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T09:23:09.665Z
+- Captured: 2026-03-05T09:26:13.142Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -10536,4 +10536,181 @@ That is exactly what we want before generating code.
 
 When the next question appears, send it here again.
 I'll help you answer it so the architecture stays consistent with all the specs we built.
+
+## User
+
+i dont understand your respond. there is only 1 to 5 options or selection, which one should i select?
+
+## Assistant
+
+Select Option 4 ✅
+
+“Hosts file + query param fallback (Hosts file primary, query param as fallback)”
+
+That matches our plan: subdomain-based tenancy in prod, with a simple fallback for local dev.
+
+## User
+
+here's the second one. see attached image:
+
+## Assistant
+
+The screenshot you sent actually still shows Question A (part 1/4) — the same screen where Copilot asked 4 things together:
+
+A1 — Workspace name
+A2 — Base domains
+A3 — Tenant subdomains
+A4 — Local dev routing (the options you selected)
+
+You already correctly selected Option 4, which is the only selection needed on that screen.
+
+So for that page the answers should be:
+
+Question	Answer
+A1	Blue Ocean Governance Platform (keep as-is)
+A2	dev.fish.powerbyte.app / stage.fish.powerbyte.app / fish.powerbyte.app
+A3	Confirmed — {lgu}.fish.powerbyte.app and bluealliance.fish.powerbyte.app
+A4	Option 4 — Hosts file + query param fallback ✅
+
+Your screenshot shows Option 4 already selected, which is correct.
+
+So now you should:
+
+➡️ Click the right arrow (next) in Copilot to proceed to 2/4.
+
+Copilot will then ask the next set of questions, which will likely be about:
+
+Tenancy configuration
+
+Keycloak authentication
+
+JWT claims mapping
+
+RBAC model
+
+When the next screen appears, send the screenshot again and I’ll guide you through the correct selections so everything stays aligned with the specs we created.
+
+## User
+
+ah ok sorry. here's the right one, see attached image
+
+## Assistant
+
+Select Option 2 ✅
+
+“Multi-tenant confirmed, Category + Species global seed, Barangay tenant-aware schema now (optional tenantId) but seed Calapan globally.”
+
+Why this matches our docs:
+
+We already decided multi-LGU tenancy with tenantId filtering.
+
+We already designed Species as tenantId nullable (global by default, tenant override later).
+
+We want Barangay to be future-ready (tenant-aware) but seed Calapan City now.
+
+Categories can be global-seeded now (same everywhere), and can be made tenant-configurable later if needed.
+
+So for this screen:
+
+B1: Yes, multi-tenancy is active now (shared DB + tenantId filtering)
+
+B2: Category + Species = global seed (Species can remain nullable tenantId)
+
+B3: Barangay = tenant-aware schema now (optional tenantId), seed Calapan list now
+
+➡️ Go ahead and click Option 2, then hit Next.
+
+## User
+
+question 3/5 see image
+
+## Assistant
+
+For this screen (Auth & RBAC – Keycloak), Copilot is asking you to type an answer, not choose an option.
+
+Copy-paste the following exact answer into the text box:
+
+C1. Realm name
+
+blue-ocean
+
+C2. Client IDs
+
+Web SPA client:
+blue-ocean-web
+
+API resource server:
+blue-ocean-api
+
+C3. Issuer URLs
+
+Dev:
+https://auth.dev.fish.powerbyte.app/realms/blue-ocean
+
+Stage:
+https://auth.stage.fish.powerbyte.app/realms/blue-ocean
+
+Prod:
+https://auth.fish.powerbyte.app/realms/blue-ocean
+
+C4. JWT Claims Mapping
+
+sub -> userId
+
+tenant_id -> tenantId
+
+realm_access.roles -> roles array
+
+C5. Role Model
+
+Roles include both global and tenant-scoped roles.
+
+Global roles:
+global_admin
+
+Tenant roles:
+lgu_admin
+user
+viewer
+
+Future module roles:
+lgu_ranger
+lgu_ranger_lead
+blue_operator
+blue_admin
+
+Keycloak carries role codes, but tenant binding is enforced application-side using the UserRole table.
+Why this matches your architecture
+
+It aligns with everything we already defined:
+
+Spec	Mapping
+Multi-LGU tenancy	tenant_id → tenantId
+RBAC registry	realm_access.roles
+Blue Alliance global control	global_admin
+LGU users	lgu_admin, user, viewer
+Future BlueSentinel roles	ranger + operator roles
+After pasting this
+
+Click Next → 4/5.
+
+The next screen will likely ask about:
+
+Storage (MinIO buckets)
+
+Upload limits
+
+Background jobs
+
+DLQ / retry policy
+
+Send that screenshot too and I’ll help you answer it correctly.
+
+## User
+
+4/4 see image
+
+## Assistant
+
+Select Option 2: “Some corrections needed (I’ll specify corrections in fr
 
