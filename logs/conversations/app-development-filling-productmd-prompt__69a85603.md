@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T07:14:42.682Z
+- Captured: 2026-03-05T07:17:45.751Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -7233,4 +7233,555 @@ vms.vessel.create
 vms.permit.approve
 
 If you want, I can generate a complete Permission Registry for FMS and VMS so your RBAC system is perfectly defined before development starts.
+
+## User
+
+ok just to be clear, now the whole content of MODULE_REGISTRY.md is now this:
+
+# Product Definition
+
+## App Name
+Enterprise Module Registry
+
+## Purpose
+Define a consistent, scalable registry for all modules/apps in the Blue Ocean Governance Platform so that:
+- modules can be enabled/disabled per LGU tenant
+- modules appear as left-side menus with submenus in a unified workspace
+- permissions can be granted per module and per operation
+- global governance (Blue Alliance) can access cross-LGU views while LGUs remain isolated
+- future modules can be added without breaking architecture or reworking navigation
+
+This registry is a platform capability (not a standalone user-facing app) used by the system to render menus, enforce RBAC, and control tenant-level module availability.
+
+## Target Users
+- global_admin (Blue Alliance): manages tenants, module enablement, and global permissions
+- lgu_admin: manages tenant-level users and their module permissions (within allowed boundaries)
+- developers/system maintainers: add new modules by registering metadata and permissions
+
+## Core Entities
+
+### Entity: Tenant (LGU)
+Represents a municipality/LGU tenant.
+
+Fields:
+- id
+- name
+- province
+- region
+- country
+- subdomain
+- status
+- createdAt
+
+Constraints:
+- unique(subdomain)
+
+Rules:
+- tenant boundary is strict; tenant users can only see tenant data.
+- global_admin can access all tenants.
+
+---
+
+### Entity: Module
+Represents a module/app inside the workspace.
+
+Fields:
+- id
+- code (unique, lowercase; e.g., fms, vms, bluesentinel)
+- name (display name; e.g., Fisherfolk Management System)
+- tagline (optional)
+- description
+- ownerOrgScope (enum: lgu | blue_alliance | both)
+- defaultRoute (e.g., /fms/fisherfolk)
+- iconKey (optional)
+- isActive
+- createdAt
+- updatedAt
+
+Constraints:
+- unique(code)
+
+Rules:
+- ownerOrgScope controls where module can appear:
+  - lgu: only within LGU subdomains
+  - blue_alliance: only within bluealliance subdomain
+  - both: can appear in both scopes
+
+---
+
+### Entity: ModuleMenu
+Defines the left-nav menus and submenus.
+
+Fields:
+- id
+- moduleCode (FK by code)
+- parentMenuId (nullable; for nested submenus)
+- label
+- route
+- orderIndex
+- isVisibleByDefault (bool)
+- requiredPermissionKey (string; must exist in Permission)
+- createdAt
+
+Constraints:
+- index(moduleCode)
+- index(parentMenuId)
+- unique(moduleCode, label, parentMenuId)
+
+Rules:
+- Each menu/submenu item must map to exactly one permission key.
+- UI renders menu items only if user has required permission and module is enabled for tenant.
+
+---
+
+### Entity: Permission
+Defines atomic permissions for RBAC.
+
+Fields:
+- id
+- key (unique, dot-separated)
+- description
+- moduleCode
+- scope (enum: lgu | global | both)
+- createdAt
+
+Constraints:
+- unique(key)
+- index(moduleCode)
+
+Permission key naming convention:
+- {moduleCode}.{resource}.{action}
+Examples:
+- fms.fisherfolk.read
+- fms.fisherfolk.create
+- fms.fisherfolk.update
+- fms.fisherfolk.merge
+- fms.idprint.use
+- vms.vessels.create
+- vms.permits.approve
+- vms.catch.create
+- bluesentinel.incidents.read
+
+---
+
+### Entity: Role
+Defines platform roles.
+
+Fields:
+- id
+- code (unique)
+- name
+- scope (enum: lgu | global)
+- createdAt
+
+Baseline roles (recommended):
+Global scope:
+- global_admin
+
+LGU scope:
+- lgu_admin
+- user
+- viewer
+
+Optional module-scoped roles (future):
+- lgu_ranger
+- lgu_ranger_lead
+- blue_operator
+- blue_admin
+
+---
+
+### Entity: RolePermission
+Assigns permissions to roles.
+
+Fields:
+- id
+- roleCode
+- permissionKey
+- createdAt
+
+Constraints:
+- unique(roleCode, permissionKey)
+
+---
+
+### Entity: User
+Fields:
+- id
+- tenantId (nullable for global-only accounts; global_admin may have null or special tenant)
+- email
+- name
+- status
+- createdAt
+
+---
+
+### Entity: UserRole
+Assigns roles to users (tenant-scoped).
+
+Fields:
+- id
+- userId
+- tenantId (nullable for global role assignments)
+- roleCode
+- createdAt
+
+Constraints:
+- unique(userId, tenantId, roleCode)
+
+Rules:
+- LGU users must always have a tenantId.
+- global_admin users can have tenantId null and roleCode=global_admin.
+
+---
+
+### Entity: TenantModule
+Controls module enablement per LGU tenant.
+
+Fields:
+- id
+- tenantId
+- moduleCode
+- isEnabled
+- enabledAt
+- enabledByUserId
+- createdAt
+
+Constraints:
+- unique(tenantId, moduleCode)
+- index(tenantId)
+
+Rules:
+- Module must be enabled for tenant before any menu items for that module render in that tenant.
+- Enabling/disabling must be auditable (AuditLog).
+
+---
+
+### Entity: AuditLog
+Fields:
+- id
+- actorUserId
+- tenantId (nullable for global operations)
+- action
+- entityType
+- entityId
+- beforeJson
+- afterJson
+- createdAt
+
+Required audit events for registry:
+- create/update/disable TenantModule
+- role changes
+- permission changes
+- user access changes
+- exports
+
+## User Roles (baseline mapping)
+
+### global_admin (global)
+- all permissions across all modules and all tenants
+- can manage tenants, modules, roles, permissions
+- domain access: bluealliance.fish.powerbyte.app
+
+### lgu_admin (lgu)
+- can manage users within tenant (optional boundary)
+- can access all enabled modules within tenant
+- cannot access other tenants
+- cannot manage global registry
+
+### user (lgu)
+- operational permissions within enabled modules (create/update where allowed)
+
+### viewer (lgu)
+- read-only in enabled modules
+
+## Main Workflows (step-by-step)
+
+### Workflow: Add a new LGU tenant
+1) global_admin creates Tenant with unique subdomain (e.g., calapan)
+2) global_admin enables desired modules via TenantModule (e.g., fms, vms, bluesentinel optional later)
+3) system writes AuditLog entries
+4) lgu_admin accounts are created for that tenant
+5) tenant users log in via {subdomain}.fish.powerbyte.app
+
+### Workflow: Enable/Disable a module for an LGU
+1) global_admin opens Tenant settings
+2) toggles module enablement (TenantModule.isEnabled)
+3) system immediately affects menu rendering for that tenant
+4) system writes AuditLog
+
+### Workflow: Render workspace navigation (left menu)
+1) user logs in
+2) system resolves tenant from subdomain:
+   - {lgu}.fish.powerbyte.app → tenant scope
+   - bluealliance.fish.powerbyte.app → global scope
+3) system loads enabled modules for tenant (TenantModule)
+4) system loads ModuleMenu entries for those modules
+5) system filters menu items by user permissions
+6) UI renders left-side menu with submenus for accessible items only
+
+### Workflow: Grant permissions
+1) admin selects role (global or tenant role)
+2) admin assigns permissions (RolePermission)
+3) users with that role gain/lose menu items and API access
+4) changes are auditable via AuditLog
+
+## Realtime Features (if any)
+None required.
+
+## Background Jobs (if any)
+None required for registry itself.
+
+(Reporting/export jobs are defined in module PRODUCT.md files.)
+
+## Storage Requirements (types, size limits)
+No large storage needs.
+
+## Data Sensitivity (PII? retention? export/delete?)
+Contains limited PII (user accounts). Retain per organization policy.
+All changes must be auditable.
+
+## Tenancy Model (single / multi / undecided)
+Multi
+
+Tenancy routing:
+- {lgu}.fish.powerbyte.app → LGU tenant scope
+- bluealliance.fish.powerbyte.app → Blue Alliance global scope
+
+Isolation:
+- Tenant-scoped users cannot access other tenant data.
+- global_admin can access all tenant data.
+
+## Environments Needed (dev / stage / prod)
+dev
+stage
+prod
+
+## Domain / Base URL Expectations (optional)
+fish.powerbyte.app (base)
+{lgu}.fish.powerbyte.app (tenant)
+bluealliance.fish.powerbyte.app (global)
+
+## Initial Module Registry Entries
+
+### Module: fms
+Code: fms  
+Name: Fisherfolk Management System  
+Owner Scope: lgu  
+
+Description:
+Manages fisherfolk master registry including identity records, photo and signature capture, fisherfolk categories, barangay assignment, and ID printing.
+
+Default Route:
+/fms/fisherfolk
+
+Important Features:
+- Fisherfolk registration
+- Photo upload and optimization
+- Signature capture
+- Barangay selection from approved list
+- Fisherfolk profile view
+- ID printing (up to 4 records on 200x300mm layout)
+
+Dependencies:
+None (this module provides master data for other modules)
+
+---
+
+### Module: vms
+Code: vms  
+Name: Vessel Management System  
+Owner Scope: lgu  
+
+Description:
+Manages vessel registration, permit applications, catch reports, and fisheries operational data linked to fisherfolk records.
+
+Default Route:
+/vms/vessels
+
+Dependencies:
+Requires fisherfolk records from FMS.
+
+Key Features:
+- Vessel registration
+- Owner linking (FMS fisherfolk)
+- Permit workflow
+- Catch reporting
+- Program enrollment tracking
+
+---
+
+### Module: bluesentinel
+Code: bluesentinel  
+Name: BlueSentinel  
+Owner Scope: both  
+
+Description:
+Future governance and enforcement monitoring system used by Blue Alliance and LGU ranger teams to document illegal fishing incidents and coordinate enforcement operations.
+
+Default Route:
+/bluesentinel
+
+Status:
+Future module (not implemented during initial development phase)
+
+Dependencies:
+May reference FMS fisherfolk and VMS vessels when available.
+
+
+....is this correct?
+
+## Assistant
+
+Yes — that is correct. ✅
+Your docs/MODULE_REGISTRY.md content is structurally correct and aligned with everything we designed:
+
+multi-LGU tenancy
+
+subdomain routing
+
+Blue Alliance global scope
+
+module enable/disable per LGU
+
+left-side menu workspace
+
+RBAC permission system
+
+FMS → VMS dependency
+
+BlueSentinel future module
+
+You did not miss anything critical.
+
+However, there are 3 small improvements I recommend adding now so the spec-driven generator behaves more predictably later.
+
+1️⃣ Add Module Status Field (very important for future modules)
+
+Right now you wrote:
+
+Status:
+Future module (not implemented during initial development phase)
+
+Instead, we should standardize module lifecycle.
+
+Add this field to the Module entity:
+
+Markdown
+status (enum: planned | active | deprecated)
+
+So update this section in your Module entity.
+
+Change this
+- isActive
+To this
+Markdown
+- status (enum: planned | active | deprecated)
+
+Then your module entries become clearer:
+
+fms → active
+vms → active
+bluesentinel → planned
+
+This prevents the AI builder from generating BlueSentinel prematurely.
+
+2️⃣ Add Dependency Field to Module Entity
+
+You already wrote dependencies in text.
+We should formalize it.
+
+Add to Module entity fields:
+
+Markdown
+- dependencies (array of module codes)
+
+Example meaning:
+
+vms depends on fms
+
+This will help your system enforce module activation order.
+
+Example rule:
+
+VMS cannot be enabled unless FMS is enabled.
+3️⃣ Add Module Scope Visibility Rule
+
+Right now we have:
+
+ownerOrgScope (lgu | blue_alliance | both)
+
+But we should clarify behavior.
+
+Add this rule under Module entity rules:
+
+Modules with ownerOrgScope=lgu appear only in LGU tenant workspaces.
+
+Modules with ownerOrgScope=blue_alliance appear only in the Blue Alliance workspace.
+
+Modules with ownerOrgScope=both can appear in both environments if enabled.
+
+This matches what we defined for:
+
+Module	Scope
+FMS	LGU
+VMS	LGU
+BlueSentinel	BOTH
+4️⃣ Final Module Registry Table (recommended but optional)
+
+Add this section at the bottom for clarity.
+
+Markdown
+## Registered Modules Summary
+
+| Code | Name | Scope | Status | Dependencies |
+|-----|------|------|------|------|
+| fms | Fisherfolk Management System | lgu | active | none |
+| vms | Vessel Management System | lgu | active | fms |
+| bluesentinel | BlueSentinel | both | planned | fms, vms |
+
+This helps humans and AI quickly understand the ecosystem.
+
+📦 Your final spec architecture now looks like this
+docs/
+│
+├─ PRODUCT.md
+│
+├─ MODULE_REGISTRY.md
+│
+└─ modules/
+     │
+     ├─ fms/
+     │   └─ PRODUCT.md
+     │
+     ├─ vms/
+     │   └─ PRODUCT.md
+     │
+     └─ bluesentinel/
+         └─ PRODUCT.md
+
+This is a very strong enterprise spec layout.
+
+🚀 Next step I strongly recommend
+
+Before running your AI Discovery Phase, we should generate the Permission Registry for:
+
+FMS
+
+Examples:
+
+fms.fisherfolk.create
+fms.fisherfolk.update
+fms.fisherfolk.merge
+fms.fisherfolk.delete
+fms.idprint.use
+VMS
+vms.vessel.create
+vms.permit.apply
+vms.permit.approve
+vms.catch.report
+
+This will ensure your RBAC system is perfect from day one.
+
+If you want, I can generate a complete Permission Registry for FMS and VMS that fits your module registry and menu design.
 
