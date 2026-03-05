@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T09:26:13.142Z
+- Captured: 2026-03-05T09:29:16.576Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -10712,5 +10712,128 @@ Send that screenshot too and I’ll help you answer it correctly.
 
 ## Assistant
 
-Select Option 2: “Some corrections needed (I’ll specify corrections in fr
+Select Option 2: “Some corrections needed (I’ll specify corrections in free text)” ✅
+
+Because one default is not what we finalized: “Store originals: yes” — we said originals are optional and default NO (to prevent storage growth), unless compliance later requires keeping originals.
+
+Then paste this into the free-text box:
+
+Plain text
+D1: Confirm route prefixes: /fms/*, /vms/*, /bluesentinel/*
+
+D2: Menus should be generated from spec and seeded into DB on init; admin-editable later (DB-stored).
+
+E1: Allowed image MIME types: image/jpeg, image/png, image/webp. Max size 10MB. Also reject extreme dimensions >8000px on any side.
+
+E2: Store originals = NO by default. Keep only optimized variants (thumb/display). Optionally enable “keep originals” later via config if compliance requires.
+
+E3: Target variants:
+- Photo (1:1): thumb 128x128, display 512x512
+- Signature: display max width 600px (preserve aspect ratio), prefer PNG/WebP lossless; also crop to signed area
+
+F1: BullMQ queues: media-optimization, export-jobs, id-print-jobs
+
+F2: Defaults: 3 retries with exponential backoff (1s, 2s, 4s) OK
+
+F3: DLQ + replay needed: YES (admin-visible replay UI desired)
+
+Then click Submit.
+
+If Copilot asks a final “confirm summary” after submit, just share the screenshot and I’ll confirm the selections.
+
+## Assistant
+
+Copy-paste this into the answer box (it confirms and slightly refines priorities + adds Blue Alliance expectations):
+
+Plain text
+G1 (LGU Dashboard KPIs) — Confirmed with minor refinements:
+
+Top 10 (priority order):
+1) Total registered fisherfolk (by status: active/inactive/merged/deceased/moved)
+2) Registrations trend (this month + last 12 months)
+3) Fisherfolk by barangay (bar)
+4) Fisherfolk by age group (bar: e.g., <18, 18–30, 31–45, 46–60, 60+)
+5) Fisherfolk by category (bar or donut)
+6) Total registered vessels (by status)
+7) Permits: active vs expiring soon (within 30/60/90 days) + overdue renewals
+8) Catch volume trend (monthly line; filterable by landing site)
+9) Top species by catch volume (top 10 bar)
+10) Landing site activity (bar: number of reports + total volume)
+
+Note: “Program participation summary” should be on dashboard as a secondary widget (not top 10 for v1) unless programs are heavily used early.
+
+G2 (Blue Alliance Global Dashboard) — Confirmed + add drill-down & compliance signals:
+
+Global expectations:
+- Aggregate KPIs across all LGUs (total fisherfolk, vessels, permits, catch volume)
+- LGU comparison charts/tables (ranked: fisherfolk count, vessel count, catch volume, permits expiring)
+- Drill-down to individual LGU dashboards (read-only unless global admin)
+- Global catch trends (time series; filter by LGU)
+- Module adoption heatmap (which LGUs have which modules enabled)
+- Data freshness / compliance indicators per LGU (e.g., last catch report date, missing reports, permit renewal backlog)
+
+Then click Next (right arrow).
+
+## Assistant
+
+Paste this answer into the text box:
+
+Plain text
+H1 (Audit log events) — Confirm with additions:
+
+Required events:
+- create
+- update
+- delete
+- merge (FMS duplicate resolution)
+- deactivate
+- reactivate
+- export (reports/data)
+- print (ID/permit)
+- role_change
+- enable_module / disable_module
+- login / logout (from Keycloak)
+- media_upload / media_delete
+- permit_approve / permit_reject
+
+Audit logs must include:
+actorUserId, tenantId, entityType, entityId, beforeJson, afterJson, timestamp, IP address.
+
+H2 (Data retention policy)
+
+Audit logs: retain minimum 3 years.
+
+Soft-deleted records: retain 1 year before permanent purge.
+
+Right-to-delete (privacy requests):
+- anonymize personal fields (name, contact, photo, signature)
+- keep anonymized statistical record for reporting.
+
+H3 (CORS origins)
+
+Dev:
+https://dev.fish.powerbyte.app
+http://localhost:3000
+
+Stage:
+https://stage.fish.powerbyte.app
+
+Prod:
+https://fish.powerbyte.app
+
+Also allow tenant subdomains:
+https://*.fish.powerbyte.app
+
+H4 (Rate limits)
+
+Public endpoints: 30 req/min/IP  
+Authenticated endpoints: 120 req/min/user  
+Upload endpoints: 10 req/min/user
+
+H5 (CSRF approach)
+
+Use Bearer-token-only API authentication (JWT from Keycloak).
+No cookie session authentication is used, so CSRF protection is not required.
+
+Then click Next →.
 
