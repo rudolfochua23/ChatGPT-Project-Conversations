@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T09:29:16.576Z
+- Captured: 2026-03-05T09:32:20.584Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -10836,4 +10836,236 @@ Use Bearer-token-only API authentication (JWT from Keycloak).
 No cookie session authentication is used, so CSRF protection is not required.
 
 Then click Next →.
+
+## Assistant
+
+Select Option 1 ✅
+
+“Compose baseline OK, k8s disabled: postgres, redis, keycloak, minio, app, worker — no k8s”
+
+This matches exactly the environment you described earlier:
+
+Your stack:
+
+Postgres → database
+
+Redis → BullMQ queue
+
+Keycloak → authentication
+
+MinIO → object storage
+
+App (Next.js) → web UI
+
+Worker → background jobs (media optimization, exports, ID printing)
+
+And since you're currently developing locally using:
+
+WSL2
+
+Docker Compose
+
+VS Code devcontainers
+
+it is correct NOT to enable Kubernetes scaffolding yet.
+
+You can always add K8s later for production if needed.
+
+So do this now
+
+1️⃣ Keep Option 1 selected
+2️⃣ Click Submit
+
+After you click Submit
+
+Copilot will finish PHASE 2 — Discovery.
+
+The next thing that should happen is PHASE 3: Implementation Planning, where it will begin generating things like:
+
+Prisma schema from ENTITY_REGISTRY.md
+
+NestJS modules
+
+API routes
+
+Next.js pages
+
+RBAC guards
+
+BullMQ workers
+
+MinIO upload flow
+
+tenant middleware
+
+When Copilot shows the next result
+
+Please paste the output here.
+
+I’ll check it to ensure:
+
+it follows the Spec-Driven V6 process
+
+it respects your multi-LGU tenancy
+
+it keeps FMS as the master identity module
+
+it generates clean database schema without duplication
+
+This step is important because this is where most AI dev stacks start drifting if unchecked.
+
+## User
+
+Copilot response:
+
+All answers received. Here's a consolidated summary of confirmed decisions:
+
+A) Platform Identity & Environments
+UI name: Blue Ocean Governance Platform ✓
+Domains: dev → dev.fish.powerbyte.app, stage → stage.fish.powerbyte.app, prod → fish.powerbyte.app
+Tenant subdomains: {lgu}.fish.powerbyte.app, bluealliance.fish.powerbyte.app ✓
+Local dev routing: Hosts file primary + query param (?tenant=calapan) fallback
+B) Tenancy & Data Isolation
+Multi-tenant confirmed (shared DB, tenantId filtering)
+Category + Species: global seed data (no tenantId)
+Barangay: tenant-aware schema now (optional tenantId), seeded with Calapan City globally
+C) Auth & RBAC (Keycloak)
+Realm: blue-ocean
+Clients: blue-ocean-web (SPA), blue-ocean-api (resource server)
+Issuer URLs: https://auth.{env}.fish.powerbyte.app/realms/blue-ocean
+JWT claims: sub → userId, tenant_id → tenantId, realm_access.roles → roles
+Role model: global (global_admin) + tenant-scoped (lgu_admin, user, viewer) + future module roles (lgu_ranger, lgu_ranger_lead, blue_operator, blue_admin). Keycloak carries codes, app-side UserRole table enforces tenant binding.
+D) Module Boundaries & Menus
+Routes: /fms/*, /vms/*, /bluesentinel/* ✓
+Menus: spec-generated → seeded into DB (ModuleMenu) on init, admin-editable later
+E) Uploads & Optimization
+MIME: image/jpeg, image/png, image/webp. Max 10MB. Reject >8000px dimension.
+Store originals: NO (keep optimized variants only; "keep originals" configurable later)
+Photo variants: thumb 128×128, display 512×512
+Signature: display max-width 600px (preserve aspect ratio), prefer PNG/WebP lossless, auto-crop to signed area
+F) Background Jobs (BullMQ)
+Queues: media-optimization, export-jobs, id-print-jobs
+Retries: 3, exponential backoff (1s, 2s, 4s)
+DLQ + admin replay UI: yes
+G) Dashboards
+LGU top 10: fisherfolk by status → registration trend (12mo) → by barangay → by age group → by category → vessels by status → permits active/expiring/overdue → catch volume trend (monthly, filterable) → top 10 species → landing site activity. Program participation as secondary widget.
+Blue Alliance global: aggregate KPIs, LGU comparison, drill-down, global catch trends, module adoption heatmap, data freshness/compliance indicators per LGU
+H) Security & Governance
+Audit events: create, update, delete, merge, deactivate, reactivate, export, print, role_change, enable/disable_module, login/logout, media_upload/delete, permit_approve/reject. Includes before/after JSON, IP, user agent.
+Retention: audit logs 3 years, soft-deleted 1 year → purge, right-to-delete → anonymize PII, keep statistical record
+CORS: https://*.fish.powerbyte.app, http://localhost:3000 (dev)
+Rate limits: public 30/min/IP, auth 120/min/user, upload 10/min/user
+CSRF: not needed (Bearer-only, no cookie auth)
+I) Infra
+Docker Compose: postgres, redis, keycloak, minio, app, worker
+Kubernetes scaffold: disabled (enable later for stage/prod)
+All technical decisions are now captured. No files generated — ready for implementation phase on your signal.
+
+## Assistant
+
+Nice — that summary is exactly what we wanted from PHASE 2. ✅
+Now you’re ready for the implementation phase, but before you let Copilot generate anything, do one quick alignment fix:
+
+0) Important mismatch to correct (Category + Species tenantId)
+
+Copilot summarized:
+
+“Category + Species: global seed data (no tenantId)”
+
+But in your ENTITY_REGISTRY.md, we designed Species as tenantId nullable (global by default, tenant override later). That’s consistent with the choice you selected in B (global seed, but future-proof).
+
+So tell Copilot this correction in the next phase:
+
+Category: global seed, no tenantId ✅
+
+Species: tenantId nullable (global seed now, tenant overrides later) ✅
+
+Barangay: tenant-aware schema (optional tenantId), seed Calapan globally ✅
+
+That’s the only “must fix” before code gen.
+
+What’s next
+
+Yes — proceed to the next phase (Implementation / Generation). Your next move should be:
+
+1) Run PHASE 3 — Implementation Planning (recommended)
+
+Use this as your next Copilot prompt (copy-paste):
+
+Plain text
+🟦 PHASE 3 — IMPLEMENTATION PLANNING (NO CODE YET)
+
+We are building using Spec-Driven Platform V6 STRICTEST.
+
+1) Re-read:
+- docs/PRODUCT.md
+- docs/MODULE_REGISTRY.md
+- docs/PERMISSION_REGISTRY.md
+- docs/ENTITY_REGISTRY.md
+- docs/modules/fms/PRODUCT.md
+- docs/modules/vms/PRODUCT.md
+- docs/modules/bluesentinel/PRODUCT.md
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+2) IMPORTANT CORRECTION (apply as source of truth):
+- Category: global seed (no tenantId)
+- Species: tenantId nullable (global seed now, tenant overrides later)
+- Barangay: tenant-aware schema (optional tenantId), seed Calapan globally
+
+3) Produce an IMPLEMENTATION_MAP plan (write content to docs/IMPLEMENTATION_MAP.md) that maps:
+- entities → Prisma models
+- workflows → NestJS modules/controllers/services
+- screens/routes → Next.js App Router pages
+- permissions → guards/policies
+- tenancy routing → middleware
+- uploads → MinIO presign + MediaObject variants + BullMQ job
+- queues → worker processors + DLQ/replay admin UI
+- ID printing → template storage + job + PDF output
+
+4) Update docs/CHANGELOG_AI.md with a dated entry summarizing this plan.
+
+Do not generate application code yet. Only update docs/IMPLEMENTATION_MAP.md and docs/CHANGELOG_AI.md.
+
+This phase is critical because it forces Copilot to plan before generating code.
+
+2) After PHASE 3, then run PHASE 4 — Code Generation
+
+Only after you see a good IMPLEMENTATION_MAP.md, you’ll do:
+
+Prisma schema generation
+
+NestJS scaffolding
+
+Next.js routes
+
+RBAC guards
+
+tenant middleware
+
+BullMQ worker setup
+
+upload optimization pipeline
+
+ID print pipeline
+
+If you want the fastest safe route
+
+Paste PHASE 3 prompt above into Copilot now.
+
+Then paste Copilot’s generated IMPLEMENTATION_MAP.md + CHANGELOG_AI.md content back here, and I’ll quickly verify it doesn’t drift from:
+
+FMS uniqueness + merge rules
+
+VMS dependency on FMS
+
+multi-LGU subdomain tenancy
+
+menu seeding model
+
+image optimization variants (thumb/display)
+
+ID printing constraints (max 4, 200x300mm, editable template)
+
+DLQ + replay requirement
 
