@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T13:59:11.409Z
+- Captured: 2026-03-05T14:02:15.372Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -16643,4 +16643,246 @@ If you want, I can also show you something extremely powerful next:
 How to make Copilot automatically enforce tenant safety in Prisma so developers can NEVER accidentally run cross-tenant queries.
 
 This is how Stripe and Shopify protect their multi-tenant systems.
+
+## User
+
+How to make Copilot automatically enforce tenant safety in Prisma so developers can NEVER accidentally run cross-tenant queries.
+
+## Assistant
+
+Here’s the clean way to make it hard to do the wrong thing with Prisma in a multi-tenant app — so even if a dev forgets tenantId in a query, the code still cannot leak cross-tenant data.
+
+The trick is: never let app code use the raw Prisma client directly. Instead, always go through a TenantScopedPrismaService that injects tenantId everywhere and blocks unsafe operations.
+
+Below are 3 layers (use all 3 for “Shopify-grade” safety).
+
+Layer 1: Request-scoped tenant context (NestJS)
+
+Create a request-scoped context that holds the resolved tenantId and whether the user is global_admin.
+
+Rule: Prisma access is only allowed when tenant context is present, unless it’s explicitly a global endpoint.
+
+How:
+
+TenantResolverMiddleware resolves x-tenant-slug → tenantId
+
+Store it on req.tenantId
+
+Also store req.isGlobalAdmin
+
+This part you already planned.
+
+Layer 2 (The big one): Prisma “Tenant Guard” middleware inside Prisma client
+
+Prisma supports client middleware via:
+
+TypeScript
+prisma.$use(async (params, next) => { ... })
+
+We’ll use that to:
+
+Detect all tenant-scoped models
+
+Automatically inject where: { tenantId: req.tenantId } for reads
+
+Force data.tenantId = req.tenantId for creates
+
+Force updates/deletes to include tenant filter
+
+Block unsafe queries (e.g., findMany({}) on tenant models)
+
+✅ Copy-paste blueprint (NestJS)
+
+FILE: apps/api/src/database/tenant-prisma.service.ts
+
+TypeScript
+import { Injectable, Scope, ForbiddenException } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { REQUEST } from '@nestjs/core';
+import { Inject } from '@nestjs/common';
+import type { Request } from 'express';
+
+type TenantRequest = Request & {
+  tenantId?: string;
+  isGlobalAdmin?: boolean;
+};
+
+const TENANT_MODELS = new Set<string>([
+  // platform tenant-bound
+  'UserRole',
+  'TenantModule',
+  'ModuleMenu',
+  'AuditLog',
+
+  // reference (tenant-aware)
+  'Barangay',
+  'Species',
+  'LandingSite',
+  'PermitType',
+
+  // fms
+  'Fisherfolk',
+  'FisherfolkCategory',
+  'FisherfolkPhoto',
+  'FisherfolkSignature',
+  'IDPrintTemplate',
+  'IDPrintJob',
+  'IDPrintJobItem',
+
+  // vms
+  'Vessel',
+  'PermitApplication',
+  'PermitDocument',
+  'CatchReport',
+  'CatchReportItem',
+  'Program',
+  'ProgramEnrollment',
+  'Distribution',
+  'DistributionItem',
+
+  // media
+  'MediaObject',
+]);
+
+const ACTIONS_REQUIRING_WHERE = new Set([
+  'findUnique',
+  'findFirst',
+  'findMany',
+  'count',
+  'aggregate',
+  'groupBy',
+  'update',
+  'updateMany',
+  'delete',
+  'deleteMany',
+]);
+
+@Injectable({ scope: Scope.REQUEST })
+export class TenantPrismaService extends PrismaClient {
+  constructor(@Inject(REQUEST) private readonly req: TenantRequest) {
+    super();
+
+    this.$use(async (params, next) => {
+      const { model, action } = params;
+
+      // Not a tenant-bound model → allow
+      if (!model || !TENANT_MODELS.has(model)) {
+        return next(params);
+      }
+
+      const tenantId = this.req.tenantId;
+      const isGlobalAdmin = !!this.req.isGlobalAdmin;
+
+      // If no tenant context and not global admin → block hard
+      if (!tenantId && !isGlobalAdmin) {
+        throw new ForbiddenException(
+          `Tenant context missing. Blocked Prisma ${model}.${action}`,
+        );
+      }
+
+      // global_admin bypass ONLY if endpoint explicitly intends cross-tenant.
+      // safest default: still enforce tenant unless you set a flag:
+      const allowCrossTenant = isGlobalAdmin && this.req.headers['x-allow-cross-tenant'] === '1';
+
+      if (allowCrossTenant) {
+        return next(params);
+      }
+
+      // Enforce tenant on all reads/updates/deletes
+      if (ACTIONS_REQUIRING_WHERE.has(action)) {
+        params.args = params.args ?? {};
+
+        // For findUnique, Prisma only allows unique where. If your unique keys are tenant-scoped,
+        // make them composite unique: (tenantId, id) or (tenantId, regNo), etc.
+        // Then findUnique can include tenantId.
+        if (!params.args.where) params.args.where = {};
+
+        // Merge tenantId into where
+        params.args.where = {
+          ...params.args.where,
+          tenantId,
+        };
+      }
+
+      // Enforce tenant on create / createMany
+      if (action === 'create') {
+        params.args = params.args ?? {};
+        params.args.data = {
+          ...params.args.data,
+          tenantId,
+        };
+      }
+
+      if (action === 'createMany') {
+        params.args = params.args ?? {};
+        if (Array.isArray(params.args.data)) {
+          params.args.data = params.args.data.map((d: any) => ({ ...d, tenantId }));
+        } else {
+          params.args.data = { ...params.args.data, tenantId };
+        }
+      }
+
+      return next(params);
+    });
+  }
+}
+What this gives you
+
+Any findMany() without tenantId automatically becomes tenant-scoped
+
+Any update() without tenant filter gets tenant filter injected
+
+Any create() automatically gets correct tenantId
+
+Missing tenant context becomes an immediate error
+
+This is a very strong safety net.
+
+Layer 3: Schema-level safety (composite unique + required tenantId)
+
+To make findUnique safe, you must NOT rely on globally unique IDs for tenant tables unless you are okay with global uniqueness.
+
+The clean pattern:
+
+✅ Each tenant-bound model has:
+
+tenantId String
+
+Composite unique keys like:
+
+prisma
+@@unique([tenantId, id])
+@@index([tenantId])
+
+Or for human identity:
+
+prisma
+@@unique([tenantId, idNumber])
+@@unique([tenantId, rsbsaNumber])
+@@unique([tenantId, fullNameNormalized])
+
+This matches your FMS duplicate-prevention plan perfectly.
+
+The “no footguns” rule: Only inject TenantPrismaService
+
+In NestJS modules/services, never inject PrismaClient directly.
+
+Instead:
+
+TypeScript
+constructor(private readonly prisma: TenantPrismaService) {}
+
+And in DatabaseModule, export ONLY the tenant-scoped service.
+
+That ensures every query is guarded.
+
+How to handle Blue Alliance / global_admin cross-tenant views safely
+
+Never allow cross-tenant queries “by accident.”
+
+Use an explicit header or explicit method, e.g.:
+
+x-allow-cross-tenant: 1 (only for global admin routes)
+
+OR better: have a separ
 
