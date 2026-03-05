@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T12:42:30.907Z
+- Captured: 2026-03-05T12:45:35.074Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -14369,5 +14369,537 @@ Source: PRODUCT.md workspace navigation + module PRODUCT.md files
 | **Dashboard** | `/dashboard` | `DashboardPage` | (any authenticated) |
 | **FMS › Fisherfolk List** | `/fms/fisherfolk` | `FisherfolkListPage` | `fms.fisherfolk.read` |
 | **FMS › Register** | `/fms/register` | `FisherfolkRegisterPage` | `fms.fisherfolk.create` |
-| **FMS › Profile** | `/fms/fisherfolk/[id]` | `FisherfolkProfile
+| **FMS › Profile** | `/fms/fisherfolk/[id]` | `FisherfolkProfilePage` | `fms.fisherfolk.read` |
+| **FMS › Edit** | `/fms/fisherfolk/[id]/edit` | `FisherfolkEditPage` | `fms.fisherfolk.update` |
+| **FMS › Reports** | `/fms/reports` | `FmsReportsPage` | `fms.reports.read` |
+| **FMS › ID Printing** | `/fms/id-printing` | `IdPrintingPage` | `fms.idprint.use` |
+| **VMS › Vessels** | `/vms/vessels` | `VesselListPage` | `vms.vessel.read` |
+| **VMS › Vessel Detail** | `/vms/vessels/[id]` | `VesselDetailPage` | `vms.vessel.read` |
+| **VMS › Register Vessel** | `/vms/vessels/new` | `VesselRegisterPage` | `vms.vessel.create` |
+| **VMS › Permits** | `/vms/permits` | `PermitListPage` | `vms.permit.apply` |
+| **VMS › Permit Detail** | `/vms/permits/[id]` | `PermitDetailPage` | `vms.permit.apply` |
+| **VMS › Catch Reports** | `/vms/catch-reports` | `CatchReportListPage` | `vms.catch.read` |
+| **VMS › New Catch Report** | `/vms/catch-reports/new` | `CatchReportCreatePage` | `vms.catch.create` |
+| **VMS › Programs** | `/vms/programs` | `ProgramListPage` | `vms.program.create` |
+| **VMS › Program Detail** | `/vms/programs/[id]` | `ProgramDetailPage` | `vms.program.create` |
+| **Analytics** | `/analytics` | `AnalyticsPage` | `fms.reports.read` or `vms.reports.read` |
+| **Admin › Users** | `/admin/users` | `UserManagementPage` | lgu_admin+ |
+| **Admin › Roles** | `/admin/roles` | `RoleManagementPage` | lgu_admin+ |
+| **Admin › Reference Data** | `/admin/reference-data` | `ReferenceDataPage` | lgu_admin+ |
+| **Admin › Audit Logs** | `/admin/audit-logs` | `AuditLogPage` | lgu_admin+ |
+
+### Blue Alliance Layout (`bluealliance.fish.powerbyte.app`)
+
+| Route | Page Component | Required Role |
+|---|---|---|
+| `/dashboard` | `GlobalDashboardPage` | global_admin |
+| `/tenants` | `TenantListPage` | global_admin |
+| `/tenants/[id]` | `TenantDetailPage` | global_admin |
+| `/tenants/new` | `TenantCreatePage` | global_admin |
+| `/analytics` | `GlobalAnalyticsPage` | global_admin |
+| `/admin/users` | `GlobalUserManagementPage` | global_admin |
+| `/admin/audit-logs` | `GlobalAuditLogPage` | global_admin |
+
+### Auth Routes (shared)
+
+| Route | Page Component |
+|---|---|
+| `/auth/login` | `LoginPage` (redirect to Keycloak) |
+| `/auth/callback` | `AuthCallbackPage` (handle OIDC callback) |
+| `/auth/logout` | `LogoutPage` |
+
+---
+
+## 6. Permissions → Guards & Policies
+
+Source: PERMISSION_REGISTRY.md
+
+### Guard Architecture
+
+
+Request
+→ TenantResolverMiddleware (resolve tenantId from x-tenant-slug/subdomain)
+→ JwtAuthGuard (validate Bearer JWT, extract claims)
+→ TenantGuard (verify user belongs to resolved tenant, or is global_admin)
+→ PermissionsGuard (check @RequirePermissions() decorator against user's role-permissions)
+→ Controller method
+
+
+### Permission Decorator Usage
+
+
+@RequirePermissions('fms.fisherfolk.create')
+@Post('/fms/fisherfolk')
+createFisherfolk() { ... }
+
+
+### Permission Keys → Guard Mapping
+
+| Permission Key | Applied To | Roles Granted |
+|---|---|---|
+| `fms.fisherfolk.read` | GET /fms/fisherfolk, GET /fms/fisherfolk/:id | global_admin, lgu_admin, user, viewer |
+| `fms.fisherfolk.create` | POST /fms/fisherfolk | global_admin, lgu_admin, user |
+| `fms.fisherfolk.update` | PATCH /fms/fisherfolk/:id | global_admin, lgu_admin, user |
+| `fms.fisherfolk.delete` | DELETE /fms/fisherfolk/:id | global_admin, lgu_admin |
+| `fms.fisherfolk.merge` | POST /fms/fisherfolk/:id/merge | global_admin, lgu_admin |
+| `fms.identity.edit` | PATCH identity fields (idNumber, rsbsaNumber, fullName, birthDate) | global_admin, lgu_admin |
+| `fms.media.upload` | POST photo/signature | global_admin, lgu_admin, user |
+| `fms.media.delete` | DELETE media | global_admin, lgu_admin |
+| `fms.idprint.use` | POST /fms/id-print/jobs | global_admin, lgu_admin, user |
+| `fms.reports.read` | GET /fms/reports/* | global_admin, lgu_admin, user, viewer |
+| `fms.reports.export` | POST /fms/reports/export | global_admin, lgu_admin |
+| `vms.vessel.read` | GET /vms/vessels | global_admin, lgu_admin, user, viewer |
+| `vms.vessel.create` | POST /vms/vessels | global_admin, lgu_admin, user |
+| `vms.vessel.update` | PATCH /vms/vessels/:id | global_admin, lgu_admin, user |
+| `vms.vessel.delete` | DELETE /vms/vessels/:id | global_admin, lgu_admin |
+| `vms.permit.apply` | POST /vms/permits | global_admin, lgu_admin, user |
+| `vms.permit.review` | PATCH /vms/permits/:id/review | global_admin, lgu_admin |
+| `vms.permit.approve` | PATCH /vms/permits/:id/approve | global_admin, lgu_admin |
+| `vms.permit.print` | POST /vms/permits/:id/print | global_admin, lgu_admin |
+| `vms.catch.read` | GET /vms/catch-reports | global_admin, lgu_admin, user, viewer |
+| `vms.catch.create` | POST /vms/catch-reports | global_admin, lgu_admin, user |
+| `vms.catch.update` | PATCH /vms/catch-reports/:id | global_admin, lgu_admin, user |
+| `vms.catch.delete` | DELETE /vms/catch-reports/:id | global_admin, lgu_admin |
+| `vms.program.create` | POST /vms/programs | global_admin, lgu_admin |
+| `vms.program.enroll` | POST /vms/programs/:id/enroll | global_admin, lgu_admin, user |
+| `vms.program.distribute` | POST /vms/programs/:id/distribute | global_admin, lgu_admin |
+| `vms.reports.read` | GET /vms/reports/* | global_admin, lgu_admin, user, viewer |
+| `vms.reports.export` | POST /vms/reports/export | global_admin, lgu_admin |
+
+### Identity Field Protection
+
+The `fms.identity.edit` permission is checked as an additional guard when PATCH requests modify any of: `idNumber`, `rsbsaNumber`, `firstName`, `lastName`, `middleName`, `dateOfBirth`. This is enforced in `FisherfolkService` at the business logic layer, not just at the route level.
+
+---
+
+## 7. Tenancy → Subdomain Middleware
+
+### Resolution Flow
+
+**Next.js Middleware** (`apps/web/middleware.ts`):
+1. Extract hostname from request
+2. Parse subdomain: `{subdomain}.fish.powerbyte.app` or `{subdomain}.localhost`
+3. If `bluealliance` → set workspace context to Blue Alliance
+4. If valid LGU subdomain → resolve and store `tenantSlug` (example: `calapan`)
+5. Local dev fallback: check `?tenant=` query parameter (example: `?tenant=calapan`)
+6. Frontend API client sends tenant slug on every API request:
+
+
+x-tenant-slug: {tenantSlug}
+
+
+Example:
+
+
+x-tenant-slug: calapan
+
+
+---
+
+**NestJS Middleware** (`TenantResolverMiddleware`):
+1. Read `x-tenant-slug` header from request.
+2. Lookup tenant by slug/subdomain (`Tenant.subdomain`).
+3. Validate tenant exists and is active (cache in Redis, TTL 60 seconds).
+4. Attach resolved `tenantId` (UUID) to request context.
+5. If slug is missing/invalid → return `403 Forbidden` (except for global Blue Alliance routes).
+
+---
+
+**Tenant Scope Interceptor** (`TenantScopeInterceptor`):
+1. Automatically inject `tenantId` into all Prisma queries via `WHERE tenantId = request.tenantId`.
+2. Prevent cross-tenant data access at ORM level.
+3. `global_admin` bypass: allowed to query across tenants when explicitly requested.
+
+### Subdomain → Tenant Resolution Cache
+
+
+Redis key: tenant:subdomain:{subdomain}
+Value: { tenantId, name, status }
+TTL: 60s (1 minute)
+
+
+---
+
+## 8. Auth → Keycloak Integration
+
+### Configuration
+
+| Setting | Value |
+|---|---|
+| Realm | `blue-ocean` |
+| Web client ID | `blue-ocean-web` |
+| API client ID | `blue-ocean-api` |
+| Issuer (dev) | `https://auth.dev.fish.powerbyte.app/realms/blue-ocean` |
+| Issuer (stage) | `https://auth.stage.fish.powerbyte.app/realms/blue-ocean` |
+| Issuer (prod) | `https://auth.fish.powerbyte.app/realms/blue-ocean` |
+| Local dev issuer | `http://localhost:8080/realms/blue-ocean` |
+
+### JWT Claims Mapping
+
+| JWT Claim | App Field | Description |
+|---|---|---|
+| `sub` | `userId` | Keycloak user ID (UUID) |
+| `tenant_id` | `tenantId` | Custom claim — tenant UUID |
+| `realm_access.roles` | `roles` | Array of role codes |
+| `email` | `email` | User email |
+| `preferred_username` | `displayName` | Display name |
+
+### Auth Flow
+
+1. Next.js redirects unauthenticated users to Keycloak login
+2. Keycloak authenticates and returns authorization code
+3. Next.js exchanges code for tokens (PKCE flow)
+4. Access token (JWT) sent as `Authorization: Bearer {token}` on API calls
+5. NestJS `JwtStrategy` validates token against Keycloak JWKS endpoint
+6. On first valid login, `AuthService` upserts local `User` record from JWT claims
+
+### Role Model
+
+- **Keycloak** stores role codes in `realm_access.roles`
+- **App-side** `UserRole` table binds userId + tenantId + roleCode
+- `global_admin` has no tenantId constraint (nullable)
+- Tenant-scoped roles (`lgu_admin`, `user`, `viewer`) require tenantId match
+- Future module roles: `lgu_ranger`, `lgu_ranger_lead`, `blue_operator`, `blue_admin`
+
+---
+
+## 9. Uploads → MinIO + MediaObject + BullMQ
+
+### Upload Pipeline
+
+
+Client
+→ POST /api/v1/media/upload (multipart, max 10MB)
+→ MediaController validates: MIME (jpeg/png/webp), size ≤10MB, dimension ≤8000px
+→ MediaService uploads raw file to MinIO temp bucket
+→ Creates MediaObject record (processingStatus=pending)
+→ Enqueues job to "media-optimization" queue
+→ Returns mediaObjectId to client (status: pending)
+
+Worker (media-optimization):
+→ Downloads raw from MinIO temp bucket
+→ Sharp pipeline:
+1. Strip EXIF metadata
+2. Validate dimensions (reject >8000px)
+3. Generate display variant:
+- Photo: 512×512 (1:1 crop, JPEG/WebP quality 80)
+- Signature: max-width 600px, preserve aspect ratio, PNG/WebP lossless
+4. Generate thumb variant:
+- Photo: 128×128 (1:1 crop, JPEG/WebP quality 70)
+- Signature: not generated (display only)
+→ Uploads variants to MinIO permanent bucket
+→ Updates MediaObject records (processingStatus=ready)
+→ Deletes temp file (originals NOT stored by default)
+
+
+### MinIO Buckets
+
+| Bucket | Purpose |
+|---|---|
+| `temp-uploads` | Raw uploads before processing |
+| `media` | Optimized display + thumb variants |
+
+### MediaObject Variants
+
+| Purpose | Variant: display | Variant: thumb |
+|---|---|---|
+| `fisherfolk_photo` | 512×512 JPEG/WebP q80 | 128×128 JPEG/WebP q70 |
+| `fisherfolk_signature` | max-w 600px PNG/WebP lossless | — (none) |
+| `vessel_photo` | 512×512 JPEG/WebP q80 | 128×128 JPEG/WebP q70 |
+| `idprint_export` | Full resolution PDF page | — (none) |
+| `permit_attachment` | max-w 1200px JPEG/WebP q85 | 128×128 JPEG/WebP q70 |
+
+### Presigned URL Pattern
+
+- UI never accesses MinIO directly
+- `GET /api/v1/media/:id/url` returns short-lived presigned GET URL (TTL 15 min)
+- API validates tenant ownership before issuing URL
+
+---
+
+## 10. Queues → BullMQ Workers
+
+### Queue Definitions
+
+| Queue Name | Processor File | Purpose |
+|---|---|---|
+| `media-optimization` | `media-optimization.processor.ts` | Image EXIF strip, resize, variant generation |
+| `export-jobs` | `export-jobs.processor.ts` | CSV/Excel report generation (async) |
+| `id-print-jobs` | `id-print-jobs.processor.ts` | ID card PDF rendering |
+
+### Shared Queue Configuration
+
+| Setting | Value |
+|---|---|
+| Redis connection | Shared Redis instance |
+| Max retries | 3 |
+| Backoff strategy | Exponential (1000ms, 2000ms, 4000ms) |
+| DLQ enabled | Yes — failed jobs after max retries → `{queue-name}:dlq` |
+| DLQ replay | Admin UI endpoint: POST /api/v1/admin/queues/:name/replay/:jobId |
+| Concurrency | media-optimization: 3, export-jobs: 2, id-print-jobs: 1 |
+| Job TTL | 24 hours (completed jobs cleaned after) |
+
+### Job Payload Schemas
+
+**media-optimization:**
+
+{
+mediaObjectId: UUID,
+tenantId: UUID,
+purpose: MediaPurpose,
+tempObjectKey: string
+}
+
+
+**export-jobs:**
+
+{
+tenantId: UUID,
+reportType: string,
+filters: object,
+requestedByUserId: UUID,
+format: "csv" | "xlsx"
+}
+
+
+**id-print-jobs:**
+
+{
+printJobId: UUID,
+tenantId: UUID,
+templateId: UUID,
+fisherfolkIds: UUID[] (max 4)
+}
+
+
+---
+
+## 11. ID Printing → Template + Job + PDF
+
+### Architecture
+
+
+UI (IdPrintingPage)
+→ User searches/selects up to 4 fisherfolk
+→ User selects template (or default)
+→ POST /api/v1/fms/id-print/jobs { templateId, fisherfolkIds[] }
+→ IdPrintService creates IDPrintJob + IDPrintJobItems
+→ Enqueues to "id-print-jobs" queue
+→ Returns jobId (status: queued)
+
+Worker (id-print-jobs):
+→ Loads IDPrintTemplate.templateJson
+→ Loads fisherfolk data + photo + signature media URLs
+→ Renders PDF (200mm × 300mm portrait):
+- Front: photo, name, ID number, barangay, categories, QR code
+- Back: signature, RSBSA number, validity, LGU info
+→ Layout places up to 4 fisherfolk per page
+→ Uploads rendered PDF to MinIO (purpose: idprint_export)
+→ Updates IDPrintJob: status=ready, resultFrontMediaId, resultBackMediaId
+
+UI Polling:
+→ GET /api/v1/fms/id-print/jobs/:id (poll every 2s)
+→ When status=ready → show download/print button
+→ Download via presigned URL
+
+
+### Template Schema (IDPrintTemplate.templateJson)
+
+
+{
+front: {
+background: { mediaObjectId?, color? },
+elements: [
+{ type: "photo", x, y, width, height },
+{ type: "text", field: "fullNameDisplay", x, y, fontSize, fontWeight },
+{ type: "text", field: "idNumber", ... },
+{ type: "text", field: "barangayDisplay", ... },
+{ type: "text", field: "categories", ... },
+{ type: "qrcode", field: "idNumber", x, y, size },
+{ type: "image", mediaObjectId: "lgu-logo-id", x, y, width, height }
+]
+},
+back: {
+elements: [
+{ type: "signature", x, y, width, height },
+{ type: "text", field: "rsbsaNumber", ... },
+{ type: "text", field: "validity", ... },
+{ type: "text", value: "City of Calapan", ... }
+]
+},
+grid: {
+columns: 2,
+rows: 2,
+cardWidthMm: 85.6,
+cardHeightMm: 54
+}
+}
+
+
+---
+
+## 12. Seed Data
+
+### Seed Execution Order
+
+1. **Roles** → global_admin, lgu_admin, user, viewer
+2. **Permissions** → all keys from PERMISSION_REGISTRY.md
+3. **RolePermissions** → map permissions to roles per PERMISSION_REGISTRY.md
+4. **Modules** → fms (active), vms (active), bluesentinel (planned)
+5. **ModuleMenus** → navigation items from PRODUCT.md workspace nav spec
+6. **Categories** → 6 fisherfolk category types (global, no tenantId)
+7. **Barangays** → 62 Calapan City barangays (global, tenantId = null)
+8. **Species** → initial species list (global, tenantId = null)
+9. **Dev-only: Tenant** → Calapan City (subdomain: calapan) + Blue Alliance
+10. **Dev-only: Users** → test users per role
+
+### Seed File
+
+Location: `packages/database/prisma/seed.ts`
+
+Seed data constants: `packages/shared/src/constants/seed/`
+
+---
+
+## 13. Dashboard & Reporting
+
+### LGU Dashboard KPIs (Priority Order)
+
+| # | KPI | Chart Type | Data Source |
+|---|---|---|---|
+| 1 | Total registered fisherfolk by status | Stat cards + breakdown | Fisherfolk |
+| 2 | Registration trend (12 months) | Line chart | Fisherfolk.createdAt |
+| 3 | Fisherfolk by barangay | Horizontal bar | Fisherfolk + Barangay |
+| 4 | Fisherfolk by age group (<18, 18–30, 31–45, 46–60, 60+) | Bar chart | Fisherfolk.dateOfBirth |
+| 5 | Fisherfolk by category | Donut chart | FisherfolkCategory + Category |
+| 6 | Total vessels by status | Stat cards | Vessel |
+| 7 | Permits: active vs expiring (30/60/90 days) + overdue | Stacked bar | PermitApplication |
+| 8 | Catch volume trend (monthly, filterable by landing site) | Line chart | CatchReport + CatchReportItem |
+| 9 | Top 10 species by catch volume | Horizontal bar | CatchReportItem + Species |
+| 10 | Landing site activity (report count + volume) | Bar chart | CatchReport + LandingSite |
+
+Secondary: Program participation summary (widget, not top-10 for v1)
+
+### Blue Alliance Global Dashboard
+
+| KPI | Type | Notes |
+|---|---|---|
+| Aggregate totals (fisherfolk, vessels, permits, catch volume) | Stat cards | Sum across all LGUs |
+| LGU comparison | Ranked table + bar | Fisherfolk count, vessels, catch, permits |
+| Drill-down to LGU | Link | Read-only LGU dashboard view |
+| Global catch trends | Time series | Filterable by LGU |
+| Module adoption heatmap | Grid/heatmap | Which LGUs have which modules |
+| Data freshness / compliance | Indicators per LGU | Last catch report date, missing reports, permit backlog |
+
+---
+
+## 14. Security & Governance
+
+### Audit Events
+
+All audit events write to `AuditLog` table with: `actorUserId`, `tenantId`, `entityType`, `entityId`, `beforeJson`, `afterJson`, `ipAddress`, `userAgent`, `createdAt`.
+
+| Event | Trigger |
+|---|---|
+| `create` | Any entity creation |
+| `update` | Any entity update |
+| `delete` | Any entity soft-delete |
+| `merge` | Fisherfolk merge operation |
+| `deactivate` | Fisherfolk status → inactive |
+| `reactivate` | Fisherfolk status → active (from inactive) |
+| `export` | Report export (CSV/XLSX) |
+| `print` | ID print job or permit print |
+| `role_change` | User role assignment/removal |
+| `enable_module` | Module enabled for tenant |
+| `disable_module` | Module disabled for tenant |
+| `login` | User login (from Keycloak event) |
+| `logout` | User logout |
+| `media_upload` | Media file uploaded |
+| `media_delete` | Media file deleted |
+| `permit_approve` | Permit approved |
+| `permit_reject` | Permit rejected |
+
+### Data Retention Policy
+
+| Data Type | Retention | Action After |
+|---|---|---|
+| Audit logs | 3 years minimum | Archive to cold storage |
+| Soft-deleted records | 1 year | Hard purge (scheduled job) |
+| Right-to-delete requests | Immediate | Anonymize PII fields, retain statistical record |
+| Completed queue jobs | 24 hours | Auto-cleaned by BullMQ |
+| Temp upload files | 1 hour | Deleted after processing |
+
+### CORS
+
+| Environment | Allowed Origins |
+|---|---|
+| Development | `https://dev.fish.powerbyte.app`, `https://*.dev.fish.powerbyte.app`, `http://localhost:3000` |
+| Staging | `https://stage.fish.powerbyte.app`, `https://*.stage.fish.powerbyte.app` |
+| Production | `https://fish.powerbyte.app`, `https://*.fish.powerbyte.app` |
+
+### Rate Limiting
+
+| Endpoint Type | Limit | Key |
+|---|---|---|
+| Public | 30 req/min | IP address |
+| Authenticated | 120 req/min | userId |
+| Upload | 10 req/min | userId |
+
+### CSRF
+
+Not required. API uses Bearer-token-only authentication (JWT). No cookie-based sessions.
+
+---
+
+## 15. Infrastructure
+
+### Docker Compose Services (Development)
+
+| Service | Image | Port | Purpose |
+|---|---|---|---|
+| `postgres` | postgres:15 | 5432 | Primary database |
+| `redis` | redis:7 | 6379 | Cache + BullMQ broker |
+| `keycloak` | quay.io/keycloak/keycloak:latest | 8080 | Auth provider |
+| `minio` | minio/minio:latest | 9000 (API), 9001 (console) | Object storage |
+| `app` | node:20 (dev mount) | 3000 | Next.js + NestJS |
+| `worker` | node:20 (dev mount) | — | BullMQ processor |
+
+### Environment Variables
+
+Database
+
+DATABASE_URL=postgresql://user:pass@postgres:5432/blueocean
+
+Redis
+
+REDIS_URL=redis://redis:6379
+
+Keycloak
+
+KEYCLOAK_ISSUER=http://keycloak:8080/realms/blue-ocean
+
+KEYCLOAK_CLIENT_ID_WEB=blue-ocean-web
+KEYCLOAK_CLIENT_ID_API=blue-ocean-api
+KEYCLOAK_CLIENT_SECRET_API=...
+
+MinIO
+
+MINIO_ENDPOINT=minio
+MINIO_PORT=9000
+MINIO_ACCESS_KEY=...
+MINIO_SECRET_KEY=...
+MINIO_BUCKET_TEMP=temp-uploads
+MINIO_BUCKET_MEDIA=media
+
+App
+
+APP_BASE_DOMAIN=fish.powerbyte.app
+APP_ENV=development
+CORS_ORIGINS=http://localhost:3000
+
+Rate Limiting
+
+RATE_LIMIT_PUBLIC=30
+RATE_LIMIT_AUTH=120
+RATE_LIMIT_UPLOAD=
 
