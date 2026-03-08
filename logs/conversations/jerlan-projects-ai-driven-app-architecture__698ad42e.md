@@ -2,7 +2,7 @@
 
 - Conversation ID: 698ad42e-7fa0-8320-a9c1-128a45e99a64
 - Title: Jerlan Projects - AI-driven App Architecture
-- Captured: 2026-02-28T16:05:18.369Z
+- Captured: 2026-03-08T11:53:16.853Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/698ad42e-7fa0-8320-a9c1-128a45e99a64
 
 ---
@@ -3661,7 +3661,6 @@ pnpm lint:hydration
 
 This prevents “dead UI” by enforcing strict Next.js Server/Client boundaries.
 
-Code
 
 ---
 
@@ -4791,7 +4790,6 @@ Hydration Safety
 
 pnpm lint:hydration prevents “dead UI” by enforcing strict Next.js Server/Client boundaries.
 
-Code
 
 FINAL STEP (MANDATORY)
 After writing all files, provide a final section:
@@ -4913,7 +4911,6 @@ This prevents accidental misuse.
 
 Add this to your reusable AI prompt:
 
-Code
 TENANCY VALIDATION RULES
 
 If tenancy.mode = single:
@@ -8231,7 +8228,6 @@ pnpm check:spec:dev
 
 2️⃣ Ask Copilot for targeted migration:
 
-Code
 TARGETED MIGRATION REQUEST
 
 inputs.yml had an architectural change.
@@ -8458,7 +8454,6 @@ pnpm check:spec:dev
 
 Then use Copilot:
 
-Code
 TARGETED MIGRATION REQUEST
 1) Read inputs.yml + project.memory.md
 2) Validate schema
@@ -8927,7 +8922,6 @@ You paste the single initializer prompt we designed earlier.
 
 It starts something like:
 
-Code
 INITIALIZE PROJECT — SPEC-DRIVEN MONOREPO
 Devcontainer + Turborepo + pnpm + Next App Router + NestJS + Keycloak + MinIO
 ...
@@ -8978,7 +8972,6 @@ Option B — Ask Copilot to Apply Changes
 
 After it outputs everything, type:
 
-Code
 Apply these changes directly to the workspace.
 
 If your Copilot supports workspace editing, it will create the files automatically.
@@ -13054,7 +13047,6 @@ Add complexity only when needed (offline sync, realtime contracts, tenancy enfor
 
 Always enforce hydration boundaries first.
 
-Code
 
 ---
 
@@ -13387,7 +13379,6 @@ Keep your design as the core platform
 
 Your structure:
 
-Code
 inputs.yml
 project.memory.md
 AI_prompt.md
@@ -13407,7 +13398,6 @@ These are the only things worth integrating:
 
 Add:
 
-Code
 openspec/
   specs/
     <module>/
@@ -13419,7 +13409,6 @@ Auto-generate spec.md per module.
 
 Add:
 
-Code
 changes/
   active/
   archive/
@@ -13519,7 +13508,6 @@ TheDocs
 
 1) Minimal OpenSpec integration (fits your repo perfectly)
 Add these folders to every generated project repo
-Code
 openspec/
   README.md
   specs/
@@ -13866,7 +13854,6 @@ pnpm bootstrap:dev
 
 pnpm dev:all
 
-Code
 
 ---
 
@@ -13925,7 +13912,6 @@ Let’s simulate real usage.
 
 Example:
 
-Code
 my-new-app/
 
 Open Copilot Chat.
@@ -13934,14 +13920,12 @@ Open Copilot Chat.
 
 In AI_prompt.md, find the section:
 
-Code
 # PROMPT 1 — SPEC SYNTHESIZER
 
 Copy only the block inside the triple backticks.
 
 It looks like this:
 
-Code
 SPEC SYNTHESIZER
 ...
 <PASTE APP DESCRIPTION HERE>
@@ -13950,14 +13934,12 @@ You paste that into Copilot chat.
 
 Then you replace:
 
-Code
 <PASTE APP DESCRIPTION HERE>
 
 With your actual idea.
 
 Example:
 
-Code
 Build an inventory and sales app for small shops.
 Must support offline usage on tablets.
 Single tenant.
@@ -13979,7 +13961,6 @@ Go back to AI_prompt.md.
 
 Find:
 
-Code
 # PROMPT 2 — SCAFFOLD GENERATOR
 
 Copy only the text inside the triple backticks.
@@ -14008,7 +13989,6 @@ Later, when adding a feature:
 
 Find:
 
-Code
 # PROMPT 3 — FEATURE/MODULE UPDATE
 
 Copy only that section.
@@ -14017,7 +13997,6 @@ Paste into Copilot chat.
 
 Replace:
 
-Code
 <PASTE CHANGE DESCRIPTION HERE>
 
 With your new feature.
@@ -14044,7 +14023,6 @@ Separation prevents chaos.
 
 You can store:
 
-Code
 /prompts/
   spec-synthesizer.txt
   scaffold-generator.txt
@@ -16413,7 +16391,6 @@ Perfect. Below is the updated barangay placeholder section, now populated with y
 
 This is ready to paste directly into:
 
-Code
 inputs.modules.reference_data.barangays
 
 inside inputs.yml.
@@ -17006,7 +16983,6 @@ pnpm -C apps/api start
 
 Open your browser and test:
 
-Code
 http://localhost:3001/dashboard/summary
 
 You should see JSON.
@@ -17123,7 +17099,6 @@ Because:
 
 Dashboard aggregations depend on:
 
-Code
 GROUP BY barangay_id
 
 If barangay values are inconsistent (string vs ID), your charts will break later.
@@ -17201,7 +17176,6 @@ pnpm -C apps/api start
 
 Then test:
 
-Code
 http://localhost:3001/dashboard/summary
 
 If it returns JSON → backend is healthy.
@@ -17215,7 +17189,6 @@ pnpm -C apps/web dev
 
 Open:
 
-Code
 http://localhost:3000/dashboard
 🧠 Why This Step Was Correct
 
@@ -17242,7 +17215,6 @@ pnpm lint:hydration
 
 If it says:
 
-Code
 ✅ hydration-lint: OK
 
 You are safe.
@@ -17689,7 +17661,6 @@ That means VS Code is still seeing a feature config somewhere.
 
 In VS Code search (Ctrl+Shift+F), search for:
 
-Code
 "features"
 
 If you find it inside .devcontainer/ anywhere:
@@ -17698,7 +17669,6 @@ remove it
 
 Also search for:
 
-Code
 docker-compose-plugin
 
 If you find it in any Dockerfile:
@@ -17743,7 +17713,6 @@ It should be in the root of your project folder.
 
 Example structure:
 
-Code
 Fisherfolk-Information-Management-System/
 │
 ├─ compose.yml   ← HERE
@@ -17763,7 +17732,6 @@ At the very top level of your project
 
 Check if you see:
 
-Code
 compose.yml
 🟥 If You DO NOT See compose.yml
 
@@ -17779,17 +17747,14 @@ You are inside a subfolder (like apps/web)
 
 At the top of VS Code Explorer, it should show:
 
-Code
 Fisherfolk-Information-Management-System
 
 If instead it shows:
 
-Code
 apps
 
 or
 
-Code
 web
 
 then you are not at the root.
@@ -17810,7 +17775,6 @@ dir
 
 You should see something like:
 
-Code
 compose.yml
 inputs.yml
 package.json
@@ -18294,7 +18258,6 @@ Perfect. This is clear and easy to fix. 👍
 
 The error:
 
-Code
 ERR_PNPM_NO_PKG_MANIFEST No package.json found in /workspace
 
 means:
@@ -18304,12 +18267,10 @@ means:
 
 It is looking at:
 
-Code
 /workspace
 
 But your actual project is mounted at:
 
-Code
 /workspaces/repo
 
 So pnpm is running in the wrong folder.
@@ -18326,7 +18287,6 @@ pwd
 
 If it prints:
 
-Code
 /workspace
 
 That’s the problem.
@@ -18345,7 +18305,6 @@ ls
 
 You should see:
 
-Code
 package.json
 inputs.yml
 apps
@@ -20653,7 +20612,6 @@ inputs: {}
 
 Open Devcontainer:
 
-Code
 Ctrl + Shift + P
 Dev Containers: Reopen in Container
 🟢 PHASE 1 — SPEC GENERATION
@@ -21256,7 +21214,6 @@ STEP 2 — Create These Files Manually (ONLY THESE)
 
 Create folder:
 
-Code
 .devcontainer/
 .devcontainer/devcontainer.json
 JSON
@@ -21319,7 +21276,6 @@ STEP 3 — Open Devcontainer
 
 Press:
 
-Code
 Ctrl + Shift + P
 Dev Containers: Reopen in Container
 
@@ -21333,7 +21289,6 @@ Open Copilot Chat.
 
 Paste this:
 
-Code
 We are building a new app using the Spec-Driven Platform.
 
 Ask me structured questions to define:
@@ -21356,7 +21311,6 @@ When done:
 
 Paste this:
 
-Code
 Generate production-grade inputs.yml and inputs.schema.json
 based strictly on my answers and project.memory.md.
 
@@ -21379,7 +21333,6 @@ Copy them into your repo.
 
 Now paste this into Copilot:
 
-Code
 Generate full monorepo scaffold based on inputs.yml and project.memory.md.
 
 Requirements:
@@ -21419,7 +21372,6 @@ STEP 4 — Install Dependencies
 
 Run inside devcontainer:
 
-Code
 pnpm install
 pnpm build
 
@@ -21429,7 +21381,6 @@ If this fails → fix errors before proceeding.
 
 Paste:
 
-Code
 Add Prisma to apps/api.
 
 Create:
@@ -21447,7 +21398,6 @@ Use DATABASE_URL env.
 
 Run:
 
-Code
 pnpm install
 pnpm -C apps/api db:generate
 pnpm -C apps/api db:migrate
@@ -21455,7 +21405,6 @@ pnpm -C apps/api db:migrate
 
 Paste:
 
-Code
 Generate docker-compose.yml for host-run.
 
 Services:
@@ -21470,13 +21419,11 @@ Include:
 
 Then OUTSIDE devcontainer (host terminal):
 
-Code
 docker compose up -d
 🔵 PART 6 — STRUCTURED LOGGING
 
 Paste:
 
-Code
 Add structured logging using nestjs-pino.
 
 Requirements:
@@ -21488,7 +21435,6 @@ Requirements:
 
 Paste:
 
-Code
 Add S3 presigned upload endpoint using AWS SDK v3.
 
 POST /uploads/presign
@@ -21502,7 +21448,6 @@ Validate file type + size.
 
 Paste:
 
-Code
 Add BullMQ background processing.
 
 Implement:
@@ -21521,7 +21466,6 @@ Whenever editing inputs.yml:
 
 Paste:
 
-Code
 FEATURE UPDATE
 
 I modified inputs.yml:
@@ -21616,7 +21560,6 @@ Feature update workflow
 This replaces the entire memory of this chat.
 
 ✅ COPY THIS INTO A NEW CHAT
-Code
 We are continuing my Spec-Driven AI Mega App Platform.
 
 This is not a random project.
