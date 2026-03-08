@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Fisherfolk Management Information System
-- Captured: 2026-03-08T07:01:16.537Z
+- Captured: 2026-03-08T07:04:20.348Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -18435,4 +18435,54 @@ At the global level, Blue Alliance administrators have access to an aggregated a
 In the future, the platform will include an enforcement-focused module called BlueSentinel. This module will support marine rangers and enforcement teams in documenting illegal fishing incidents and other marine violations. Rangers will be able to record violator information, vessel details, fishing gear used, incident locations, and supporting evidence such as photos or reports. BlueSentinel will allow LGUs and Blue Alliance to work together more effectively in protecting marine ecosystems and enforcing fisheries regulations.
 
 Overall, the Fisheries Information Management System provides a comprehensive digital infrastructure for fisheries governance. By centralizing fisherfolk registration, vessel management, permits, catch monitoring, and program tracking into a single platform, it enables governments to manage marine resources more effectively, support fisherfolk communities, and promote sustainable fisheries practices.
+
+## User
+
+ok, now create a much more technical detail of the app we built here so that claude can clearly understand the boundaries, extent and the technical details and structure of the app
+
+## Assistant
+
+Below is a much more technical system description you can give to Claude so it clearly understands the architecture, boundaries, modules, tenancy, and technology stack of the application.
+
+This is written as a technical explanation, not a prompt.
+
+Fisheries Information Management System (FIMS) — Technical System Description
+
+The Fisheries Information Management System (FIMS) is a modular, multi-tenant enterprise platform designed to manage fisheries governance data for multiple Local Government Units (LGUs). The system centralizes fisherfolk registries, vessel records, permits, catch reports, fisheries programs, and future marine enforcement activities into a unified digital workspace.
+
+The platform is designed using a spec-driven architecture, meaning the system’s behavior, entities, permissions, and modules are first defined in specification documents. These specifications guide the automated generation of application components and enforce architectural consistency across the system.
+
+The platform operates under a multi-tenant model, where each LGU acts as an independent tenant. Each tenant accesses the platform through its own subdomain. For example, an LGU such as Calapan City would access its workspace through:
+
+calapan.fish.powerbyte.app
+
+Within this tenant workspace, LGU staff manage their fisheries data independently from other municipalities. Tenant isolation is enforced both at the application layer and at the database level.
+
+The platform also includes a global governance workspace used by an oversight organization called Blue Alliance. Blue Alliance administrators access the system through:
+
+bluealliance.fish.powerbyte.app
+
+This workspace provides cross-tenant analytics, monitoring, and oversight capabilities across all participating LGUs. While LGUs can only access their own tenant data, Blue Alliance administrators may access aggregated or cross-LGU datasets for monitoring and policy analysis.
+
+The system is organized as a modular workspace-based application, where each major feature area is implemented as a module that appears as a menu within the user interface. Each module can contain multiple operations, views, and workflows. Modules can also be enabled or disabled per tenant depending on configuration.
+
+The first foundational module is the Fisherfolk Management System (FMS). This module acts as the core master data registry for the platform. It maintains the official identity records of fisherfolk within an LGU. All other modules reference fisherfolk records as their primary identity entity. Each fisherfolk record contains structured identity information such as a manually assigned ID number, full name (including last name, first name, and middle name), date of birth, barangay address, sex, contact number, and a unique RSBSA number when available. The system also stores fisherfolk categories that indicate the type of fisheries activity performed by the individual. These categories can include boat owner/operator, capture fishing, gleaning, vendor, fish processing, and aquaculture.
+
+The FMS module also supports identity media capture. Each fisherfolk record may include a photograph and a signature image. These can be uploaded from external files or captured directly through a device camera or stylus input. Uploaded images are automatically processed through an image optimization pipeline that removes metadata, resizes images, and generates optimized display and thumbnail variants to minimize storage usage. The system stores only optimized variants rather than raw images to ensure efficient storage management.
+
+Each fisherfolk record can be viewed through a detailed profile interface that displays all identity data, categories, media files, and related records. The module also includes an ID printing subsystem that allows administrators to generate printable identification cards. The system supports selecting up to four fisherfolk records at a time and rendering a formatted identification layout on a printable page. The layout is template-driven and can be customized through a template configuration stored within the database.
+
+The second major module is the Vessel Management System (VMS). This module manages fishing vessels and operational fisheries information. Vessel records are linked directly to fisherfolk records in the FMS module, ensuring that all vessels are associated with verified individuals. Each vessel record includes fields such as registration number, vessel name, vessel status, and ownership information.
+
+The VMS module also manages permit workflows. Permit applications can be created, submitted for review, approved, rejected, printed, or expired. Each permit application follows a structured workflow state machine that tracks the status of the permit lifecycle.
+
+Another critical capability of the VMS module is catch reporting. Fisheries staff can log catch reports for fishing trips or landing sites. Each catch report records the date of the catch, the vessel involved, the landing site, and individual catch report items. Each item records the species caught and the corresponding catch volume. These records allow LGUs to build datasets that track fisheries production and species distribution patterns over time.
+
+The VMS module also supports fisheries programs and interventions. LGUs often run programs such as equipment distribution, training programs, or financial assistance initiatives. The system allows administrators to define programs, enroll fisherfolk beneficiaries, and record distribution events. This provides transparency and traceability for government programs that support fisherfolk communities.
+
+The platform includes an integrated dashboard and analytics layer that visualizes fisheries data. Each LGU tenant has its own operational dashboard displaying metrics such as the number of registered fisherfolk, fisherfolk distribution by barangay, fisherfolk categories, vessel registrations, permit statuses, and catch volume trends. These dashboards allow municipal officials to monitor fisheries activity and identify trends in real time.
+
+At the global level, Blue Alliance administrators have access to a cross-tenant analytics dashboard. This dashboard aggregates data across all participating LGUs and presents comparative insights, regional fisheries statistics, and compliance indicators. This global dashboard acts as an oversight and monitoring interface for fisheries governance.
+
+The platform is designed to support future expansion through additional modules. One planned module is BlueSentinel, which will focus on marine enforcement and illegal fishing monitoring. This module will allow marine rangers and enforcement officers to record incidents involving illegal fishing activiti
 
