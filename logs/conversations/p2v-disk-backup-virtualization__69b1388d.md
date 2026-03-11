@@ -2,7 +2,7 @@
 
 - Conversation ID: 69b1388d-5e7c-8324-bbb5-f3cfd38129df
 - Title: P2V Disk Backup Virtualization
-- Captured: 2026-03-11T12:05:06.613Z
+- Captured: 2026-03-11T12:08:08.658Z
 - URL: https://chatgpt.com/c/69b1388d-5e7c-8324-bbb5-f3cfd38129df
 
 ---
@@ -731,4 +731,138 @@ Your old laptop will boot as a VM immediately.
 If you want, I can also show you something extremely useful:
 
 How to convert that Macrium backup directly into a VMware VM in about 3 minutes (without StarWind or manual cloning). This is a trick most people don't know.
+
+## User
+
+how to clone it to VHD?
+
+## Assistant
+
+You’re very close already. From your screenshot I can see you already created the VHD disk (Disk 4 – 130GB Msft Virtual Disk), which is exactly what we need. 👍
+
+Now the only missing part is cloning the image contents into that VHD disk.
+
+But first, you must mount the Macrium image so Macrium can see it as a source disk.
+
+Step 1 — Mount the Macrium Image
+
+Go to:
+
+Existing Backups
+
+Select your backup file:
+
+E9B225EA0F7B3BAC-MaEsLaptop-00-00.mrimgx
+
+Click:
+
+Browse
+
+A window will appear listing partitions.
+
+Select:
+
+3 - NTFS (111GB)
+
+Assign a drive letter like:
+
+G:
+
+Click OK.
+
+Now Windows will see the backup like a normal drive.
+
+Step 2 — Clone the Image Disk
+
+Now go back to:
+
+Create Backups → Local Disks
+
+You should now see one extra disk/partition from the mounted image.
+
+Click:
+
+Clone this disk
+
+on the mounted image disk (the one showing your old partitions).
+
+Step 3 — Select Destination
+
+When the clone wizard opens:
+
+Choose destination disk:
+
+Disk 4 – Msft Virtual Disk (130GB)
+
+Then drag or copy all partitions from source → destination.
+
+You should copy these:
+
+MSR 128MB
+EFI 100MB
+Windows 111GB
+Recovery 582MB
+Step 4 — Run the Clone
+
+Click:
+
+Next → Finish → Run
+
+Macrium will copy the entire system into the VHD.
+
+Step 5 — Detach the VHD
+
+After cloning finishes:
+
+Open Disk Management
+
+Right click:
+
+Disk 4 → Detach VHD
+
+Now you have a file like:
+
+oldlaptop.vhdx
+Step 6 — Use in Virtual Machine
+
+Now you can:
+
+VMware
+
+Convert VHDX → VMDK using:
+
+StarWind V2V Converter
+
+VirtualBox
+
+VirtualBox can directly use VHD.
+
+Important Setting for Your VM
+
+Your backup disk is:
+
+GPT + EFI
+
+So the VM must use:
+
+Firmware: UEFI
+Disk controller: SATA
+
+Otherwise Windows will not boot.
+
+⚡ Important (You Already Have a Much Easier Option)
+
+Since I saw viBoot in your screenshot, you can boot the Macrium image without cloning at all.
+
+Just:
+
+Existing Backups → select image → viBoot
+
+It will create a VM instantly.
+
+Many technicians use this for exactly your situation (dead laptop recovery).
+
+✅ If you want, I can also show you a much faster professional trick:
+
+Convert the Macrium backup directly into a VMware VM in about 2 minutes, skipping VHD creation entirely.
 
