@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat Consolidator</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1><svg class="app-logo" viewBox="0 0 64 64" width="28" height="28"><defs><linearGradient id="logoBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7ba2ff"/><stop offset="100%" stop-color="#4a6fff"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#logoBg)"/><path d="M16 20h32v4H16zM16 30h24v4H16zM16 40h28v4H16z" fill="#0b1020" opacity="0.6" rx="2"/><circle cx="46" cy="46" r="12" fill="#f9a853"/><path d="M42 46l3 3 6-6" stroke="#0b1020" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg> AI Chat Consolidator</h1>
+      <p>Browse, search, and manage all your AI conversations in one place.</p>
+      <div class="header-actions">
+        <button id="headerSignInBtn" class="logout-btn">Sign In</button>
+        <button id="settingsBtn" class="logout-btn" hidden>Settings</button>
+        <button id="logoutBtn" class="logout-btn" hidden>Logout</button>
+      </div>
+    </header>
+
+    <div id="loginOverlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="loginTitle" hidden>
+      <form id="loginForm" class="auth-card" autocomplete="off">
+        <button type="button" class="auth-close-btn" data-close-overlay>&times;</button>
+        <h2 id="loginTitle">Sign In</h2>
+        <p class="auth-hint">Sign in to access conversation data.</p>
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" name="email" type="email" required autocomplete="email" />
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password" type="password" required autocomplete="current-password" />
+        <button id="loginSubmit" type="submit">Sign In</button>
+        <p id="loginStatus" class="auth-status" aria-live="polite"></p>
+        <div class="auth-links">
+          <button type="button" id="showRegisterBtn" class="auth-link-btn">Create account</button>
+          <button type="button" id="showForgotBtn" class="auth-link-btn">Forgot password?</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="registerOverlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="registerTitle" hidden>
+      <form id="registerForm" class="auth-card" autocomplete="off">
+        <button type="button" class="auth-close-btn" data-close-overlay>&times;</button>
+        <h2 id="registerTitle">Create Account</h2>
+        <p class="auth-hint">Register with your email to get access.</p>
+        <label for="regEmail">Email</label>
+        <input id="regEmail" name="email" type="email" required autocomplete="email" />
+        <label for="regUsername">Username</label>
+        <input id="regUsername" name="username" type="text" required minlength="3" maxlength="30" pattern="[a-zA-Z0-9_-]+" title="3–30 characters: letters, numbers, _ or -" />
+        <label for="regPassword">Password</label>
+        <input id="regPassword" name="password" type="password" minlength="12" required autocomplete="new-password" />
+        <label for="regConfirm">Confirm Password</label>
+        <input id="regConfirm" name="confirm" type="password" minlength="12" required autocomplete="new-password" />
+        <button id="registerSubmit" type="submit">Create Account</button>
+        <p id="registerStatus" class="auth-status" aria-live="polite"></p>
+        <div class="auth-links">
+          <button type="button" id="showLoginFromRegisterBtn" class="auth-link-btn">Already have an account? Sign in</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="verifyOverlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="verifyTitle" hidden>
+      <form id="verifyForm" class="auth-card" autocomplete="off">
+        <h2 id="verifyTitle">Verify Email</h2>
+        <p class="auth-hint">Enter the 6-digit code sent to <strong id="verifyEmailHint"></strong>.</p>
+        <label for="verifyCode">Verification Code</label>
+        <input id="verifyCode" name="code" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required autocomplete="one-time-code" />
+        <button id="verifySubmit" type="submit">Verify</button>
+        <p id="verifyStatus" class="auth-status" aria-live="polite"></p>
+        <div class="auth-links">
+          <button type="button" id="resendCodeBtn" class="auth-link-btn">Resend code</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="forgotOverlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="forgotTitle" hidden>
+      <form id="forgotForm" class="auth-card" autocomplete="off">
+        <button type="button" class="auth-close-btn" data-close-overlay>&times;</button>
+        <h2 id="forgotTitle">Forgot Password</h2>
+        <p class="auth-hint">Enter your email and we'll send a reset link.</p>
+        <label for="forgotEmail">Email</label>
+        <input id="forgotEmail" name="email" type="email" required autocomplete="email" />
+        <button id="forgotSubmit" type="submit">Send Reset Link</button>
+        <p id="forgotStatus" class="auth-status" aria-live="polite"></p>
+        <div class="auth-links">
+          <button type="button" id="showLoginFromForgotBtn" class="auth-link-btn">Back to Sign In</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="resetOverlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="resetTitle" hidden>
+      <form id="resetForm" class="auth-card" autocomplete="off">
+        <button type="button" class="auth-close-btn" data-close-overlay>&times;</button>
+        <h2 id="resetTitle">Set New Password</h2>
+        <p class="auth-hint">Choose a new password for your account.</p>
+        <label for="resetPassword">New Password</label>
+        <input id="resetPassword" name="password" type="password" minlength="12" required autocomplete="new-password" />
+        <label for="resetConfirm">Confirm Password</label>
+        <input id="resetConfirm" name="confirm" type="password" minlength="12" required autocomplete="new-password" />
+        <button id="resetSubmit" type="submit">Set Password</button>
+        <p id="resetStatus" class="auth-status" aria-live="polite"></p>
+        <div class="auth-links">
+          <button type="button" id="showLoginFromResetBtn" class="auth-link-btn">Back to Sign In</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="settingsOverlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+      <form id="changePasswordForm" class="auth-card" autocomplete="off">
+        <h2 id="settingsTitle">Security Settings</h2>
+        <p class="auth-hint">Change your password.</p>
+        <label for="currentPassword">Current Password</label>
+        <input id="currentPassword" name="currentPassword" type="password" required />
+        <label for="newPassword">New Password</label>
+        <input id="newPassword" name="newPassword" type="password" minlength="12" required />
+        <label for="confirmPassword">Confirm New Password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" minlength="12" required />
+        <div class="settings-actions">
+          <button id="savePasswordBtn" type="submit">Save Password</button>
+          <button id="closeSettingsBtn" type="button" class="secondary-btn">Close</button>
+        </div>
+        <p id="settingsStatus" class="auth-status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div id="landingPage" class="landing">
+      <!-- Hero -->
+      <section class="landing-hero">
+        <h2>Your AI Conversations,<br>All in One Place</h2>
+        <p class="hero-sub">Automatically capture, archive, and search every conversation from ChatGPT, Claude AI, and other platforms. Self-hosted, private, and fully under your control.</p>
+        <div class="hero-actions">
+          <button id="heroGetStartedBtn" class="hero-btn primary">Get Started</button>
+          <button id="heroSignInBtn" class="hero-btn secondary">Sign In</button>
+        </div>
+        <div class="hero-mockup">
+          <div class="mockup-bar"><span class="mockup-dot" style="background:#ff5f57"></span><span class="mockup-dot" style="background:#febc2e"></span><span class="mockup-dot" style="background:#28c840"></span></div>
+          <div class="mockup-panels">
+            <div class="mockup-panel mockup-sidebar">
+              <div class="mockup-line w60"></div>
+              <div class="mockup-card"><div class="mockup-badge green"></div><div class="mockup-line w80"></div></div>
+              <div class="mockup-card active"><div class="mockup-badge orange"></div><div class="mockup-line w70"></div></div>
+              <div class="mockup-card"><div class="mockup-badge green"></div><div class="mockup-line w90"></div></div>
+              <div class="mockup-card"><div class="mockup-badge purple"></div><div class="mockup-line w60"></div></div>
+            </div>
+            <div class="mockup-panel mockup-chat">
+              <div class="mockup-msg user"><div class="mockup-line w90"></div><div class="mockup-line w60"></div></div>
+              <div class="mockup-msg assistant"><div class="mockup-line w100"></div><div class="mockup-line w80"></div><div class="mockup-line w70"></div></div>
+              <div class="mockup-msg user"><div class="mockup-line w50"></div></div>
+              <div class="mockup-msg assistant"><div class="mockup-line w100"></div><div class="mockup-line w90"></div></div>
+            </div>
+            <div class="mockup-panel mockup-code">
+              <div class="mockup-line w40" style="background:#7ba2ff"></div>
+              <div class="mockup-code-block"><div class="mockup-line w80"></div><div class="mockup-line w60"></div><div class="mockup-line w90"></div></div>
+              <div class="mockup-code-block"><div class="mockup-line w70"></div><div class="mockup-line w50"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section class="landing-section">
+        <h2 class="section-title">Features</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><circle cx="12" cy="12" r="6" fill="#3fcf8e"/><circle cx="28" cy="12" r="6" fill="#f9a853"/><circle cx="12" cy="28" r="6" fill="#a78bfa"/><circle cx="28" cy="28" r="6" fill="#7ba2ff"/></svg>
+            <h3>Multi-Platform</h3>
+            <p>Supports ChatGPT, Claude AI, Cline, GitHub Copilot, Codex, and more. All your AI chats in one unified dashboard.</p>
+          </div>
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><rect x="8" y="18" width="24" height="16" rx="3" fill="none" stroke="#7ba2ff" stroke-width="2"/><path d="M20 6v16M14 16l6-6 6 6" stroke="#7ba2ff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>Auto-Capture</h3>
+            <p>A Tampermonkey browser script automatically saves conversations as you chat. No manual export needed.</p>
+          </div>
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><circle cx="18" cy="18" r="10" fill="none" stroke="#7ba2ff" stroke-width="2"/><path d="M26 26l8 8" stroke="#7ba2ff" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <h3>Full-Text Search</h3>
+            <p>Search across all conversations instantly. Find any message, code snippet, or topic from your entire AI chat history.</p>
+          </div>
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><path d="M8 10l8-4 8 4M16 6v14" stroke="#7ba2ff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M6 24h28M6 30h20M6 36h24" stroke="#f9a853" stroke-width="2" stroke-linecap="round"/></svg>
+            <h3>Code Detection</h3>
+            <p>Automatically extracts code snippets from conversations — fenced blocks, inline code, and heuristic detection.</p>
+          </div>
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><path d="M20 4l5 10 11 2-8 7 2 11-10-5-10 5 2-11-8-7 11-2z" fill="none" stroke="#f9a853" stroke-width="2" stroke-linejoin="round"/></svg>
+            <h3>Bookmarks</h3>
+            <p>Star important messages and code snippets. Rename, search, and quickly navigate to bookmarked content.</p>
+          </div>
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><rect x="6" y="6" width="18" height="24" rx="3" fill="none" stroke="#7ba2ff" stroke-width="2"/><path d="M28 14h4a2 2 0 012 2v16a2 2 0 01-2 2H18a2 2 0 01-2-2v-4" stroke="#7ba2ff" stroke-width="2" fill="none"/><path d="M20 20l6-6M22 14h4v4" stroke="#f9a853" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>Cross-Platform Export</h3>
+            <p>Export any conversation as a continuation prompt for ChatGPT, Claude, or any LLM. Keep context across platforms.</p>
+          </div>
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><rect x="12" y="4" width="16" height="10" rx="2" fill="none" stroke="#7ba2ff" stroke-width="2"/><rect x="12" y="18" width="16" height="10" rx="2" fill="none" stroke="#7ba2ff" stroke-width="2"/><path d="M20 14v4M14 32h12" stroke="#7ba2ff" stroke-width="2" stroke-linecap="round"/><rect x="8" y="32" width="24" height="4" rx="1" fill="none" stroke="#7ba2ff" stroke-width="2"/></svg>
+            <h3>Self-Hosted</h3>
+            <p>Deploy on your own server with Docker. Your data never leaves your infrastructure. No third-party cloud dependency.</p>
+          </div>
+          <div class="feature-card">
+            <svg class="feature-icon" viewBox="0 0 40 40"><rect x="10" y="16" width="20" height="16" rx="3" fill="none" stroke="#7ba2ff" stroke-width="2"/><path d="M14 16v-4a6 6 0 0112 0v4" stroke="#7ba2ff" stroke-width="2" fill="none"/><circle cx="20" cy="25" r="2" fill="#f9a853"/><path d="M20 27v3" stroke="#f9a853" stroke-width="2" stroke-linecap="round"/></svg>
+            <h3>Secure Authentication</h3>
+            <p>Multi-user accounts with email verification, password reset via email, rate limiting, and scrypt password hashing.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works -->
+      <section class="landing-section">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-row">
+          <div class="step-card">
+            <span class="step-num">1</span>
+            <h3>Install Tampermonkey</h3>
+            <p>Add the browser extension and paste the archiver script. It runs silently in the background on ChatGPT and Claude.</p>
+          </div>
+          <div class="step-arrow">&#8594;</div>
+          <div class="step-card">
+            <span class="step-num">2</span>
+            <h3>Conversations Sync</h3>
+            <p>Every conversation is auto-saved as a markdown file to your GitHub repository. Manual save is also available.</p>
+          </div>
+          <div class="step-arrow">&#8594;</div>
+          <div class="step-card">
+            <span class="step-num">3</span>
+            <h3>Browse the Dashboard</h3>
+            <p>Search, filter, bookmark, and export conversations from the three-panel dashboard. All platforms unified.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Account Setup Guide -->
+      <section class="landing-section">
+        <h2 class="section-title">Setting Up Your Account</h2>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <span class="guide-num">1</span>
+            <div>
+              <h4>Open the App</h4>
+              <p>Visit the AI Chat Consolidator URL (e.g. <code>https://aichat.powerbyte.app</code>). You'll see this landing page.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">2</span>
+            <div>
+              <h4>Create an Account</h4>
+              <p>Click <strong>"Get Started"</strong> or <strong>"Create account"</strong>. Fill in your email, choose a username (3-30 chars), and a password (min 12 chars).</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">3</span>
+            <div>
+              <h4>Verify Your Email</h4>
+              <p>Check your inbox for a <strong>6-digit verification code</strong>. Enter it on the verification screen. The code expires in 15 minutes.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">4</span>
+            <div>
+              <h4>Start Browsing</h4>
+              <p>After verification you're automatically logged in. Browse conversations in the left panel, read messages in the center, and view code snippets on the right.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">5</span>
+            <div>
+              <h4>Forgot Your Password?</h4>
+              <p>Click <strong>"Forgot password?"</strong> on the sign-in screen. Enter your email and check your inbox for a reset link. The link expires in 1 hour.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tampermonkey Setup Guide -->
+      <section class="landing-section">
+        <h2 class="section-title">Setting Up Tampermonkey</h2>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <span class="guide-num">1</span>
+            <div>
+              <h4>Install Tampermonkey Extension</h4>
+              <p>Install Tampermonkey for your browser: <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">tampermonkey.net</a>. Available for Chrome, Firefox, Edge, and Safari.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">2</span>
+            <div>
+              <h4>Create a GitHub Personal Access Token</h4>
+              <p>Go to <strong>GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; Tokens (classic)</strong>. Create a new token with the <code>repo</code> scope. Copy the token — you'll need it in the script.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">3</span>
+            <div>
+              <h4>Create a GitHub Repository</h4>
+              <p>Create a repository (e.g. <code>AI-Chats</code>) where conversations will be stored. It can be private or public.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">4</span>
+            <div>
+              <h4>Add the Script</h4>
+              <p>Open the Tampermonkey dashboard &rarr; click <strong>"Create a new script"</strong> &rarr; delete the default template &rarr; paste the script below &rarr; update the <code>CONFIG</code> section with your GitHub token, username, and repo name &rarr; save (Ctrl+S).</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <span class="guide-num">5</span>
+            <div>
+              <h4>Start Chatting</h4>
+              <p>Visit <a href="https://chatgpt.com" target="_blank" rel="noopener">chatgpt.com</a> or <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>. You'll see a <strong>"Save Chat"</strong> button in the bottom-left corner. Conversations auto-save every 3 minutes when changes are detected.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="script-title">Sample Tampermonkey Script</h3>
+        <pre class="script-block"><code>// ==UserScript==
+// @name         AI Chat Archiver
+// @namespace    https://aichat.powerbyte.app
+// @version      1.0
+// @description  Auto-save ChatGPT &amp; Claude AI conversations to GitHub
+// @match        https://chatgpt.com/*
+// @match        https://chat.openai.com/*
+// @match        https://claude.ai/*
+// @grant        GM_xmlhttpRequest
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @connect      api.github.com
+// ==/UserScript==
+
+(function () {
+  'use strict';
+
+  // ━━━ CONFIGURATION (edit these) ━━━━━━━━━━━━━━━━━━
+  const CONFIG = {
+    GITHUB_TOKEN: 'ghp_xxxxxxxxxxxxxxxxxxxx', // Your GitHub PAT
+    GITHUB_OWNER: 'your-username',             // GitHub username
+    GITHUB_REPO:  'AI-Chats',                  // Repository name
+    BRANCH:       'main',
+    LOG_PATH:     'logs/conversations',
+    AUTOSAVE_MS:  3 * 60 * 1000,               // Auto-save every 3 minutes
+  };
+
+  // ━━━ PLATFORM DETECTION ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  function detectPlatform() {
+    const h = location.hostname;
+    if (h.includes('chatgpt') || h.includes('openai')) return 'chatgpt';
+    if (h.includes('claude')) return 'claudeai';
+    return null;
+  }
+
+  // ━━━ EXTRACTION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  function extractChatGPT() {
+    const msgs = [];
+    document.querySelectorAll('[data-message-author-role]').forEach(el =&gt; {
+      const role = el.getAttribute('data-message-author-role');
+      const prose = el.querySelector('.markdown, .prose, [class*="markdown"]');
+      const text = (prose?.innerText || el.innerText || '').trim();
+      if (text) msgs.push({ role: role === 'user' ? 'User' : 'Assistant', text });
+    });
+    return msgs;
+  }
+
+  function extractClaude() {
+    const msgs = [];
+    document.querySelectorAll('[data-testid="user-message"]').forEach(el =&gt; {
+      const text = (el.innerText || '').trim();
+      if (text) msgs.push({ role: 'User', text });
+    });
+    document.querySelectorAll('.font-claude-message').forEach(el =&gt; {
+      const clone = el.cloneNode(true);
+      clone.querySelectorAll('button, [role="button"], svg, form, ' +
+        '[class*="action"], [class*="toolbar"], [class*="copy"]')
+        .forEach(n =&gt; n.remove());
+      const text = (clone.innerText || '').trim();
+      if (text &amp;&amp; text.length &gt; 10) msgs.push({ role: 'Assistant', text });
+    });
+    return msgs;
+  }
+
+  // ━━━ MARKDOWN FORMAT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  function getTitle() {
+    return document.title.replace(/ \|.*$/, '').trim() || 'Untitled';
+  }
+
+  function getConvId() {
+    const m = location.pathname.match(/\/([a-zA-Z0-9-]+)$/);
+    return m ? m[1] : 'conv_' + Date.now();
+  }
+
+  function toMarkdown(platform, messages) {
+    const title = getTitle(), id = getConvId(), now = new Date().toISOString();
+    let md = '# ' + (platform === 'chatgpt' ? 'ChatGPT' : 'Claude AI') +
+             ' Conversation Log\n';
+    md += '- Conversation ID: ' + id + '\n';
+    md += '- Title: ' + title + '\n- Captured: ' + now + '\n';
+    md += '- Platform: ' + platform + '\n- URL: ' + location.href + '\n---\n\n';
+    messages.forEach(m =&gt; { md += '## ' + m.role + '\n\n' + m.text + '\n\n'; });
+    return { md, title, id, platform };
+  }
+
+  // ━━━ GITHUB API ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  function slug(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+  }
+
+  function gmFetch(url, method, body) {
+    return new Promise((resolve, reject) =&gt; {
+      GM_xmlhttpRequest({
+        method, url,
+        headers: {
+          Authorization: 'token ' + CONFIG.GITHUB_TOKEN,
+          'Content-Type': 'application/json',
+          Accept: 'application/vnd.github.v3+json',
+        },
+        data: body ? JSON.stringify(body) : undefined,
+        onload: r =&gt; r.status &lt; 300
+          ? resolve(JSON.parse(r.responseText || '{}'))
+          : reject(new Error('GitHub ' + r.status)),
+        onerror: reject,
+      });
+    });
+  }
+
+  async function pushToGitHub(content, filePath, msg) {
+    const url = 'https://api.github.com/repos/' + CONFIG.GITHUB_OWNER +
+                '/' + CONFIG.GITHUB_REPO + '/contents/' + filePath;
+    let sha = null;
+    try { sha = (await gmFetch(url, 'GET')).sha; } catch {}
+    const body = {
+      message: msg,
+      content: btoa(unescape(encodeURIComponent(content))),
+      branch: CONFIG.BRANCH,
+    };
+    if (sha) body.sha = sha;
+    return gmFetch(url, 'PUT', body);
+  }
+
+  // ━━━ SAVE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  function simpleHash(s) {
+    let h = 0;
+    for (let i = 0; i &lt; s.length; i++) h = ((h &lt;&lt; 5) - h + s.charCodeAt(i)) | 0;
+    return h;
+  }
+
+  async function save() {
+    const platform = detectPlatform();
+    const messages = platform === 'chatgpt' ? extractChatGPT() : extractClaude();
+    if (!messages.length) { toast('No messages found.'); return; }
+    const { md, title, id } = toMarkdown(platform, messages);
+    const path = CONFIG.LOG_PATH + '/' + platform + '/' + slug(title) + '__' + id + '.md';
+    toast('Saving...');
+    try {
+      await pushToGitHub(md, path, 'Auto-save conversation: ' + title);
+      GM_setValue('hash_' + id, simpleHash(md));
+      toast('Saved! (' + messages.length + ' messages)');
+    } catch (e) { toast('Save failed: ' + e.message); }
+  }
+
+  // ━━━ UI ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  function toast(msg) {
+    let el = document.getElementById('ai-archiver-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'ai-archiver-toast';
+      Object.assign(el.style, {
+        position:'fixed',bottom:'20px',right:'20px',zIndex:'99999',
+        background:'#1a2130',color:'#e5ecff',border:'1px solid #7ba2ff',
+        borderRadius:'8px',padding:'10px 16px',fontSize:'14px',
+        fontFamily:'system-ui',maxWidth:'320px',boxShadow:'0 4px 20px rgba(0,0,0,.4)',
+      });
+      document.body.appendChild(el);
+    }
+    el.textContent = msg; el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(() =&gt; { el.style.display = 'none'; }, 3000);
+  }
+
+  // ━━━ INIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (!detectPlatform()) return;
+  setTimeout(() =&gt; {
+    const btn = document.createElement('button');
+    btn.textContent = 'Save Chat';
+    Object.assign(btn.style, {
+      position:'fixed',bottom:'20px',left:'20px',zIndex:'99999',
+      background:'#7ba2ff',color:'#0b1020',border:'none',borderRadius:'8px',
+      padding:'8px 16px',fontSize:'14px',fontWeight:'700',cursor:'pointer',
+    });
+    btn.onclick = save;
+    document.body.appendChild(btn);
+    toast('AI Chat Archiver active');
+  }, 2000);
+
+  // Auto-save when content changes
+  setInterval(() =&gt; {
+    const p = detectPlatform();
+    const msgs = p === 'chatgpt' ? extractChatGPT() : extractClaude();
+    if (!msgs.length) return;
+    const { md, id } = toMarkdown(p, msgs);
+    if (simpleHash(md) !== GM_getValue('hash_' + id, 0)) save();
+  }, CONFIG.AUTOSAVE_MS);
+})();</code></pre>
+      </section>
+
+      <!-- Footer CTA -->
+      <section class="landing-cta">
+        <h2>Ready to get started?</h2>
+        <p>Create a free account and start archiving your AI conversations today.</p>
+        <div class="hero-actions">
+          <button class="hero-btn primary landing-register-btn">Create Account</button>
+          <button class="hero-btn secondary landing-signin-btn">Sign In</button>
+        </div>
+        <div class="landing-footer-links">
+          <a href="https://github.com/bonitobonita24/AI-Chats" target="_blank" rel="noopener" class="footer-link">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <main class="layout" hidden>
+      <aside class="panel conversations-panel">
+        <div class="panel-header">
+          <h2>Conversations</h2>
+          <input id="globalSearch" type="search" placeholder="Global search across all chats..." />
+          <div id="platformFilter" class="platform-filter">
+            <button class="filter-btn active" data-platform="all">All</button>
+            <button class="filter-btn" data-platform="claude">Claude</button>
+            <button class="filter-btn" data-platform="chatgpt">ChatGPT</button>
+            <button class="filter-btn" data-platform="uncategorized">Uncategorized</button>
+          </div>
+        </div>
+        <div id="stats" class="stats"></div>
+        <ul id="conversationList" class="conversation-list"></ul>
+      </aside>
+
+      <section class="panel chat-panel">
+        <div class="panel-header sticky">
+          <h2 id="chatTitle">Select a conversation</h2>
+          <input id="chatSearch" type="search" placeholder="Search inside selected chat..." disabled />
+          <div class="export-toolbar">
+            <label for="exportTarget">Export for</label>
+            <select id="exportTarget" disabled>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="claude">Claude</option>
+              <option value="generic">Generic LLM</option>
+            </select>
+            <button id="copyExportBtn" class="export-btn" disabled>Copy Export Prompt</button>
+            <button id="downloadExportBtn" class="export-btn" disabled>Download .md</button>
+          </div>
+          <div id="exportStatus" class="export-status"></div>
+          <div id="searchResultsBar" class="search-results-bar"></div>
+        </div>
+        <div id="chatContent" class="chat-content"></div>
+      </section>
+
+      <aside class="panel code-panel">
+        <div class="panel-header">
+          <div class="panel-tabs" id="rightPanelTabs">
+            <button class="panel-tab active" data-tab="code">Code</button>
+            <button class="panel-tab" data-tab="bookmarks">Bookmarks</button>
+          </div>
+          <input id="codeSearch" type="search" placeholder="Filter code snippets..." />
+          <input id="bookmarkSearch" type="search" placeholder="Search bookmarks..." hidden />
+        </div>
+        <ul id="codeList" class="code-list"></ul>
+        <ul id="bookmarkList" class="bookmark-list" hidden></ul>
+      </aside>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+# Secrets & credentials
+.env
+.env.*
+!.env.example
+.auth/
+tampermonkey-script.md
+
+# Node dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# IDE / session history
+.specstory/
+.claude/

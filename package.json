@@ -1,0 +1,20 @@
+{
+  "name": "ai-chats",
+  "version": "1.0.0",
+  "description": "AI Chat Conversations Dashboard",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "PORT=4173 node server.js",
+    "build": "node app/scripts/build-index.mjs",
+    "reset-password": "node scripts/reset-admin-password.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
+    "nodemailer": "^6.10.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

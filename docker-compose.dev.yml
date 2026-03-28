@@ -1,0 +1,47 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+
+    container_name: ai-chats-dev
+
+    ports:
+      - "4287:4173"
+
+    env_file:
+      - .env.dev
+
+    environment:
+      - NODE_ENV=development
+      - PORT=4173
+
+    volumes:
+      - ai-chats-dev-auth:/app/.auth
+
+    networks:
+      - ai-chats-dev-net
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4173/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  ai-chats-dev-auth:
+    name: ai-chats-dev-auth
+
+networks:
+  ai-chats-dev-net:
+    name: ai-chats-dev-net

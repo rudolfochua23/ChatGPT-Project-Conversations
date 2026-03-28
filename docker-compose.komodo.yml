@@ -1,0 +1,61 @@
+services:
+  app:
+    image: bonitobonita24/ai-chats:latest
+
+    container_name: ai-chats-prod
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aichat.rule=Host(`aichat.powerbyte.app`)"
+      - "traefik.http.routers.aichat.entrypoints=websecure"
+      - "traefik.http.routers.aichat.tls=true"
+      - "traefik.http.routers.aichat.tls.certresolver=letsencrypt"
+      - "traefik.http.services.aichat.loadbalancer.server.port=4173"
+
+    environment:
+      - NODE_ENV=production
+      - PORT=4173
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
+      - COOKIE_SECURE=true
+      - COOKIE_DOMAIN=aichat.powerbyte.app
+      - APP_ADMIN_USERNAME=${APP_ADMIN_USERNAME:?APP_ADMIN_USERNAME is required}
+      - APP_ADMIN_EMAIL=${APP_ADMIN_EMAIL:-admin@localhost}
+      - APP_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:?APP_ADMIN_PASSWORD is required}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      - APP_URL=${APP_URL:-https://aichat.powerbyte.app}
+
+    volumes:
+      - ai-chats-prod-auth:/app/.auth
+
+    networks:
+      - ai-chats-prod-net
+      - proxy
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4173/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  ai-chats-prod-auth:
+    name: ai-chats-prod-auth
+
+networks:
+  ai-chats-prod-net:
+    name: ai-chats-prod-net
+  proxy:
+    external: true
