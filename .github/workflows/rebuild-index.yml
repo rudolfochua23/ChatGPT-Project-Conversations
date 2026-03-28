@@ -6,6 +6,9 @@ on:
     paths:
       - 'logs/**'
 
+permissions:
+  contents: write
+
 jobs:
   rebuild-and-deploy:
     runs-on: ubuntu-latest
