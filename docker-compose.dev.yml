@@ -1,4 +1,22 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: ai-chats-dev-db
+    environment:
+      POSTGRES_DB: aichats
+      POSTGRES_USER: aichats
+      POSTGRES_PASSWORD: aichats_dev
+    volumes:
+      - ai-chats-dev-pgdata:/var/lib/postgresql/data
+    networks:
+      - ai-chats-dev-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aichats"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
@@ -16,15 +34,19 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=4173
+      - DATABASE_URL=postgresql://aichats:aichats_dev@db:5432/aichats
 
     volumes:
-      - ai-chats-dev-auth:/app/.auth
       - ./app:/app/app
       - ./server.js:/app/server.js
       - ./db.js:/app/db.js
 
     networks:
       - ai-chats-dev-net
+
+    depends_on:
+      db:
+        condition: service_healthy
 
     restart: unless-stopped
 
@@ -42,8 +64,8 @@ services:
         max-file: "3"
 
 volumes:
-  ai-chats-dev-auth:
-    name: ai-chats-dev-auth
+  ai-chats-dev-pgdata:
+    name: ai-chats-dev-pgdata
 
 networks:
   ai-chats-dev-net:

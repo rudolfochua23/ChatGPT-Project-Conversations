@@ -1,4 +1,22 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: ai-chats-prod-db
+    environment:
+      - POSTGRES_DB=aichats
+      - POSTGRES_USER=${PG_USER:-aichats}
+      - POSTGRES_PASSWORD=${PG_PASSWORD:?PG_PASSWORD is required}
+    volumes:
+      - ai-chats-prod-pgdata:/var/lib/postgresql/data
+    networks:
+      - ai-chats-prod-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-aichats}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     image: ${DOCKER_IMAGE:-your-dockerhub-username/ai-chats:latest}
 
@@ -15,6 +33,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=4173
+      - DATABASE_URL=postgresql://${PG_USER:-aichats}:${PG_PASSWORD:?PG_PASSWORD is required}@db:5432/aichats
       - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
       - COOKIE_SECURE=true
       - COOKIE_DOMAIN=${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}
@@ -28,12 +47,13 @@ services:
       - SMTP_FROM=${SMTP_FROM:-}
       - APP_URL=${APP_URL:?APP_URL is required}
 
-    volumes:
-      - ai-chats-prod-auth:/app/.auth
-
     networks:
       - ai-chats-prod-net
       - proxy
+
+    depends_on:
+      db:
+        condition: service_healthy
 
     restart: unless-stopped
 
@@ -51,8 +71,8 @@ services:
         max-file: "3"
 
 volumes:
-  ai-chats-prod-auth:
-    name: ai-chats-prod-auth
+  ai-chats-prod-pgdata:
+    name: ai-chats-prod-pgdata
 
 networks:
   ai-chats-prod-net:
