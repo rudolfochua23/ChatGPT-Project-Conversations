@@ -5,6 +5,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 
 const db = require('./db');
+const storage = require('./storage');
 
 let nodemailer;
 try { nodemailer = require('nodemailer'); } catch { nodemailer = null; }
@@ -48,7 +49,7 @@ const passwordResetTokens = new Map();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '50mb' }));
 app.use(session({
   name: 'ai_chats_sid',
   secret: SESSION_SECRET,
@@ -216,8 +217,8 @@ app.post('/api/auth/login', async (req, res) => {
     if (!(await verifyPassword(password, user))) { fail(); return; }
 
     clearAttempts(ip);
-    req.session.user = { userId: user.id, email: user.email, username: user.username };
-    res.json({ ok: true, email: user.email, username: user.username });
+    req.session.user = { userId: user.id, email: user.email, username: user.username, tier: user.tier };
+    res.json({ ok: true, email: user.email, username: user.username, tier: user.tier });
   } catch {
     res.status(500).json({ ok: false, error: 'Authentication failed.' });
   }
@@ -394,7 +395,7 @@ app.post('/api/conversations', async (req, res) => {
   const user = await db.findUserByApiKey(apiKey);
   if (!user) { res.status(401).json({ ok: false, error: 'Invalid API key. Check Settings for your key.' }); return; }
 
-  const { id, title, platform, url, captured, messages } = req.body || {};
+  const { id, title, platform, url, captured, messages, attachments } = req.body || {};
   if (!id || !title || !Array.isArray(messages) || !messages.length) {
     res.status(400).json({ ok: false, error: 'Missing required fields: id, title, messages[].' }); return;
   }
@@ -407,7 +408,43 @@ app.post('/api/conversations', async (req, res) => {
       captured: captured || new Date().toISOString(),
       messages,
     });
-    res.json({ ok: true, ...result });
+
+    // Process attachments if present
+    let savedAttachments = 0;
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      for (const att of attachments) {
+        if (!att.fileName || !att.mimeType || !att.data) continue;
+
+        // Tier enforcement: free users can only upload text files
+        if (user.tier === 'free' && !storage.isFreeAllowed(att.mimeType)) continue;
+
+        // Premium storage quota check
+        if (user.tier === 'premium') {
+          const fileSize = Buffer.byteLength(att.data, 'base64');
+          if (user.storage_used_bytes + fileSize > user.storage_limit_bytes) {
+            continue; // skip files over quota
+          }
+        }
+
+        const buffer = Buffer.from(att.data, 'base64');
+        const { storagePath, fileSize, fileCategory } = await storage.uploadFile({
+          userId: user.id, conversationId: id,
+          fileName: att.fileName, mimeType: att.mimeType, buffer,
+        });
+
+        await db.createAttachment({
+          conversationId: id, userId: user.id,
+          messageIndex: att.messageIndex ?? 0,
+          fileName: att.fileName, fileType: att.mimeType,
+          fileCategory, fileSize, storagePath,
+        });
+
+        await db.addStorageUsed(user.id, fileSize);
+        savedAttachments++;
+      }
+    }
+
+    res.json({ ok: true, ...result, savedAttachments });
   } catch (e) {
     console.error('Upsert error:', e.message);
     res.status(500).json({ ok: false, error: 'Failed to save conversation.' });
@@ -444,11 +481,45 @@ app.get('/api/conversations/:id', requireAuth, async (req, res) => {
 
 app.delete('/api/conversations/:id', requireAuth, async (req, res) => {
   try {
-    await db.deleteConversation(req.session.user.userId, req.params.id);
+    const userId = req.session.user.userId;
+    // Clean up S3 files and storage accounting
+    const attachments = await db.getConversationAttachmentPaths(userId, req.params.id);
+    const totalSize = attachments.reduce((sum, a) => sum + Number(a.file_size), 0);
+    await storage.deleteConversationFiles(userId, req.params.id);
+    await db.deleteConversation(userId, req.params.id);
+    if (totalSize > 0) await db.subtractStorageUsed(userId, totalSize);
     res.json({ ok: true });
   } catch (e) {
     console.error('Delete error:', e.message);
     res.status(500).json({ ok: false, error: 'Failed to delete conversation.' });
+  }
+});
+
+// Serve attachment files (session auth, scoped to user)
+app.get('/api/files/:attachmentId', requireAuth, async (req, res) => {
+  try {
+    const attachment = await db.getAttachment(req.session.user.userId, req.params.attachmentId);
+    if (!attachment) { res.status(404).json({ ok: false, error: 'File not found.' }); return; }
+
+    const file = await storage.getFile(attachment.storage_path);
+    res.set('Content-Type', file.contentType || 'application/octet-stream');
+    res.set('Content-Disposition', `inline; filename="${attachment.file_name}"`);
+    if (file.contentLength) res.set('Content-Length', String(file.contentLength));
+    file.stream.pipe(res);
+  } catch (e) {
+    console.error('File serve error:', e.message);
+    res.status(500).json({ ok: false, error: 'Failed to serve file.' });
+  }
+});
+
+// Account info (session auth)
+app.get('/api/account', requireAuth, async (req, res) => {
+  try {
+    const account = await db.getUserAccount(req.session.user.userId);
+    if (!account) { res.status(404).json({ ok: false, error: 'Account not found.' }); return; }
+    res.json(account);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: 'Failed to get account.' });
   }
 });
 

@@ -65,6 +65,33 @@ async function migrate() {
       CREATE INDEX IF NOT EXISTS idx_users_api_key ON users(api_key);
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     `);
+
+    // v2: tier, storage, attachments
+    const addCol = async (table, col, def) => {
+      try { await client.query(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`); } catch {}
+    };
+    await addCol('users', 'tier', "TEXT NOT NULL DEFAULT 'free'");
+    await addCol('users', 'storage_used_bytes', 'BIGINT NOT NULL DEFAULT 0');
+    await addCol('users', 'storage_limit_bytes', 'BIGINT NOT NULL DEFAULT 0');
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS attachments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        conversation_id TEXT NOT NULL,
+        user_id UUID NOT NULL,
+        message_index INTEGER NOT NULL,
+        file_name TEXT NOT NULL,
+        file_type TEXT NOT NULL,
+        file_category TEXT NOT NULL,
+        file_size BIGINT NOT NULL,
+        storage_path TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        FOREIGN KEY (conversation_id, user_id) REFERENCES conversations(id, user_id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_attachments_conv ON attachments(conversation_id, user_id);
+      CREATE INDEX IF NOT EXISTS idx_attachments_user ON attachments(user_id);
+    `);
   } finally {
     client.release();
   }
@@ -272,6 +299,12 @@ async function getConversation(userId, id) {
   );
   conversation.codeSnippets = snippets;
 
+  const { rows: attachments } = await pool.query(
+    'SELECT id, message_index AS "messageIndex", file_name AS "fileName", file_type AS "fileType", file_category AS "fileCategory", file_size AS "fileSize" FROM attachments WHERE conversation_id = $1 AND user_id = $2 ORDER BY message_index, created_at',
+    [id, userId]
+  );
+  conversation.attachments = attachments;
+
   return conversation;
 }
 
@@ -284,9 +317,16 @@ async function getStats(userId) {
     SELECT
       (SELECT COUNT(*) FROM conversations WHERE user_id = $1) AS conversations,
       (SELECT COUNT(*) FROM code_snippets WHERE user_id = $1) AS "codeSnippets",
-      (SELECT COUNT(*) FROM messages WHERE user_id = $1) AS messages
+      (SELECT COUNT(*) FROM messages WHERE user_id = $1) AS messages,
+      (SELECT COUNT(*) FROM attachments WHERE user_id = $1) AS attachments,
+      u.tier, u.storage_used_bytes AS "storageUsed", u.storage_limit_bytes AS "storageLimit"
+    FROM users u WHERE u.id = $1
   `, [userId]);
-  return { conversations: Number(stats.conversations), codeSnippets: Number(stats.codeSnippets), messages: Number(stats.messages) };
+  return {
+    conversations: Number(stats.conversations), codeSnippets: Number(stats.codeSnippets),
+    messages: Number(stats.messages), attachments: Number(stats.attachments),
+    tier: stats.tier, storageUsed: Number(stats.storageUsed), storageLimit: Number(stats.storageLimit),
+  };
 }
 
 async function searchMessages(userId, query, { limit = 50 } = {}) {
@@ -302,6 +342,56 @@ async function searchMessages(userId, query, { limit = 50 } = {}) {
   return rows;
 }
 
+// ─── Attachment CRUD ─────────────────────────────────────────────────────────
+
+async function createAttachment({ conversationId, userId, messageIndex, fileName, fileType, fileCategory, fileSize, storagePath }) {
+  const { rows } = await pool.query(
+    `INSERT INTO attachments (conversation_id, user_id, message_index, file_name, file_type, file_category, file_size, storage_path)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    [conversationId, userId, messageIndex, fileName, fileType, fileCategory, fileSize, storagePath]
+  );
+  return rows[0];
+}
+
+async function getAttachment(userId, attachmentId) {
+  const { rows } = await pool.query(
+    'SELECT * FROM attachments WHERE id = $1 AND user_id = $2', [attachmentId, userId]
+  );
+  return rows[0] || null;
+}
+
+async function getAttachmentsByConversation(userId, conversationId) {
+  const { rows } = await pool.query(
+    'SELECT id, message_index, file_name, file_type, file_category, file_size, created_at FROM attachments WHERE conversation_id = $1 AND user_id = $2 ORDER BY message_index, created_at',
+    [conversationId, userId]
+  );
+  return rows;
+}
+
+async function getConversationAttachmentPaths(userId, conversationId) {
+  const { rows } = await pool.query(
+    'SELECT storage_path, file_size FROM attachments WHERE conversation_id = $1 AND user_id = $2',
+    [conversationId, userId]
+  );
+  return rows;
+}
+
+async function addStorageUsed(userId, bytes) {
+  await pool.query('UPDATE users SET storage_used_bytes = storage_used_bytes + $1 WHERE id = $2', [bytes, userId]);
+}
+
+async function subtractStorageUsed(userId, bytes) {
+  await pool.query('UPDATE users SET storage_used_bytes = GREATEST(0, storage_used_bytes - $1) WHERE id = $2', [bytes, userId]);
+}
+
+async function getUserAccount(userId) {
+  const { rows } = await pool.query(
+    'SELECT id, email, username, role, tier, storage_used_bytes, storage_limit_bytes, created_at FROM users WHERE id = $1',
+    [userId]
+  );
+  return rows[0] || null;
+}
+
 module.exports = {
   pool,
   migrate,
@@ -313,10 +403,17 @@ module.exports = {
   updateUserPassword,
   updateUserApiKey,
   getApiKey,
+  getUserAccount,
   upsertConversation,
   listConversations,
   getConversation,
   deleteConversation,
   getStats,
   searchMessages,
+  createAttachment,
+  getAttachment,
+  getAttachmentsByConversation,
+  getConversationAttachmentPaths,
+  addStorageUsed,
+  subtractStorageUsed,
 };
