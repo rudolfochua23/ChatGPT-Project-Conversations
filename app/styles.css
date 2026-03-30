@@ -295,6 +295,16 @@ h1 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; gap: 0.45
   padding: 0.55rem;
   cursor: pointer;
   background: #1a2130;
+  overflow: hidden;
+}
+.code-list li pre {
+  margin: 0.35rem 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+  max-height: 6rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 .conversation-list li:hover,
 .code-list li:hover,
