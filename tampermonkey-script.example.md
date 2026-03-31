@@ -34,7 +34,7 @@
   // (get it from your dashboard → Settings → Tampermonkey API Key)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const API_URL = "https://your-domain.com";
-  const AUTOSAVE_MS = 3 * 60 * 1000;
+  const AUTOSAVE_MS = 1 * 60 * 1000;
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
 
   // ━━━ STORAGE KEYS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -560,7 +560,7 @@
 
     const platform = detectPlatform();
     const label = platform.charAt(0).toUpperCase() + platform.slice(1) + " Archiver";
-    const isCollapsed = GM_getValue(K_COLLAPSED, false);
+    const isCollapsed = GM_getValue(K_COLLAPSED, true); // collapsed (small) by default
     const savedPos = GM_getValue(K_PANEL_POS, null);
     const pos = savedPos ? JSON.parse(savedPos) : null;
 
@@ -569,11 +569,31 @@
     Object.assign(wrap.style, {
       position: "fixed",
       ...(pos ? { left: `${pos.left}px`, top: `${pos.top}px`, right: "auto", bottom: "auto" } : { left: "16px", bottom: "16px" }),
-      zIndex: "999999", background: "rgba(255,255,255,.95)", border: "1px solid rgba(0,0,0,.12)",
-      borderRadius: "12px", padding: "10px", font: "12px/1.2 system-ui",
-      boxShadow: "0 10px 24px rgba(0,0,0,.12)", color: "#111", width: "220px",
-      backdropFilter: "blur(8px)",
+      zIndex: "999999", font: "12px/1.2 system-ui", color: "#111",
     });
+
+    // ── Minimized: tiny circular + button ──
+    const fab = document.createElement("button");
+    fab.textContent = "+";
+    Object.assign(fab.style, {
+      width: "32px", height: "32px", borderRadius: "50%",
+      border: "1px solid rgba(0,0,0,.15)", background: "rgba(255,255,255,.92)",
+      cursor: "pointer", color: "#111", fontSize: "18px", fontWeight: "700",
+      boxShadow: "0 2px 8px rgba(0,0,0,.15)", backdropFilter: "blur(8px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "0", lineHeight: "1",
+    });
+    wrap.appendChild(fab);
+
+    // ── Expanded panel ──
+    const panel = document.createElement("div");
+    Object.assign(panel.style, {
+      background: "rgba(255,255,255,.95)", border: "1px solid rgba(0,0,0,.12)",
+      borderRadius: "12px", padding: "10px", width: "220px",
+      boxShadow: "0 10px 24px rgba(0,0,0,.12)", backdropFilter: "blur(8px)",
+      display: "none",
+    });
+    wrap.appendChild(panel);
 
     const header = document.createElement("div");
     Object.assign(header.style, {
@@ -585,19 +605,19 @@
     titleEl.textContent = label;
     titleEl.style.fontWeight = "700";
 
-    const toggleBtn = document.createElement("button");
-    toggleBtn.textContent = isCollapsed ? "+" : "–";
-    Object.assign(toggleBtn.style, {
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "–";
+    Object.assign(closeBtn.style, {
       width: "24px", height: "24px", borderRadius: "6px", border: "1px solid rgba(0,0,0,.15)",
       background: "#fff", cursor: "pointer", color: "#111",
     });
 
     header.appendChild(titleEl);
-    header.appendChild(toggleBtn);
-    wrap.appendChild(header);
+    header.appendChild(closeBtn);
+    panel.appendChild(header);
 
     const content = document.createElement("div");
-    wrap.appendChild(content);
+    panel.appendChild(content);
 
     const btnSave = makeButton("Save");
     btnSave.onclick = () => save(false);
@@ -608,7 +628,7 @@
     Object.assign(autoRow.style, { display: "flex", gap: "6px", alignItems: "center", marginBottom: "4px", userSelect: "none", fontSize: "12px" });
     const autoCb = document.createElement("input"); autoCb.type = "checkbox"; autoCb.checked = getAutosave();
     autoCb.onchange = () => { setAutosave(autoCb.checked); toast(`Auto-save ${autoCb.checked ? "on" : "off"}`); };
-    autoRow.appendChild(autoCb); autoRow.appendChild(document.createTextNode("Auto-save"));
+    autoRow.appendChild(autoCb); autoRow.appendChild(document.createTextNode("Auto-save (1 min)"));
     content.appendChild(autoRow);
 
     // Capture files toggle
@@ -639,15 +659,18 @@
     content.appendChild(info);
 
     function applyCollapse(collapsed) {
-      content.style.display = collapsed ? "none" : "block";
-      wrap.style.width = collapsed ? "140px" : "220px";
-      toggleBtn.textContent = collapsed ? "+" : "–";
+      fab.style.display = collapsed ? "flex" : "none";
+      panel.style.display = collapsed ? "none" : "block";
     }
 
-    toggleBtn.onclick = () => {
-      const c = !GM_getValue(K_COLLAPSED, false);
-      GM_setValue(K_COLLAPSED, c);
-      applyCollapse(c);
+    fab.onclick = () => {
+      GM_setValue(K_COLLAPSED, false);
+      applyCollapse(false);
+    };
+
+    closeBtn.onclick = () => {
+      GM_setValue(K_COLLAPSED, true);
+      applyCollapse(true);
     };
 
     applyCollapse(isCollapsed);
