@@ -1,8 +1,8 @@
-# Docker Setup Guide for ChatStash App
+# Docker Setup Guide for ChatPileAI App
 
 ## Overview
 
-This guide provides instructions for running the ChatStash application in Docker containers for both development and production environments.
+This guide provides instructions for running the ChatPileAI application in Docker containers for both development and production environments.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This guide provides instructions for running the ChatStash application in Docker
 
 1. **Clone/Setup the project:**
    ```bash
-   cd /path/to/ChatStash
+   cd /path/to/ChatPileAI
    ```
 
 2. **Create environment file (optional):**
@@ -142,7 +142,7 @@ NODE_ENV=development
 DEBUG=*
 
 # Application settings
-APP_NAME=ChatStash
+APP_NAME=ChatPileAI
 APP_VERSION=1.0.0
 ```
 
@@ -199,7 +199,7 @@ Use the dedicated compose file so every Komodo deployment starts the production 
 1. In Komodo, create a new Stack for this repository.
 2. Set Compose File to `docker-compose.komodo.yml`.
 3. Keep branch as `main` (or your chosen release branch).
-4. Set the production domain to `chatstash.powerbyte.app` in your reverse proxy / ingress route to this stack.
+4. Set the production domain to `chatpileai.powerbyte.app` in your reverse proxy / ingress route to this stack.
 5. In Komodo stack environment variables, set:
    - `SESSION_SECRET` to a strong random value (required)
    - `PROD_PORT` if you need a custom external port (default is `3000`)
@@ -209,24 +209,24 @@ Result:
 - On each deployment trigger, Komodo builds `Dockerfile` using `target: production`.
 - Container runs with `NODE_ENV=production` automatically.
 - No development profile is used in Komodo deployments.
-- Session cookie security is enforced for `chatstash.powerbyte.app`.
+- Session cookie security is enforced for `chatpileai.powerbyte.app`.
 
 ### Image Management
 
 ```bash
 # Build images manually
-docker build --target development -t chatstash:dev .
-docker build --target production -t chatstash:prod .
+docker build --target development -t chatpileai:dev .
+docker build --target production -t chatpileai:prod .
 
 # List images
-docker images | grep chatstash
+docker images | grep chatpileai
 
 # Remove image
-docker rmi chatstash:dev
-docker rmi chatstash:prod
+docker rmi chatpileai:dev
+docker rmi chatpileai:prod
 
 # View image details
-docker inspect chatstash:prod
+docker inspect chatpileai:prod
 ```
 
 ## Volumes and Data Persistence
@@ -323,7 +323,7 @@ Approximate image sizes:
 
 ## Networking
 
-Both configurations use a Docker network named `chatstash-network`:
+Both configurations use a Docker network named `chatpileai-network`:
 - Containers can communicate with each other using service names
 - Network is isolated by default
 - External access through exposed ports
@@ -337,9 +337,9 @@ For production deployment with multiple instances:
 docker-compose -f docker-compose.prod.yml up -d --scale app=3
 
 # With Kubernetes
-kubectl create deployment chatstash --image=chatstash:prod
-kubectl scale deployment chatstash --replicas=3
-kubectl expose deployment chatstash --port=3000 --type=LoadBalancer
+kubectl create deployment chatpileai --image=chatpileai:prod
+kubectl scale deployment chatpileai --replicas=3
+kubectl expose deployment chatpileai --port=3000 --type=LoadBalancer
 ```
 
 ## CI/CD Integration
@@ -348,12 +348,12 @@ kubectl expose deployment chatstash --port=3000 --type=LoadBalancer
 
 ```bash
 # Build with tag
-docker build --target production -t your-registry/chatstash:latest .
-docker build --target production -t your-registry/chatstash:1.0.0 .
+docker build --target production -t your-registry/chatpileai:latest .
+docker build --target production -t your-registry/chatpileai:1.0.0 .
 
 # Push to registry
-docker push your-registry/chatstash:latest
-docker push your-registry/chatstash:1.0.0
+docker push your-registry/chatpileai:latest
+docker push your-registry/chatpileai:1.0.0
 ```
 
 ### Using in CI/CD pipelines
@@ -404,23 +404,23 @@ docker-compose logs --timestamps app
 
 ```bash
 # Real-time stats
-docker stats chatstash-dev
+docker stats chatpileai-dev
 
 # For production
-docker stats chatstash-prod
+docker stats chatpileai-prod
 ```
 
 ### Inspect container
 
 ```bash
 # Get container details
-docker inspect chatstash-dev
+docker inspect chatpileai-dev
 
 # Get container processes
-docker top chatstash-dev
+docker top chatpileai-dev
 
 # Get container logs
-docker logs chatstash-dev
+docker logs chatpileai-dev
 ```
 
 ## Additional Resources

@@ -1,4 +1,4 @@
-# CLAUDE.md — ChatStash Project Reference
+# CLAUDE.md — ChatPileAI Project Reference
 
 This file is the persistent development log and reference for Claude Code sessions in this project.
 
@@ -8,8 +8,8 @@ This file is the persistent development log and reference for Claude Code sessio
 
 A self-hosted web app that aggregates, indexes, and searches AI conversations from multiple platforms (ChatGPT, Claude AI, Gemini, Copilot, DeepSeek, Perplexity, Grok, Mistral, HuggingChat, Poe). Conversations are captured by a Tampermonkey browser script and pushed directly to the app's API, stored in SQLite.
 
-**Production domain:** chatstash.powerbyte.app
-**Staging domain:** staging-chatstash.powerbyte.app
+**Production domain:** chatpileai.powerbyte.app
+**Staging domain:** chatpileai-staging.powerbyte.app
 
 ---
 
@@ -89,12 +89,12 @@ A self-hosted web app that aggregates, indexes, and searches AI conversations fr
 
 | File | Use |
 |------|-----|
-| `docker-compose.dev.yml` | Dev/testing — builds `development` target, port `4287:4173`, volume `chatstash-dev-pgdata` |
-| `docker-compose.komodo.yml` | Production — pulls `your-dockerhub-username/chatstash:latest` from Docker Hub, Traefik + SSL, volume `chatstash-prod-pgdata` |
+| `docker-compose.dev.yml` | Dev/testing — builds `development` target, port `4287:4173`, volume `chatpileai-dev-pgdata` |
+| `docker-compose.komodo.yml` | Production — pulls `your-dockerhub-username/chatpileai:latest` from Docker Hub, Traefik + SSL, volume `chatpileai-prod-pgdata` |
 | `compose.yaml` | Legacy (builds production target locally) |
 | `docker-compose.prod.yml` | Legacy (builds production target locally) |
 
-**Docker Hub image:** `your-dockerhub-username/chatstash:latest`
+**Docker Hub image:** `your-dockerhub-username/chatpileai:latest`
 
 **Makefile commands:**
 - `make dev` — start dev container (builds locally)
@@ -105,8 +105,8 @@ A self-hosted web app that aggregates, indexes, and searches AI conversations fr
 - `make release` — alias for push
 
 **Container naming (unique to avoid conflicts):**
-- Dev container: `chatstash-dev` | port `4287` | volume `chatstash-dev-pgdata` | network `chatstash-dev-net`
-- Prod container: `chatstash-prod` | no port (Traefik) | volume `chatstash-prod-pgdata` | network `chatstash-prod-net`
+- Dev container: `chatpileai-dev` | port `4287` | volume `chatpileai-dev-pgdata` | network `chatpileai-dev-net`
+- Prod container: `chatpileai-prod` | no port (Traefik) | volume `chatpileai-prod-pgdata` | network `chatpileai-prod-net`
 
 Production container: non-root user (`nodejs:1001`), read-only filesystem, tmpfs for `/tmp` and `/var/cache`. `.auth` is a named volume (persists password changes across restarts).
 
@@ -177,8 +177,8 @@ Production container: non-root user (`nodejs:1001`), read-only filesystem, tmpfs
 - **Docs:** Created this `CLAUDE.md` as the persistent project reference and dev log.
 - **Dev workflow changed:** All development/testing now runs via Docker Compose (`make dev`), not on the host directly.
 - **Docker:** Restructured Docker Compose setup:
-  - Created `docker-compose.dev.yml` — dev environment, port `4287`, named volume `chatstash-dev-pgdata`, network `chatstash-dev-net`
-  - Updated `docker-compose.komodo.yml` — now pulls `your-dockerhub-username/chatstash:latest` from Docker Hub (no local build), named volume `chatstash-prod-pgdata`, network `chatstash-prod-net`
+  - Created `docker-compose.dev.yml` — dev environment, port `4287`, named volume `chatpileai-dev-pgdata`, network `chatpileai-dev-net`
+  - Updated `docker-compose.komodo.yml` — now pulls `your-dockerhub-username/chatpileai:latest` from Docker Hub (no local build), named volume `chatpileai-prod-pgdata`, network `chatpileai-prod-net`
   - Moved `.auth` from tmpfs → named volume in production so password changes survive restarts
   - Created `Makefile` with `make dev/dev-down/dev-logs/build/push/release`
   - Created `.env.dev` for local dev defaults (gitignored)

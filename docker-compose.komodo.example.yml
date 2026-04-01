@@ -4,12 +4,12 @@
 # Required environment variables (set in Komodo Environment section):
 #   SESSION_SECRET        — random 64+ char string
 #   PG_PASSWORD           — strong PostgreSQL password
-#   COOKIE_DOMAIN         — your production domain (e.g. chatstash.example.com)
+#   COOKIE_DOMAIN         — your production domain (e.g. chatpileai.example.com)
 #   APP_ADMIN_USERNAME    — initial admin username
 #   APP_ADMIN_EMAIL       — initial admin email
 #   APP_ADMIN_PASSWORD    — initial admin password (12+ chars)
-#   APP_URL               — full URL (e.g. https://chatstash.example.com)
-#   DOCKER_IMAGE          — Docker Hub image (e.g. youruser/chatstash:latest)
+#   APP_URL               — full URL (e.g. https://chatpileai.example.com)
+#   DOCKER_IMAGE          — Docker Hub image (e.g. youruser/chatpileai:latest)
 #
 # Optional:
 #   PG_USER               — PostgreSQL user (default: aichats)
@@ -18,15 +18,15 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: chatstash-prod-db
+    container_name: chatpileai-prod-db
     environment:
       - POSTGRES_DB=aichats
       - POSTGRES_USER=${PG_USER:-aichats}
       - POSTGRES_PASSWORD=${PG_PASSWORD:?PG_PASSWORD is required}
     volumes:
-      - chatstash-prod-pgdata:/var/lib/postgresql/data
+      - chatpileai-prod-pgdata:/var/lib/postgresql/data
     networks:
-      - chatstash-prod-net
+      - chatpileai-prod-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-aichats}"]
@@ -35,17 +35,17 @@ services:
       retries: 5
 
   app:
-    image: ${DOCKER_IMAGE:-your-dockerhub-username/chatstash:latest}
+    image: ${DOCKER_IMAGE:-your-dockerhub-username/chatpileai:latest}
 
-    container_name: chatstash-prod
+    container_name: chatpileai-prod
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.chatstash.rule=Host(`${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}`)"
-      - "traefik.http.routers.chatstash.entrypoints=websecure"
-      - "traefik.http.routers.chatstash.tls=true"
-      - "traefik.http.routers.chatstash.tls.certresolver=letsencrypt"
-      - "traefik.http.services.chatstash.loadbalancer.server.port=4173"
+      - "traefik.http.routers.chatpileai.rule=Host(`${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}`)"
+      - "traefik.http.routers.chatpileai.entrypoints=websecure"
+      - "traefik.http.routers.chatpileai.tls=true"
+      - "traefik.http.routers.chatpileai.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chatpileai.loadbalancer.server.port=4173"
 
     environment:
       - NODE_ENV=production
@@ -65,7 +65,7 @@ services:
       - APP_URL=${APP_URL:?APP_URL is required}
 
     networks:
-      - chatstash-prod-net
+      - chatpileai-prod-net
       - proxy
 
     depends_on:
@@ -88,11 +88,11 @@ services:
         max-file: "3"
 
 volumes:
-  chatstash-prod-pgdata:
-    name: chatstash-prod-pgdata
+  chatpileai-prod-pgdata:
+    name: chatpileai-prod-pgdata
 
 networks:
-  chatstash-prod-net:
-    name: chatstash-prod-net
+  chatpileai-prod-net:
+    name: chatpileai-prod-net
   proxy:
     external: true

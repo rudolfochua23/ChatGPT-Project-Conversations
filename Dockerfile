@@ -1,4 +1,4 @@
-# Multi-stage build for ChatStash
+# Multi-stage build for ChatPileAI
 
 # Stage 1: Builder
 FROM node:18-alpine AS builder

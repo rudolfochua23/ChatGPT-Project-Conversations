@@ -1,6 +1,6 @@
 # Load local overrides (gitignored)
 -include Makefile.local
-IMAGE ?= your-dockerhub-username/chatstash
+IMAGE ?= your-dockerhub-username/chatpileai
 
 .PHONY: dev dev-down dev-logs dev-restart release setup test
 

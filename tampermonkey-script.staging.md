@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         ChatStash [STAGING]
-// @namespace    chatstash-staging
+// @name         ChatPileAI [STAGING]
+// @namespace    chatpileai-staging
 // @version      5.0.0
-// @description  Auto-save AI conversations with images and files to your ChatStash STAGING dashboard
+// @description  Auto-save AI conversations with images and files to your ChatPileAI STAGING dashboard
 // @match        https://chat.openai.com/*
 // @match        https://chatgpt.com/*
 // @match        https://claude.ai/*
@@ -27,7 +27,7 @@
   "use strict";
 
   // ━━━ CONFIG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const API_URL = "https://chatstash-staging.powerbyte.app";
+  const API_URL = "https://chatpileai-staging.powerbyte.app";
   const AUTOSAVE_MS = 1 * 60 * 1000;
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
 
@@ -606,7 +606,7 @@
     if (!document.body) return;
 
     const platform = detectPlatform();
-    const label = "ChatStash [STG]";
+    const label = "ChatPileAI [STG]";
     const isCollapsed = GM_getValue(K_COLLAPSED, true); // collapsed (small) by default
     const savedPos = GM_getValue(K_PANEL_POS, null);
     const pos = savedPos ? JSON.parse(savedPos) : null;
@@ -732,7 +732,7 @@
 
   setTimeout(() => {
     mountUI();
-    toast("ChatStash [STAGING] active");
+    toast("ChatPileAI [STAGING] active");
   }, 2000);
 
   setInterval(async () => {
