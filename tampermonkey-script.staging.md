@@ -302,24 +302,103 @@
 
   async function extractFilesFromElement(el) {
     const attachments = [];
-    // Look for file attachment links
-    const links = el.querySelectorAll('a[download], a[href*="blob:"], a[href*="/file/"], [data-testid*="file"], [class*="attachment"], [class*="file-card"]');
 
+    // 1. Standard links with download/blob/file hrefs
+    const links = el.querySelectorAll('a[download], a[href*="blob:"], a[href*="/file/"]');
     for (const link of links) {
       const href = link.href || link.getAttribute("href") || "";
       const name = link.download || link.textContent?.trim() || link.getAttribute("aria-label") || "file";
       if (!href || href === "#") continue;
-
       const result = await fetchAsBase64(href);
       if (result) {
-        attachments.push({
-          fileName: name.slice(0, 100),
-          mimeType: result.mimeType,
-          data: result.data,
-        });
+        attachments.push({ fileName: name.slice(0, 100), mimeType: result.mimeType, data: result.data });
       }
     }
+
+    // 2. ChatGPT file attachment cards — uses /backend-api/files/{id}/download
+    const fileCards = el.querySelectorAll('[data-testid*="file"], [class*="file-card"], [class*="fileCard"]');
+    for (const card of fileCards) {
+      const nameEl = card.querySelector('[class*="truncate"], [class*="filename"], [class*="name"]') || card;
+      const fileName = (nameEl.textContent || "").trim().split("\n")[0].trim();
+      if (!fileName || fileName.length < 2) continue;
+
+      const downloadLink = card.querySelector('a[href*="/file"], a[download]');
+      if (downloadLink) {
+        const href = downloadLink.href || downloadLink.getAttribute("href") || "";
+        if (href && href !== "#") {
+          const result = await fetchAsBase64(href);
+          if (result) {
+            attachments.push({ fileName: fileName.slice(0, 100), mimeType: result.mimeType, data: result.data });
+            continue;
+          }
+        }
+      }
+
+      const fileId = card.getAttribute("data-file-id")
+        || card.closest("[data-file-id]")?.getAttribute("data-file-id")
+        || extractFileIdFromCard(card);
+
+      if (fileId) {
+        try {
+          const downloadInfo = await fetchJson(`/backend-api/files/${fileId}/download`);
+          if (downloadInfo?.download_url) {
+            const result = await fetchAsBase64(downloadInfo.download_url);
+            if (result) {
+              attachments.push({ fileName: fileName.slice(0, 100), mimeType: result.mimeType, data: result.data });
+            }
+          }
+        } catch { /* file download not available */ }
+      }
+    }
+
+    // 3. Claude file attachment cards
+    const claudeFiles = el.querySelectorAll('[data-testid="file-attachment"], [data-testid="chat-message-file"]');
+    for (const card of claudeFiles) {
+      const nameEl = card.querySelector('[class*="name"], [class*="truncate"]') || card;
+      const fileName = (nameEl.textContent || "").trim().split("\n")[0].trim();
+      if (!fileName || fileName.length < 2) continue;
+
+      const downloadLink = card.querySelector('a[href], button[data-href]');
+      const href = downloadLink?.href || downloadLink?.getAttribute("data-href") || "";
+      if (href && href.startsWith("http")) {
+        const result = await fetchAsBase64(href);
+        if (result) {
+          attachments.push({ fileName: fileName.slice(0, 100), mimeType: result.mimeType, data: result.data });
+        }
+      }
+    }
+
     return attachments;
+  }
+
+  function extractFileIdFromCard(card) {
+    const html = card.outerHTML || "";
+    const m = html.match(/file[-_](?:id|ID)['":\s]+['"]?([a-zA-Z0-9_-]{20,})/);
+    if (m) return m[1];
+    const anchor = card.closest("a[href]");
+    if (anchor) {
+      const hrefMatch = (anchor.href || "").match(/files?\/([a-zA-Z0-9_-]{20,})/);
+      if (hrefMatch) return hrefMatch[1];
+    }
+    return null;
+  }
+
+  function fetchJson(path) {
+    return new Promise((resolve) => {
+      const url = path.startsWith("http") ? path : `${location.origin}${path}`;
+      GM_xmlhttpRequest({
+        method: "GET", url,
+        headers: { "Content-Type": "application/json" },
+        timeout: 10000,
+        onload: (res) => {
+          if (res.status < 300) {
+            try { resolve(JSON.parse(res.responseText)); } catch { resolve(null); }
+          } else { resolve(null); }
+        },
+        onerror: () => resolve(null),
+        ontimeout: () => resolve(null),
+      });
+    });
   }
 
   // ━━━ TEXT + FILE EXTRACTION PER PLATFORM ━━━━━━━━━
